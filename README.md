@@ -7,7 +7,7 @@ models, and a public record of how accurate those forecasts were.
 > No data has been ingested and no models have been trained yet. The site deliberately shows
 > no economic figures. See [`docs/m1-data-verification.md`](docs/m1-data-verification.md).
 
-Everything here runs for **₹0**. No paid APIs, databases, hosting or GPUs are required.
+Everything here runs for **â‚¹0**. No paid APIs, databases, hosting or GPUs are required.
 
 ## Repository layout
 
@@ -20,7 +20,7 @@ docs/              Verification report, roles, (later) methodology
 reports/           Local probe output (git-ignored)
 ```
 
-Coming later: `models/` (M5–M6) and `research/` (M5, M13).
+Coming later: `models/` (M5â€“M6) and `research/` (M5, M13).
 
 ## Prerequisites (all free)
 
@@ -176,7 +176,7 @@ python -m pipeline.verify --list   # what will be checked
 python -m pipeline.verify          # ~20 small read-only GETs; report saved to reports/verification/
 ```
 
-Or run **Actions → Verify data sources → Run workflow** on GitHub, then download the report artifact.
+Or run **Actions â†’ Verify data sources â†’ Run workflow** on GitHub, then download the report artifact.
 
 ## Ground rules
 
@@ -196,3 +196,7 @@ and [nso-india/esankhyiki-mcp](https://github.com/nso-india/esankhyiki-mcp), bot
 and exactly what is used from each are in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ArthaSense AI is a research and decision-support project, not investment advice.
+
+## Contributing / Git workflow
+
+Work on `main`; see [docs/GIT-WORKFLOW.md](docs/GIT-WORKFLOW.md) for the safe fetch, check, commit and push routine (no force pushes, secrets never committed). GitHub's default branch is still `master`; the project lives on `main`.

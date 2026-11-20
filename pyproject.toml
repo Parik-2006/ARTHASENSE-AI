@@ -21,5 +21,11 @@ extend-exclude = ["apps", "data"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+# Long SQL strings and hand-aligned table literals in the forecasting modules.
+"services/api/app/forecasting.py" = ["E501"]
+"pipeline/forecasting/*.py" = ["E501"]
+"pipeline/tests/test_forecasting*.py" = ["E501"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["app", "pipeline", "db"]

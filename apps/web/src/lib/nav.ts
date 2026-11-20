@@ -20,10 +20,16 @@ export const NAV_ITEMS: NavItem[] = [
     summary: "History of CPI, IIP, WPI, GDP and the repo rate, with base-year breaks marked.",
   },
   {
-    href: "/forecasts",
+    href: "/forecasting",
     label: "Forecasts",
     milestone: "M10",
-    summary: "Stored model forecasts with uncertainty bands and backtest comparisons.",
+    summary: "Stored model forecasts with uncertainty bands, backtest accuracy and model comparison.",
+  },
+  {
+    href: "/intelligence",
+    label: "Intelligence",
+    milestone: "M11",
+    summary: "Plain-language readings of stored data and forecasts, labelled as official, derived or forecast.",
   },
   {
     href: "/report-card",

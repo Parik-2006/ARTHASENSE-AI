@@ -12,12 +12,16 @@ from pydantic import BaseModel
 from app import __version__
 from app.config import get_settings
 from app.db import DbStatus, check_database
+from app.forecasting import router as forecasting_router
+from app.indicators import router as indicators_router
 
 app = FastAPI(
     title="ArthaSense AI API",
     version=__version__,
     description="Read-only access to official Indian economic data, stored forecasts and scores.",
 )
+app.include_router(indicators_router)
+app.include_router(forecasting_router)
 
 
 class DatabaseHealth(BaseModel):

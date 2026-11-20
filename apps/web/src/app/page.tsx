@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { EmptyState, PageHeader, Panel } from "@/components/ui/primitives";
+import { Suspense } from "react";
+import { IndicatorSummary } from "@/components/indicators/indicator-summary";
+import { PageHeader, Panel } from "@/components/ui/primitives";
+import { CONFIG_LIST } from "@/lib/indicators";
 
 export default function OverviewPage() {
   return (
@@ -10,11 +13,20 @@ export default function OverviewPage() {
         lede="ArthaSense shows official statistics with their source and release date, forecasts from evaluated models, and a public record of how those forecasts performed."
       />
 
-      <EmptyState title="No official data has been loaded yet" milestone="M3">
-        The ingestion pipeline is not built yet, so this page deliberately shows no figures. Data
-        sources are being verified first. The M1 verification report is in{" "}
-        <code className="figure">docs/m1-data-verification.md</code>.
-      </EmptyState>
+      <section aria-label="Latest official figures" className="grid gap-4 md:grid-cols-3">
+        {CONFIG_LIST.map((config) => (
+          <Suspense
+            key={config.key}
+            fallback={<div className="h-36 animate-pulse rounded-md border border-rule bg-surface" />}
+          >
+            <IndicatorSummary config={config} />
+          </Suspense>
+        ))}
+      </section>
+      <p className="mt-2 text-xs text-ink-muted">
+        Each card shows its own import status. Each index has its own base year, so levels are not comparable
+        between cards. GDP and the repo rate are not yet ingested.
+      </p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-3">
         <Panel title="What it will explain">

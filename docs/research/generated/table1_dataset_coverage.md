@@ -1,0 +1,10 @@
+### Table 1: Dataset characteristics (stored headline index series)
+
+| Indicator | Series | Base year | First month | Last month | Observations | Missing months | Source | Retrieved (UTC) | Publication date |
+|---|---|---|---|---|---|---|---|---|---|
+| CPI | mospi.cpi.2024.current.all_india.combined.general.index | 2024 | 2025-01-01 | 2025-12-01 | 12 | 0 | MoSPI eSankhyiki API | 2026-11-20 13:01:32 | not provided by the API |
+| WPI | mospi.wpi.2022-23.india.all_commodities.index | 2022-23 | 2023-04-01 | 2026-10-01 | 43 | 0 | MoSPI eSankhyiki API | 2026-11-20 14:13:32 | not provided by the API |
+| IIP | mospi.iip.2022-23.india.general.index | 2022-23 | 2023-04-01 | 2026-09-01 | 42 | 0 | MoSPI eSankhyiki API | 2026-11-20 14:13:45 | not provided by the API |
+
+Index levels only. Retrieval time is when the data was downloaded, not when it was published.
+

@@ -3,6 +3,7 @@ import os
 import psycopg
 import pytest
 
+from conftest import reset_test_database
 from db.migrate import migrate
 
 pytestmark = pytest.mark.integration
@@ -13,8 +14,7 @@ def url():
     u = os.environ.get("ARTHASENSE_TEST_DATABASE_URL")
     if not u:
         pytest.skip("ARTHASENSE_TEST_DATABASE_URL not set")
-    with psycopg.connect(u, autocommit=True) as conn:
-        conn.execute("DROP TABLE IF EXISTS schema_migrations")
+    reset_test_database(u)  # a full wipe: migrations 0001+ create tables that must not pre-exist
     return u
 
 

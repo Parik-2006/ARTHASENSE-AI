@@ -20,21 +20,80 @@ import { type IipSectorsResult, parseIipSectors } from "@/lib/iip-sectors";
 import { type IndicatorKey, type IndicatorResult, parseIndicatorResponse } from "@/lib/indicator";
 import { type HealthResult, parseApiHealth } from "@/lib/health";
 
-/** Server-side only. The browser never talks to FastAPI directly. */
-export const API_URL = process.env.ARTHASENSE_API_URL ?? "http://127.0.0.1:8000";
+import {
+  configProblem,
+  isTransientStatus,
+  joinUrl,
+  normalizeBaseUrl,
+  readFetchPolicy,
+} from "@/lib/api-config";
 
-export async function getApiHealth(timeoutMs = 2500): Promise<HealthResult> {
+/** Server-side only. The browser never talks to FastAPI directly (see lib/api-config.ts). */
+export const API_URL = normalizeBaseUrl(process.env.ARTHASENSE_API_URL);
+
+/** Non-null when the API URL looks wrong for this environment (for example unset on Vercel). */
+export function apiConfigProblem(): string | null {
+  return configProblem(API_URL, { onVercel: Boolean(process.env.VERCEL), production: process.env.NODE_ENV === "production" });
+}
+
+interface ApiResponse {
+  status: number;
+  body: unknown;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** GET with a timeout and bounded retries for a server that is still waking up (network error, 502/503/504).
+ *  Permanent conditions (404, 4xx, "not migrated", "not configured") are never retried. */
+async function apiGet(path: string, opts: { timeoutMs?: number; attempts?: number } = {}): Promise<ApiResponse> {
+  const policy = readFetchPolicy(process.env);
+  const attempts = opts.attempts ?? policy.attempts;
+  const timeoutMs = opts.timeoutMs ?? policy.timeoutMs;
+  let last: ApiResponse | Error = new Error("no attempt was made");
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) await sleep(policy.retryDelayMs);
+    try {
+      const res = await fetch(joinUrl(API_URL, path), {
+        signal: AbortSignal.timeout(timeoutMs),
+        headers: { accept: "application/json" },
+      });
+      let body: unknown = null;
+      try {
+        body = await res.json();
+      } catch {
+        /* non-JSON body */
+      }
+      const detail = typeof (body as { detail?: unknown } | null)?.detail === "string" ? ((body as { detail: string }).detail) : "";
+      const permanent = /not migrated|not configured/i.test(detail);
+      if (isTransientStatus(res.status) && !permanent && i < attempts - 1) {
+        last = { status: res.status, body };
+        continue;
+      }
+      return { status: res.status, body };
+    } catch (err) {
+      last = err instanceof Error ? err : new Error(String(err));
+    }
+  }
+  if (last instanceof Error) throw last;
+  return last;
+}
+
+function httpError(res: ApiResponse): string {
+  const detail = (res.body as { detail?: unknown } | null)?.detail;
+  return `API answered HTTP ${res.status}${typeof detail === "string" ? `: ${detail}` : ""}`;
+}
+
+/** A failed request on a misconfigured deployment is reported as the configuration problem, which is the real cause. */
+const errText = (err: unknown) => apiConfigProblem() ?? (err instanceof Error ? err.message : String(err));
+
+export async function getApiHealth(timeoutMs = 8000): Promise<HealthResult> {
   try {
-    const res = await fetch(`${API_URL}/health`, {
-      signal: AbortSignal.timeout(timeoutMs),
-      headers: { accept: "application/json" },
-    });
-    const health = parseApiHealth(await res.json());
+    const res = await apiGet("/health", { timeoutMs, attempts: 1 });
+    const health = parseApiHealth(res.body);
     if (!health) return { reachable: false, error: `Unexpected response (HTTP ${res.status})` };
     return { reachable: true, health };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return { reachable: false, error: message };
+    return { reachable: false, error: errText(err) };
   }
 }
 
@@ -43,60 +102,42 @@ export async function getIndicator(
   kind: IndicatorKey,
   query = "?limit=240",
   path = "",
-  timeoutMs = 5000,
+  timeoutMs?: number,
 ): Promise<IndicatorResult> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/indicators/${kind}${path}${query}`, {
-      signal: AbortSignal.timeout(timeoutMs),
-      headers: { accept: "application/json" },
-    });
-    if (!res.ok) return { ok: false, error: `API answered HTTP ${res.status}` };
-    const data = parseIndicatorResponse(await res.json(), kind);
+    const res = await apiGet(`/api/v1/indicators/${kind}${path}${query}`, { timeoutMs });
+    if (res.status < 200 || res.status >= 300) return { ok: false, error: httpError(res) };
+    const data = parseIndicatorResponse(res.body, kind);
     if (!data) return { ok: false, error: "Unexpected response shape from the API" };
     return { ok: true, data };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return { ok: false, error: errText(err) };
   }
 }
 
-/** Sector totals of the IIP, one list per sector (null on any failure; the page degrades gracefully). */
-export async function getIipSectors(timeoutMs = 5000): Promise<IipSectorsResult> {
+/** Sector totals of the IIP, one list per sector (a failure degrades gracefully on the page). */
+export async function getIipSectors(timeoutMs?: number): Promise<IipSectorsResult> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/indicators/iip/sectors?limit=120`, {
-      signal: AbortSignal.timeout(timeoutMs),
-      headers: { accept: "application/json" },
-    });
-    if (!res.ok) return { ok: false, error: `API answered HTTP ${res.status}` };
-    const data = parseIipSectors(await res.json());
+    const res = await apiGet("/api/v1/indicators/iip/sectors?limit=120", { timeoutMs });
+    if (res.status < 200 || res.status >= 300) return { ok: false, error: httpError(res) };
+    const data = parseIipSectors(res.body);
     return data ? { ok: true, data } : { ok: false, error: "Unexpected response shape from the API" };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return { ok: false, error: errText(err) };
   }
 }
 
 // ---------- forecasting (stored results only; the API never trains a model) ----------
 
-async function getJson<T>(path: string, parse: (j: unknown) => T | null, timeoutMs = 6000): Promise<Result<T>> {
+async function getJson<T>(path: string, parse: (j: unknown) => T | null, timeoutMs?: number): Promise<Result<T>> {
   try {
-    const res = await fetch(`${API_URL}/api/v1/forecasting${path}`, {
-      signal: AbortSignal.timeout(timeoutMs),
-      headers: { accept: "application/json" },
-    });
-    if (!res.ok) {
-      if (res.status === 404) return { ok: false, error: "Not found" };
-      let detail = "";
-      try {
-        const body = (await res.json()) as { detail?: unknown };
-        if (typeof body.detail === "string") detail = `: ${body.detail}`;
-      } catch {
-        /* no JSON body */
-      }
-      return { ok: false, error: `API answered HTTP ${res.status}${detail}` };
-    }
-    const data = parse(await res.json());
+    const res = await apiGet(`/api/v1/forecasting${path}`, { timeoutMs });
+    if (res.status === 404) return { ok: false, error: "Not found" };
+    if (res.status < 200 || res.status >= 300) return { ok: false, error: httpError(res) };
+    const data = parse(res.body);
     return data ? { ok: true, data } : { ok: false, error: "Unexpected response shape from the API" };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return { ok: false, error: errText(err) };
   }
 }
 

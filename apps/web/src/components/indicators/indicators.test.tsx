@@ -15,6 +15,8 @@ import { isActive, NAV_ITEMS } from "@/lib/nav";
 /** React inserts <!-- --> between adjacent text nodes; strip them so assertions read naturally. */
 const renderToStaticMarkup = (el: React.ReactElement) => renderRaw(el).replace(/<!-- -->/g, "");
 
+process.env.ARTHASENSE_API_RETRY_DELAY_MS = "0"; // keep retry tests instant
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: () => {} }),
   usePathname: () => "/indicators/wpi",
@@ -204,7 +206,7 @@ describe("API fetchers (mocked fetch, no network)", () => {
   });
   it("reports HTTP errors, malformed bodies and network failures without throwing", async () => {
     respond({ detail: "database unavailable" }, 503);
-    expect(await getIndicator("cpi")).toEqual({ ok: false, error: "API answered HTTP 503" });
+    expect(await getIndicator("cpi")).toEqual({ ok: false, error: "API answered HTTP 503: database unavailable" });
     respond({ nonsense: true });
     expect((await getIndicator("cpi")).ok).toBe(false);
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new Error("ECONNREFUSED"))));

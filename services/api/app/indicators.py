@@ -16,6 +16,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.config import get_settings
+from app.db import connect
 
 router = APIRouter(prefix="/api/v1/indicators", tags=["indicators"])
 
@@ -100,7 +101,7 @@ def query_series_rows(
         "release_key": release_key,
         "row_limit": row_limit,
     }
-    with psycopg.connect(database_url, connect_timeout=3) as conn:
+    with connect(database_url, get_settings().api_connect_timeout_s) as conn:
         return conn.execute(_SQL, params).fetchall()
 
 

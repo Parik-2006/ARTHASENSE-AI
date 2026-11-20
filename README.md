@@ -3,11 +3,20 @@
 Indian economic intelligence: official statistics with their sources, forecasts from evaluated
 models, and a public record of how accurate those forecasts were.
 
-> **Status: Milestone 0 (scaffold) + Milestone 1 (data-source verification).**
-> No data has been ingested and no models have been trained yet. The site deliberately shows
-> no economic figures. See [`docs/m1-data-verification.md`](docs/m1-data-verification.md).
+> **Status:** CPI, WPI and IIP are ingested from the official MoSPI API; forecasts (naive, seasonal naive, drift, ETS, ARIMA,
+> SARIMA, XGBoost) are backtested and stored; the dashboards, API, research tables and an IEEE-style draft exist. See
+> [`docs/FINAL-PROJECT-STATUS.md`](docs/FINAL-PROJECT-STATUS.md) for exactly what is done and what is not.
 
-Everything here runs for **â‚¹0**. No paid APIs, databases, hosting or GPUs are required.
+| | URL |
+|---|---|
+| Live website (Vercel) | <https://arthasense-ai.vercel.app> |
+| Live API (Render) | <https://arthasense-ai.onrender.com> (`/healthz`, `/docs`, `/api/v1/...`) |
+| Database | Supabase PostgreSQL (private connection string, never in this repository) |
+
+Deployment, environment variables and the first-time database setup: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+Safe Git routine: [`docs/GIT-WORKFLOW.md`](docs/GIT-WORKFLOW.md).
+
+Everything here runs for **zero cost**. No paid APIs, databases, hosting or GPUs are required.
 
 ## Repository layout
 

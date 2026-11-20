@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader, Panel, StatusPill } from "@/components/ui/primitives";
-import { API_URL, getApiHealth } from "@/lib/api";
+import { API_URL, apiConfigProblem, getApiHealth } from "@/lib/api";
 import { apiTone, dbTone } from "@/lib/health";
 
 export const metadata: Metadata = { title: "System status" };
@@ -55,6 +55,11 @@ export default function StatusPage() {
         title="Services"
         footnote="Start the stack with `docker compose up -d db`, then `uvicorn` and `npm run dev`. See README."
       >
+        {apiConfigProblem() && (
+          <p role="alert" className="mb-3 rounded border border-warn px-3 py-2 text-sm text-warn">
+            Configuration problem: {apiConfigProblem()}
+          </p>
+        )}
         <Suspense fallback={<p className="py-3 text-sm text-ink-muted">Checking services…</p>}>
           <ServiceStatus />
         </Suspense>

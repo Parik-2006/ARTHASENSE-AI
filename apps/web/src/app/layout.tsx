@@ -9,9 +9,11 @@ import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { PRODUCTION_SITE_URL } from "@/lib/api-config";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.ARTHASENSE_SITE_URL?.trim() || PRODUCTION_SITE_URL),
   title: {
     default: "ArthaSense AI",
     template: "%s · ArthaSense AI",

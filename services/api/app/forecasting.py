@@ -16,6 +16,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.config import get_settings
+from app.db import connect
 
 router = APIRouter(prefix="/api/v1/forecasting", tags=["forecasting"])
 
@@ -105,7 +106,7 @@ def _db() -> Iterator[psycopg.Connection]:
     if not url:
         raise HTTPException(status_code=503, detail="database is not configured")
     try:
-        with psycopg.connect(url, connect_timeout=3) as conn:
+        with connect(url, get_settings().api_connect_timeout_s) as conn:
             yield conn
     except (psycopg.errors.UndefinedColumn, psycopg.errors.UndefinedTable):
         raise HTTPException(

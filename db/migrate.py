@@ -15,6 +15,8 @@ from pathlib import Path
 
 import psycopg
 
+from db.target import connect
+
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 
@@ -35,7 +37,7 @@ def _applied(conn: psycopg.Connection) -> dict[str, str]:
 
 def migrate(database_url: str) -> list[str]:
     applied_now = []
-    with psycopg.connect(database_url) as conn:
+    with connect(database_url) as conn:
         done = _applied(conn)
         for version, sql, digest in _migrations():
             if version in done:
@@ -61,7 +63,7 @@ def main() -> int:
         print("ARTHASENSE_DATABASE_URL is not set (see .env.example)", file=sys.stderr)
         return 2
     if args.status:
-        with psycopg.connect(url) as conn:
+        with connect(url) as conn:
             done = _applied(conn)
         for version, _, _ in _migrations():
             print(f"{'applied' if version in done else 'pending':8} {version}")

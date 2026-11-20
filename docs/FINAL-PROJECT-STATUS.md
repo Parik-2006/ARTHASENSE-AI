@@ -102,3 +102,15 @@ mismatches. The paper makes no claim of publication, evaluates no foundation mod
 3. Significance tests for model comparisons; more history (or an approved CPI back-series policy) for CPI.
 4. Optional: install PyTorch and approve the Chronos-2 / TimesFM 2.5 download, then evaluate them.
 5. Optional: commit the work to Git (nothing is committed) and decide on any deployment (`docs/DEPLOYMENT.md`).
+
+## K. Production deployment state (probed 2026-11-20, before the fixes in this commit)
+
+| Layer | Observed | Cause / action |
+|---|---|---|
+| Vercel `https://arthasense-ai.vercel.app` | pages served (HTTP 200) but every data section said "Unable to load"; `/status` showed `http://127.0.0.1:8000` | `ARTHASENSE_API_URL` is not set on Vercel: set it to `https://arthasense-ai.onrender.com` and redeploy |
+| Render `https://arthasense-ai.onrender.com` | process up (`/docs` 200, `/health` 200 degraded); all data endpoints 503 | database unreachable: `Network is unreachable` to an IPv6 address on port 5432 = Supabase *direct* host; use the **Session pooler** URL |
+| Supabase | **not verified**: connection never succeeded from Render; contents unknown | run `db.verify_target`, `db.migrate`, then `db.transfer` (dry run first) as in `docs/DEPLOYMENT.md` |
+
+The code now: reads `ARTHASENSE_API_URL` with retries for a sleeping backend, enables TLS and pooler-safe settings for remote databases, hides
+host/IP/port from `/health`, adds `/healthz`, adds an env-driven CORS allow-list, and ships `db.verify_target` / `db.transfer`.
+Nothing was written to Supabase. The deployment is **not** complete until the three layers are verified together.

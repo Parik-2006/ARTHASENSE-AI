@@ -1,0 +1,37 @@
+# Manual, read-only check of the official data sources (M1 probes).
+# Run it from the Actions tab: "Verify data sources" -> "Run workflow".
+# It makes ~20 small GET requests to public servers and uploads the JSON report.
+name: Verify data sources
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Probe id prefix (blank = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Run probes
+        run: |
+          if [ -n "${{ inputs.only }}" ]; then
+            python -m pipeline.verify --only "${{ inputs.only }}" || true
+          else
+            python -m pipeline.verify || true
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification-report
+          path: reports/verification/*.json
+          if-no-files-found: error

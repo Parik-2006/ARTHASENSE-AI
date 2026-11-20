@@ -1,0 +1,49 @@
+# --- secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Node / Next.js (apps/web has its own .gitignore too) ---
+node_modules/
+.next/
+out/
+
+# --- data: raw downloads stay local, hashed in the DB ---
+data/raw/
+data/interim/
+data/processed/
+*.parquet
+*.feather
+
+# --- model weights and caches: never commit ---
+models/weights/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+.cache/
+hf_cache/
+
+# --- verification probe output (commit only the curated report in docs/) ---
+reports/verification/*.json
+!reports/verification/.gitkeep
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

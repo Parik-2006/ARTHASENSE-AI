@@ -1,0 +1,25 @@
+# Tooling configuration only. Dependencies live in requirements*.txt.
+[project]
+name = "arthasense-ai"
+version = "0.1.0"
+description = "ArthaSense AI: Indian economic data pipeline, forecasting research and API"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = [".", "services/api"]
+testpaths = ["services/api/tests", "pipeline/tests", "db/tests"]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+markers = [
+  "integration: needs a running PostgreSQL (set ARTHASENSE_TEST_DATABASE_URL)",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = ["apps", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "pipeline", "db"]

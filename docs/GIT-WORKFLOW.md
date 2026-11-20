@@ -34,7 +34,7 @@ cd apps\web; npm test; npm run typecheck; npm run lint; npm run build; cd ..\..
 git add -- <the paths you changed>
 git diff --cached --name-status
 git diff --cached --check
-git grep --cached -I -n -E "postgres(ql)?://[^:/\s]+:[^@\s]{4,}@|ghp_|github_pat_|BEGIN (RSA |EC )?PRIVATE KEY"   # expect no output
+git grep --cached -I -n -E "postgres(ql)?://[^:/\s]+:[^@\s]{4,}@|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,}|BEGIN (RSA |EC )?PRIVATE KEY"   # token SHAPES; expect no output
 
 # 6. Commit and push (a normal push)
 git commit -m "type: short description"

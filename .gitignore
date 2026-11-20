@@ -47,3 +47,14 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Local research exports (regenerate with python -m pipeline.research export)
+data/exports/
+
+# Database dumps, logs and coverage output: never commit
+*.dump
+*.sql.gz
+backup*.sql
+*.log
+.coverage
+htmlcov/

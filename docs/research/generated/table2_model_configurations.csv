@@ -1,0 +1,10 @@
+Model,Family,Class,Configuration,Min. training obs.,Status
+naive,baseline,"""Naive""",{},1,available
+snaive,baseline,"""SeasonalNaive""",{},12,available
+drift,baseline,"""Drift""",{},4,available
+ets,statistical,"""ETS""","{""damped"": true}",12,available
+arima,statistical,"""ARIMA""","{""order"": [1, 1, 0]}",12,available
+sarima,statistical,"""SARIMA""","{""order"": [1, 1, 0], ""seasonal_order"": [0, 1, 0, 12]}",36,available
+xgboost,machine learning,"""XGBoostForecaster""","{""learning_rate"": 0.05, ""max_depth"": 2, ""min_rows"": 24, ""n_estimators"": 100}",31,available
+chronos2,foundation,"""Chronos2""",{},12,"unavailable: python package(s) torch, chronos not installed (pip install chronos-forecasting torch; roughly ~0.5 GB of weights plus ~200 MB for CPU PyTorch). Needs explicit approval."
+timesfm25,foundation,"""TimesFM25""",{},12,"unavailable: python package(s) torch, timesfm not installed (pip install timesfm torch; roughly ~0.9 GB of weights plus ~200 MB for CPU PyTorch). Needs explicit approval."

@@ -1,7 +1,7 @@
 # Runtime dependencies for services/api and pipeline/.
 # Direct dependencies are pinned exactly for reproducibility. Python 3.11+.
-# ML dependencies (torch, chronos, timesfm, xgboost, statsmodels) are added in
-# requirements-ml.txt at milestone M5/M6, not here, so the API stays lightweight.
+# Forecasting dependencies (numpy, statsmodels, xgboost, ...) live in requirements-ml.txt so the
+# API stays lightweight. Foundation models (torch, chronos, timesfm) are not installed by default.
 fastapi==0.165.0
 uvicorn==0.54.0
 psycopg[binary]==3.3.9

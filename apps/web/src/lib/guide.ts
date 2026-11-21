@@ -156,6 +156,83 @@ export const HELP: Record<string, HelpEntry> = {
     how: "Open each page for its history, source and downloadable data.",
     mistake: "They are different measures with different base years.",
   },
+  "forecast-horizon": {
+    title: "Forecast horizon",
+    what: "How many months ahead the forecast looks, for example 6 months.",
+    why: "Longer horizons are harder to predict, so each is tested separately.",
+    how: "Pick a horizon that has a stored forecast and a backtest.",
+    mistake: "A good 1-month result says nothing about the 12-month forecast.",
+  },
+  "forecast-origin": {
+    title: "Forecast origin",
+    what: "The last official month the model was allowed to see when it made the forecast.",
+    why: "It tells you how fresh the forecast is.",
+    how: "Compare the origin with the latest observation month.",
+    mistake: "A forecast made before newer data arrived does not reflect that data.",
+  },
+  backtesting: {
+    title: "Backtesting",
+    what: "Replaying a model on past months, each time hiding the future, and measuring its mistakes.",
+    why: "It shows how the model behaved on data it had not seen.",
+    how: "Look at the number of origins (test points) as well as the error size.",
+    mistake: "Few origins make the result unreliable, and past accuracy does not guarantee future accuracy.",
+  },
+  mae: {
+    title: "MAE and RMSE",
+    what: "MAE is the average size of the forecast mistakes in index points. RMSE punishes large mistakes more.",
+    why: "They show typical and worst-case error size.",
+    how: "Lower is better, but only compare models scored on the same indicator, horizon and origins.",
+    mistake: "A model can have a low error and still have badly calibrated intervals.",
+  },
+  mase: {
+    title: "MASE (scaled error)",
+    what: "Error divided by the average one-month change in the training data.",
+    why: "It puts errors on a scale that does not depend on the index level.",
+    how: "Around 1 means similar to a one-step naive forecast. Longer horizons naturally score higher.",
+    mistake: "A flat training history makes the scale tiny, so MASE can look huge after a sudden shift.",
+  },
+  smape: {
+    title: "sMAPE (percentage error)",
+    what: "A percentage error that treats over- and under-forecasts symmetrically.",
+    why: "It is easy to compare across indicators.",
+    how: "Lower is better.",
+    mistake: "It is not the same as the percentage change of the index.",
+  },
+  coverage: {
+    title: "Interval coverage",
+    what: "How often the actual value landed inside the model's 80% or 95% interval in the backtest.",
+    why: "It checks whether the stated uncertainty is honest.",
+    how: "Close to 80% (or 95%) is good. Far below means the intervals are too narrow.",
+    mistake: "Narrow intervals are not better. A missing interval is not 0% coverage.",
+  },
+  "model-comparison": {
+    title: "Model comparison",
+    what: "Models scored on identical months and origins, side by side, with a naive baseline.",
+    why: "Fair comparison needs the same test.",
+    how: "Look at the difference versus the baseline and at the number of origins.",
+    mistake: "A complex model is not automatically better than the naive one.",
+  },
+  "data-fingerprint": {
+    title: "Data fingerprint",
+    what: "A short code that identifies the exact data a run used.",
+    why: "It lets researchers check that two runs used the same data.",
+    how: "Matching fingerprints mean matching inputs.",
+    mistake: "If it says Not recorded, exact reproducibility cannot be claimed.",
+  },
+  "training-window": {
+    title: "Training window",
+    what: "The span of official months the model learned from.",
+    why: "Short windows give weaker evidence.",
+    how: "Check the start and the cutoff month.",
+    mistake: "A model cannot know about changes that happened after the cutoff.",
+  },
+  reliability: {
+    title: "Reliability assessment",
+    what: "A rule-based label built from the number of backtest origins, error versus a naive baseline and interval coverage.",
+    why: "It summarises the evidence behind a forecast in one place.",
+    how: "Read the reasons listed beside it.",
+    mistake: "It is not a probability and not a validated score. A narrow interval does not raise it.",
+  },
   source: {
     title: "Source details",
     what: "Where a number comes from: publisher, dataset, retrieval time and method.",
@@ -196,6 +273,35 @@ export const INDICATORS_TOUR: TourStep[] = [
   { target: "ind-compare", title: "Comparing indicators", body: "Percentage changes can sit side by side; index levels cannot. Similar movement does not show that one causes the other." },
   { target: "ind-coverage", title: "Checking coverage and sources", body: "This table shows what is stored. Every chart also has a source line and a 'Source details' panel with the series identifier and formula." },
   { target: "ind-explore", title: "Going deeper", body: "Open an indicator page for the metric selector, heatmap, moving average, sector explorer, searchable table and CSV download of the months you selected." },
+];
+
+export const FORECAST_OVERVIEW_TOUR: TourStep[] = [
+  { target: "fo-hero", title: "Economic outlook", body: "Model-based forecasts for CPI, WPI and IIP. They are estimates, never official statistics." },
+  { target: "fo-cards", title: "One card per indicator", body: "Each card shows the latest official value, the stored forecast, the model that produced it and how well it did in backtests." },
+  { target: "fo-outlook", title: "Outlook summary", body: "Plain statements built from the stored numbers by fixed rules. If evidence is weak, it says so." },
+  { target: "fo-reliability", title: "Reliability", body: "A rule-based label from backtest evidence. Narrow intervals do not raise it." },
+  { target: "fo-models", title: "Model inventory", body: "Which models exist, which have been evaluated, and why some are unavailable." },
+  { target: "fo-experiments", title: "Latest experiments", body: "Recent stored runs. Open Experiments for the full history." },
+];
+
+export const FORECAST_EXPLORER_TOUR: TourStep[] = [
+  { target: "fx-controls", title: "Choose what to explore", body: "Pick the history window, the model and the forecast horizon. They are saved in the page link." },
+  { target: "fx-chart", title: "Observed and forecast", body: "The solid line is official history. The dashed line is the model forecast; the bands are 80% and 95% intervals." },
+  { target: "fx-reliability", title: "How trustworthy is it?", body: "The label summarises backtest evidence. Read the reasons, especially the number of origins and interval coverage." },
+  { target: "fx-interpretation", title: "What it means", body: "Templated statements from stored numbers. They describe the index level, not causes." },
+  { target: "fx-table", title: "The numbers", body: "Every forecast month with its intervals, model and origin. Download the CSV with full provenance." },
+  { target: "fx-source", title: "Check the sources", body: "Official history and the model forecast are attributed separately." },
+];
+
+export const COMPARISON_TOUR: TourStep[] = [
+  { target: "fc-filters", title: "Choose the comparison", body: "Pick an indicator and horizon. Models are only compared on identical months and origins." },
+  { target: "fc-table", title: "Scores", body: "MAE, RMSE, MASE, sMAPE and interval coverage, with the difference versus the naive baseline." },
+  { target: "fc-baseline", title: "The naive baseline", body: "Repeating the latest value. A complex model has to beat this to be useful." },
+];
+
+export const EXPERIMENTS_TOUR: TourStep[] = [
+  { target: "fe-filters", title: "Filter the history", body: "Filter by indicator, model, status and horizon. Filters are saved in the page link." },
+  { target: "fe-table", title: "Every run", body: "Skipped and failed runs are listed too, with the reason." },
 ];
 
 export interface TourState {

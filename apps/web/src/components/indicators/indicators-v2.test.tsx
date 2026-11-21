@@ -14,7 +14,7 @@ const replace = vi.fn((url: string) => {
   search = url.includes("?") ? url.split("?")[1] : "";
 });
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: () => {}, replace }),
+  useRouter: () => ({ refresh: () => {}, replace, push: replace }),
   usePathname: () => "/indicators/cpi",
   useSearchParams: () => new URLSearchParams(search),
 }));
@@ -225,5 +225,19 @@ describe("Custom range is reachable", () => {
     render(<IndicatorDashboard config={CPI_CONFIG} result={cpi()} />);
     fireEvent.click(screen.getByRole("button", { name: "Custom" }));
     expect(replace.mock.calls.at(-1)![0]).toBe("/indicators/cpi?range=Custom&from=2025-10&to=2026-09");
+  });
+});
+
+describe("Indicators -> Forecasts navigation", () => {
+  it("links to the matching forecast page carrying only the history window (never metric)", () => {
+    search = "range=3Y&metric=yoy";
+    render(<IndicatorDashboard config={WPI_CONFIG} result={wpi()} />);
+    const link = screen.getByRole("link", { name: /WPI forecasts/ });
+    expect(link.getAttribute("href")).toBe("/forecasting/wpi?range=3Y");
+  });
+  it("carries a valid custom range", () => {
+    search = "range=Custom&from=2025-03&to=2025-08";
+    render(<IndicatorDashboard config={CPI_CONFIG} result={cpi()} />);
+    expect(screen.getByRole("link", { name: /CPI forecasts/ }).getAttribute("href")).toBe("/forecasting/cpi?range=Custom&from=2025-03&to=2025-08");
   });
 });

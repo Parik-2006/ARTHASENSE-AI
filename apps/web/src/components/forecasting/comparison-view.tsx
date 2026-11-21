@@ -1,7 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { HelpTip } from "@/components/guide/help-tip";
+import { Tour, TourButton } from "@/components/guide/tour";
 import { Panel } from "@/components/ui/primitives";
+import { COMPARISON_TOUR } from "@/lib/guide";
 import {
   type Comparison,
   type ComparisonGroup,
@@ -45,9 +50,23 @@ function Bars({ group, metric }: { group: ComparisonGroup; metric: string }) {
 }
 
 export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; apiError?: string }) {
-  const [indicator, setIndicator] = useState<IndicatorId>("wpi");
-  const [horizon, setHorizon] = useState<number>(1);
-  const [groupIdx, setGroupIdx] = useState(0);
+  // Indicator, horizon and evaluation set live in the URL (?indicator=&horizon=&set=) so the view can be shared.
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const indParam = params?.get("indicator") ?? "";
+  const indicator: IndicatorId = (INDICATOR_IDS as string[]).includes(indParam) ? (indParam as IndicatorId) : "wpi";
+  const hParam = Number(params?.get("horizon"));
+  const horizon: number = (HORIZONS as readonly number[]).includes(hParam) ? hParam : 1;
+  const groupIdx = Math.max(0, Math.floor(Number(params?.get("set"))) || 0);
+  const setView = (patch: { indicator?: string; horizon?: number; set?: number }) => {
+    const p = new URLSearchParams();
+    p.set("indicator", patch.indicator ?? indicator);
+    p.set("horizon", String(patch.horizon ?? horizon));
+    if (patch.set) p.set("set", String(patch.set));
+    router.push(`${pathname}?${p.toString()}`, { scroll: false });
+  };
+  const isDefault = !params || [...params.keys()].length === 0;
   const [barMetric, setBarMetric] = useState<string>("mae");
   const cmp = data[`${indicator}-${horizon}`] ?? null;
   const group = cmp?.groups[Math.min(groupIdx, Math.max(0, (cmp?.groups.length ?? 1) - 1))];
@@ -64,10 +83,11 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end gap-4">
+      <Tour steps={COMPARISON_TOUR} />
+      <div data-tour="fc-filters" className="flex flex-wrap items-end gap-4">
         <label className="text-sm">
           <span className="mb-1 block text-ink-muted">Indicator</span>
-          <select className={selectClass} value={indicator} onChange={(e) => { setIndicator(e.target.value as IndicatorId); setGroupIdx(0); }}>
+          <select aria-label="Indicator" className={selectClass} value={indicator} onChange={(e) => setView({ indicator: e.target.value, set: 0 })}>
             {INDICATOR_IDS.map((i) => (
               <option key={i} value={i}>{INDICATOR_NAMES[i]}</option>
             ))}
@@ -75,7 +95,7 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
         </label>
         <label className="text-sm">
           <span className="mb-1 block text-ink-muted">Forecast horizon</span>
-          <select className={selectClass} value={horizon} onChange={(e) => { setHorizon(Number(e.target.value)); setGroupIdx(0); }}>
+          <select aria-label="Forecast horizon" className={selectClass} value={horizon} onChange={(e) => setView({ horizon: Number(e.target.value), set: 0 })}>
             {HORIZONS.map((h) => (
               <option key={h} value={h}>{h} month{h > 1 ? "s" : ""} ahead</option>
             ))}
@@ -84,7 +104,7 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
         {cmp && cmp.groups.length > 1 && (
           <label className="text-sm">
             <span className="mb-1 block text-ink-muted">Evaluation set</span>
-            <select className={selectClass} value={groupIdx} onChange={(e) => setGroupIdx(Number(e.target.value))}>
+            <select className={selectClass} value={groupIdx} onChange={(e) => setView({ set: Number(e.target.value) })}>
               {cmp.groups.map((g, i) => (
                 <option key={g.group_id} value={i}>
                   {g.models.length} models, {g.n_origins} origins{g.evaluation_start ? `, ${monthLabel(g.evaluation_start)} to ${monthLabel(g.evaluation_end ?? g.evaluation_start)}` : ""}
@@ -93,6 +113,12 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
             </select>
           </label>
         )}
+        <button type="button" onClick={() => router.push(pathname, { scroll: false })} disabled={isDefault} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-40 ${focusRing}`}>
+          Reset filters
+        </button>
+        <TourButton className={`rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a Tour</TourButton>
+        <Link href={`/forecasting/${indicator}`} className="pb-1.5 text-sm text-accent underline">{indicator.toUpperCase()} forecast explorer →</Link>
+        <Link href={`/forecasting/experiments?indicator=${indicator}&horizon=${horizon}`} className="pb-1.5 text-sm text-accent underline">Experiments →</Link>
       </div>
 
       {!cmp ? (
@@ -111,7 +137,7 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
         <>
           <Panel
             title={`${INDICATOR_NAMES[indicator]}: ${horizon}-month-ahead accuracy`}
-            footnote="Lower is better for MAE, RMSE, MASE and sMAPE. MASE below 1 beats a one-step naive forecast on training data. Coverage should be near its nominal level (80% or 95%)."
+            footnote={<span data-tour="fc-baseline">Lower is better for MAE, RMSE, MASE and sMAPE. MASE is scaled by one-step changes in the training data, so longer horizons naturally score higher. Coverage should be near its nominal level (80% or 95%); a narrow interval is not a better one. Models are compared only on identical origins <HelpTip id="model-comparison" />, MAE <HelpTip id="mae" />, coverage <HelpTip id="coverage" />. The naive baseline repeats the latest value; a more complex model is useful only if it beats it.</span>}
           >
             <div className="-mt-1 mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-ink-muted">
               <p>
@@ -127,7 +153,7 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
                 {group.warnings.map((w) => <li key={w}>{w}</li>)}
               </ul>
             )}
-            <div className="overflow-x-auto">
+            <div data-tour="fc-table" className="overflow-x-auto">
               <table className="w-full min-w-[40rem] text-sm">
                 <caption className="sr-only">Backtest accuracy by model on identical forecast origins</caption>
                 <thead>

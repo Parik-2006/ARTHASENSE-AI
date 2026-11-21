@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState, useTransition } from "react";
 import { Help } from "@/components/artha/help";
@@ -10,6 +11,7 @@ import { IndicatorChart } from "@/components/indicators/indicator-chart";
 import type { ChartMode } from "@/components/indicators/series-chart";
 import { Panel } from "@/components/ui/primitives";
 import { type AnalysisRow, inWindow, type MetricKey, METRIC_KEYS, METRIC_LABEL, resolveWindow, toCsvV2, withDerived } from "@/lib/analysis";
+import { toForecastQuery } from "@/lib/forecast-v2";
 import { FORMULA, seriesIds, sourceFor } from "@/lib/source";
 import {
   distinctSnapshots,
@@ -282,9 +284,14 @@ export function IndicatorDashboard({
           <span className="figure text-ink">{retrieved ? formatTimestamp(retrieved) : "Unknown"}</span>{" "}
           <span className="text-xs">(our download time, not the official publication time)</span>
         </p>
-        <button type="button" onClick={refresh} disabled={pending} className={buttonClass}>
-          {pending ? "Refreshing…" : "Refresh"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={`/forecasting/${config.key}${toForecastQuery({ range: filters.range, custom: filters.custom })}`} className={`${buttonClass} text-accent`}>
+            {config.shortName} forecasts →
+          </Link>
+          <button type="button" onClick={refresh} disabled={pending} className={buttonClass}>
+            {pending ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
       </div>
 
       <section aria-label={`${config.shortName} overview`} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

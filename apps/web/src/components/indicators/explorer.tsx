@@ -42,7 +42,11 @@ export function useFilterState(allowedMetrics: MetricKey[]): [FilterState, (patc
     (patch: Partial<FilterState>) => {
       const next = { ...state, ...patch };
       const qs = serializeFilters(next).toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      const url = qs ? `${pathname}?${qs}` : pathname;
+      // A new preset/metric is a navigation step (Back undoes it); typing month values only refines the current step.
+      const refine = patch.custom !== undefined && patch.range === undefined;
+      if (refine) router.replace(url, { scroll: false });
+      else router.push(url, { scroll: false });
     },
     [state, router, pathname],
   );
@@ -129,6 +133,7 @@ export function FilterBar({
         </div>
       )}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        {metrics.length > 1 && (
         <div role="group" aria-label="Metric" className="flex flex-wrap items-center gap-2">
           {metrics.map((m) => (
             <button key={m} type="button" aria-pressed={filters.metric === m} onClick={() => onChange({ metric: m })} className={chip(filters.metric === m)}>
@@ -137,6 +142,7 @@ export function FilterBar({
           ))}
           <Help topic={filters.metric === "index" ? "index" : filters.metric === "mom" ? "mom" : filters.metric === "yoy" ? "yoy" : "official"} />
         </div>
+        )}
         {modes.length > 1 && (
           <div role="group" aria-label="Chart type" className="flex items-center gap-2">
             {modes.map((m) => (

@@ -116,8 +116,22 @@ class SARIMA(ForecastModel):
             "warnings": _record(caught),
             "converged": bool(retvals.get("converged", True)),
             "aic": float(self._res.aic),
+            **self._ar_stability(),
         }
         return self
+
+    def _ar_stability(self) -> dict[str, Any]:
+        """RECORD (never alter) whether the fitted AR part is explosive. The model is fitted with
+        enforce_stationarity=False, so after a sudden level shift the AR coefficient can exceed 1 and
+        multi-step forecasts diverge. Scores are not changed by this; it only makes the cause visible."""
+        try:
+            roots = np.asarray(self._res.arroots, dtype=complex)
+        except Exception:  # no AR terms, or statsmodels cannot provide roots
+            return {"explosive_ar": False, "ar_min_root_modulus": None}
+        if roots.size == 0:
+            return {"explosive_ar": False, "ar_min_root_modulus": None}
+        m = float(np.min(np.abs(roots)))
+        return {"explosive_ar": m < 1.0 - 1e-6, "ar_min_root_modulus": m}
 
     def predict(self, h: int) -> ForecastResult:
         fc = self._res.get_forecast(steps=h)

@@ -26,17 +26,23 @@ SOURCE_NAME = "Ministry of Statistics and Programme Implementation (MoSPI), eSan
 # ---- series registry (must match pipeline/ingest/*_records.py; a test enforces this) ------------
 CPI_INDEX_SERIES = "mospi.cpi.2024.current.all_india.combined.general.index"
 CPI_INFLATION_SERIES = "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy"
-CPI_SERIES = ("current", "back")
+CPI_SERIES = ("current", "back")  # the two series on the 2024 base
+CPI_LEGACY = "legacy2012"  # separate series on the 2012 base (Jan 2013 - Dec 2025); never merged with the above
 
 
 def cpi_codes(series: str) -> tuple[str, str]:
+    if series == CPI_LEGACY:
+        return (
+            "mospi.cpi.2012.current.all_india.combined.general.index",
+            "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+        )
     return (
         f"mospi.cpi.2024.{series}.all_india.combined.general.index",
         f"mospi.cpi.2024.{series}.all_india.combined.general.inflation_yoy",
     )
 
 
-WPI_BASES = ("2022-23", "2011-12")
+WPI_BASES = ("2022-23", "2011-12", "2004-05", "1993-94")  # 2004-05 and 1993-94 are closed archive series
 DEFAULT_WPI_BASE = "2022-23"
 
 
@@ -54,6 +60,8 @@ IIP_SECTORS: dict[str, str] = {
 IIP_BASES: dict[str, tuple[str, ...]] = {
     "2022-23": ("general", "mining", "manufacturing", "electricity", "water"),
     "2011-12": ("general", "mining", "manufacturing", "electricity"),
+    "2004-05": ("general",),  # archive: index only
+    "1993-94": ("general",),
 }
 DEFAULT_IIP_BASE = "2022-23"
 
@@ -67,9 +75,9 @@ def iip_codes(base_year: str, sector: str) -> tuple[str, str]:
 # Per series and month: the observation from the most recently retrieved snapshot (or only from
 # one snapshot when release_key is given). Newest months first.
 _SQL = """
-SELECT code, period_date, value, release_key, retrieved_at, published_at FROM (
+SELECT code, period_date, value, release_key, retrieved_at, published_at, status FROM (
   SELECT DISTINCT ON (s.code, o.period_date)
-         s.code, o.period_date, o.value, r.release_key, r.retrieved_at, r.published_at
+         s.code, o.period_date, o.value, r.release_key, r.retrieved_at, r.published_at, o.status
     FROM observations o
     JOIN series s ON s.id = o.series_id
     JOIN releases r ON r.id = o.release_id
@@ -112,6 +120,7 @@ class Provenance(BaseModel):
     release_key: str
     retrieved_at: datetime
     published_at: datetime | None = None  # NULL: MoSPI's API gives no publication date
+    status: str | None = None  # the SOURCE's finality flag where it gives one (e.g. CPI 2012: source_final); else 'retrieved'
 
 
 class Source(BaseModel):
@@ -124,8 +133,8 @@ def _number(value: Decimal) -> float:
     return float(value)
 
 
-def _prov(key: str, retrieved_at: datetime, published_at: datetime | None) -> Provenance:
-    return Provenance(release_key=key, retrieved_at=retrieved_at, published_at=published_at)
+def _prov(key: str, retrieved_at: datetime, published_at: datetime | None, status: str | None = None) -> Provenance:
+    return Provenance(release_key=key, retrieved_at=retrieved_at, published_at=published_at, status=status)
 
 
 def _database_url() -> str:
@@ -158,8 +167,8 @@ def _fetch(
 
 def _by_period(rows: list[Row]) -> dict[date, dict[str, tuple[float, Provenance]]]:
     out: dict[date, dict[str, tuple[float, Provenance]]] = {}
-    for code, period, value, key, retrieved_at, published_at in rows:
-        out.setdefault(period, {})[code] = (_number(value), _prov(key, retrieved_at, published_at))
+    for code, period, value, key, retrieved_at, published_at, *rest in rows:
+        out.setdefault(period, {})[code] = (_number(value), _prov(key, retrieved_at, published_at, rest[0] if rest else None))
     return out
 
 
@@ -194,7 +203,16 @@ class CpiResponse(BaseModel):
     source: Source = Source()
     count: int
     observations: list[CpiObservation]
+    limitations: list[str] = []
     note: str | None = None
+
+
+LEGACY_CPI_LIMITATIONS = [
+    "CPI base 2012 is a separate series from the 2024 base (Current and Back). It is not linked or merged with them.",
+    "The source has stopped publishing the 2012 base: its last month is December 2025.",
+    "The first year (2013) has no year-on-year inflation, because the 2012 base starts in January 2013.",
+    "Some months carry a source flag other than final (for example F* in April and May 2020); the API does not document what it means.",
+]
 
 
 def query_cpi_rows(
@@ -211,9 +229,9 @@ def query_cpi_rows(
 def build_observations(rows: list[Row], limit: int, series: str = "current") -> list[CpiObservation]:
     idx_code, infl_code = cpi_codes(series)
     by_period: dict[date, CpiObservation] = {}
-    for code, period, value, key, retrieved_at, published_at in rows:
+    for code, period, value, key, retrieved_at, published_at, *rest in rows:
         obs = by_period.setdefault(period, CpiObservation(period=period))
-        prov = _prov(key, retrieved_at, published_at)
+        prov = _prov(key, retrieved_at, published_at, rest[0] if rest else None)
         if code == idx_code:
             obs.index, obs.index_source = _number(value), prov
         elif code == infl_code:
@@ -228,10 +246,11 @@ def get_cpi(
     release_key: ReleaseParam = None,
     limit: LimitParam = 120,
     series: Annotated[
-        Literal["current", "back"], Query(description="'back' = MoSPI's official back series (2013-2024)")
+        Literal["current", "back", "legacy2012"],
+        Query(description="'back' = MoSPI's official back series on the 2024 base; 'legacy2012' = the separate 2012-base series"),
     ] = "current",
 ) -> CpiResponse:
-    """All India / Combined / CPI (General), base 2024. `inflation` is null where MoSPI gave none."""
+    """All India / Combined / CPI (General). Base 2024 (current, back) or the separate 2012 base. `inflation` is null where MoSPI gave none."""
     _check_dates(start, end)
     url = _database_url()
     try:
@@ -249,7 +268,15 @@ def get_cpi(
         if observations
         else "No CPI observations stored yet. Run: python -m pipeline.ingest.cpi --year 2025"
     )
-    return CpiResponse(series=series, count=len(observations), observations=observations, note=note)
+    legacy = series == CPI_LEGACY
+    return CpiResponse(
+        series=series,
+        base_year="2012" if legacy else "2024",
+        count=len(observations),
+        observations=observations,
+        limitations=LEGACY_CPI_LIMITATIONS if legacy else [],
+        note=note,
+    )
 
 
 # ---- WPI ---------------------------------------------------------------------------------------
@@ -286,7 +313,7 @@ def get_wpi(
     release_key: ReleaseParam = None,
     limit: LimitParam = 120,
     base_year: Annotated[
-        Literal["2022-23", "2011-12"], Query(description="WPI base year")
+        Literal["2022-23", "2011-12", "2004-05", "1993-94"], Query(description="WPI base year")
     ] = DEFAULT_WPI_BASE,
 ) -> WpiResponse:
     """Headline Wholesale Price Index for one base year. Base years are never mixed."""
@@ -378,7 +405,7 @@ def get_iip(
     release_key: ReleaseParam = None,
     limit: LimitParam = 120,
     base_year: Annotated[
-        Literal["2022-23", "2011-12"], Query(description="IIP base year")
+        Literal["2022-23", "2011-12", "2004-05", "1993-94"], Query(description="IIP base year")
     ] = DEFAULT_IIP_BASE,
     sector: Annotated[
         Literal["general", "mining", "manufacturing", "electricity", "water"],
@@ -415,7 +442,7 @@ def get_iip_sectors(
     release_key: ReleaseParam = None,
     limit: LimitParam = 60,
     base_year: Annotated[
-        Literal["2022-23", "2011-12"], Query(description="IIP base year")
+        Literal["2022-23", "2011-12", "2004-05", "1993-94"], Query(description="IIP base year")
     ] = DEFAULT_IIP_BASE,
 ) -> IipSectorsResponse:
     """History of every sector total (not the headline) for one base year, one list per sector."""

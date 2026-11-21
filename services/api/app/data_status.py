@@ -57,8 +57,8 @@ SOURCES: tuple[SourceInfo, ...] = (
         dataset="Consumer Price Index (CPI), All India, Combined, General; series Current and Back",
         portal_url="https://esankhyiki.mospi.gov.in/",
         access_method="MoSPI eSankhyiki REST API (/api/cpi/getCPIData), read-only JSON",
-        bases_ingested=["2024 (Current)", "2024 (Back series, 2020-2024)"],
-        bases_listed_by_source_not_ingested=["2012 (group level)", "2010 (group level)"],
+        bases_ingested=["2024 (Current)", "2024 (Back series, 2013-2024)", "2012 (legacy, all-India general index, 2013-2025)"],
+        bases_listed_by_source_not_ingested=["2012 group/item level", "2010 (the source returned no all-India general index for it)"],
         revision_policy="Not stated by the API. ArthaSense stores each retrieval as a snapshot and reports value changes.",
         notes="The Back series is MoSPI's own back-cast onto the 2024 base and is kept as a separate segment.",
     ),
@@ -68,8 +68,8 @@ SOURCES: tuple[SourceInfo, ...] = (
         dataset="Wholesale Price Index, all commodities (headline)",
         portal_url="https://eaindustry.nic.in/",
         access_method="MoSPI eSankhyiki REST API (/api/wpi/getWpiRecords), read-only JSON",
-        bases_ingested=["2022-23", "2011-12"],
-        bases_listed_by_source_not_ingested=["2004-05", "1993-94"],
+        bases_ingested=["2022-23", "2011-12", "2004-05 (archive)", "1993-94 (archive)"],
+        bases_listed_by_source_not_ingested=[],
         revision_policy="Not stated by the API. ArthaSense stores each retrieval as a snapshot and reports value changes.",
         notes=(
             "The OEA home page failed TLS verification from the build machine (incomplete certificate chain), "
@@ -83,10 +83,10 @@ SOURCES: tuple[SourceInfo, ...] = (
         dataset="Index of Industrial Production: General plus Mining, Manufacturing, Electricity (and Water on 2022-23)",
         portal_url="https://esankhyiki.mospi.gov.in/",
         access_method="MoSPI eSankhyiki REST API (/api/iip/getIipData), read-only JSON",
-        bases_ingested=["2022-23", "2011-12"],
-        bases_listed_by_source_not_ingested=["2004-05", "1993-94"],
+        bases_ingested=["2022-23", "2011-12", "2004-05 (archive, General index only)", "1993-94 (archive, General index only)"],
+        bases_listed_by_source_not_ingested=[],
         revision_policy="Not stated by the API. ArthaSense stores each retrieval as a snapshot and reports value changes.",
-        notes="Official growth rates are stored only where the source gives them for the same base.",
+        notes="Official growth rates are stored only where the source gives them for the same base; archive bases store the index only.",
     ),
 )
 

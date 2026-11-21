@@ -2,21 +2,24 @@ import { Suspense } from "react";
 import { IndicatorDashboard, IndicatorSkeleton } from "@/components/indicators/indicator-dashboard";
 import { IipSectorPanel } from "@/components/indicators/iip-sector-panel";
 import { BackSeriesPanel } from "@/components/indicators/back-series-panel";
+import { LegacyBasePanel } from "@/components/indicators/legacy-base-panel";
 import { PageHeader } from "@/components/ui/primitives";
-import { getBackSeries, getIipSectors, getIndicator } from "@/lib/api";
+import { getBackSeries, getIipSectors, getIndicator, getLegacySeries } from "@/lib/api";
 import type { IndicatorConfig } from "@/lib/indicators";
 
 async function Data({ config }: { config: IndicatorConfig }) {
   // Server-side: reads stored observations via FastAPI. MoSPI is never called from here.
-  const [result, sectors, back] = await Promise.all([
+  const [result, sectors, back, legacy] = await Promise.all([
     getIndicator(config.key, config.apiQuery),
     config.key === "iip" ? getIipSectors() : Promise.resolve(null),
     getBackSeries(config),
+    getLegacySeries(config),
   ]);
   return (
     <IndicatorDashboard config={config} result={result}>
       {sectors && <IipSectorPanel result={sectors} />}
       <BackSeriesPanel config={config} result={back} />
+      <LegacyBasePanel config={config} result={legacy} />
     </IndicatorDashboard>
   );
 }

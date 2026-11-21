@@ -8,6 +8,8 @@ export interface IndicatorConfig {
   apiQuery: string; // appended to /api/v1/indicators/<key>
   /** Optional second request for an official linked Back series on the same base year. */
   backQuery?: string;
+  /** Optional request for the previous base year, kept as a separate segment (WPI / IIP). */
+  legacyQuery?: string;
   shortName: string; // "CPI"
   navLabel: string;
   title: string;
@@ -85,6 +87,7 @@ export const WPI_CONFIG: IndicatorConfig = {
   key: "wpi",
   path: "/indicators/wpi",
   apiQuery: "?limit=240",
+  legacyQuery: "?limit=240&base_year=2011-12",
   shortName: "WPI",
   navLabel: "WPI Intelligence",
   title: "Wholesale Price Index Intelligence",
@@ -135,6 +138,7 @@ export const IIP_CONFIG: IndicatorConfig = {
   key: "iip",
   path: "/indicators/iip",
   apiQuery: "?limit=240",
+  legacyQuery: "?limit=240&base_year=2011-12",
   shortName: "IIP",
   navLabel: "IIP Intelligence",
   title: "Industrial Production Intelligence",

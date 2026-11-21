@@ -30,6 +30,7 @@ import psycopg
 from pipeline.ingest import cpi, iip, wpi
 from pipeline.ingest.common import FetchError, ValidationError
 from pipeline.ingest.config import database_url
+from pipeline.ingest.evidence import attach_evidence, make_recording_client
 from pipeline.ingest.preview import SeriesPreview, capture_store, preview_year
 from pipeline.ingest.runner import Ingester, fetch_range, make_client
 from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
@@ -171,6 +172,8 @@ def check_target(
     ):
         if i:
             time.sleep(delay)
+        if hasattr(client, "take"):
+            client.take()
         try:
             records, _, at = fetch_range(t.ingester, client, year, year, delay, args)
             cap = capture_store(t.ingester, records, year, at, args)
@@ -193,6 +196,8 @@ def check_target(
         if apply and any(sp.new or sp.revised for sp in previews):
             stats = t.ingester.store(conn, records, year, year, at, args)
             report["stored_snapshots"].append(stats.release_key)
+            if hasattr(client, "take"):
+                attach_evidence(conn, stats.release_key, client.take())
     return report
 
 
@@ -243,7 +248,7 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None, today:
     years = list(range(today.year - a.years_back, today.year + 1))
     targets = [t for t in TARGETS if not a.only or t.key in a.only]
     own = client is None
-    mospi = client or make_client()
+    mospi = client or (make_recording_client() if a.apply else make_client())
     summary: dict[str, Any] = {
         "mode": "apply" if a.apply else "dry_run", "database_host": host,
         "started_at": datetime.now(UTC).isoformat(timespec="seconds"), "targets": [], "freshness": {},

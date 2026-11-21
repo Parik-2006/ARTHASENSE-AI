@@ -121,6 +121,11 @@ export async function getBackSeries(config: { key: IndicatorKey; backQuery?: str
   return config.backQuery ? getIndicator(config.key, config.backQuery) : null;
 }
 
+/** Previous base year (WPI / IIP 2011-12) as its own segment; null when the indicator has none. */
+export async function getLegacySeries(config: { key: IndicatorKey; legacyQuery?: string }): Promise<IndicatorResult | null> {
+  return config.legacyQuery ? getIndicator(config.key, config.legacyQuery) : null;
+}
+
 /** Sector totals of the IIP, one list per sector (a failure degrades gracefully on the page). */
 export async function getIipSectors(timeoutMs?: number): Promise<IipSectorsResult> {
   try {

@@ -1,0 +1,3330 @@
+{
+ "summary": {
+  "generated_at": "2026-11-21T15:05:27+00:00",
+  "cases_executed": 70,
+  "outcomes": {
+   "ok_document": 14,
+   "ok_data": 43,
+   "ok_empty": 10,
+   "tls_verification_failed": 1,
+   "rejected_http_400": 2
+  },
+  "from_cache": 70,
+  "live_requests_this_run": 0,
+  "unsupported_formats_not_executed": [
+   {
+    "id": "U1",
+    "format": "XLSX",
+    "reason": "No XLSX export is documented in the swagger manuals (Format enum is JSON|CSV) and no official XLSX link was found; not requested."
+   },
+   {
+    "id": "U2",
+    "format": "XLS",
+    "reason": "No legacy XLS export is documented; not requested."
+   },
+   {
+    "id": "U3",
+    "format": "ZIP/compressed archive",
+    "reason": "No archive download is documented for CPI/WPI/IIP; not requested."
+   }
+  ]
+ },
+ "cases": [
+  {
+   "id": "01",
+   "group": "A",
+   "title": "REST service root",
+   "source": "api.mospi.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/html",
+   "expected_type": "HTML (SPA shell)",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:18+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "d7e3c4726ad7691ce9af85def96495d7bed2c5b91705b3bc715e03a157f9c77a",
+   "actual_type": "text/html",
+   "bytes": 486,
+   "html_title": "Ministry of Statistics and Program Implementation | Government Of India",
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "02",
+   "group": "A",
+   "title": "MCP initialize (Streamable HTTP, SSE reply)",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP initialize",
+   "request_format": "application/json",
+   "expected_type": "SSE JSON-RPC",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:19+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "initialize",
+    "arguments": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "541f0723900cb593c46037d4e73932dda0fb2e39042982bdcdef855dce2c891e",
+   "actual_type": "text/event-stream",
+   "bytes": 361,
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "03",
+   "group": "A",
+   "title": "MCP tools/list: actual tool names",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/list",
+   "request_format": "application/json",
+   "expected_type": "tool catalogue",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:19+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/list",
+    "arguments": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "bb020aa5e86bcc9a7fcee56ed7d128837510c13dd4c821ec8ead4a5e1784da4e",
+   "actual_type": "application/json",
+   "bytes": 10428,
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "04",
+   "group": "A",
+   "title": "MCP list_datasets",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "dataset overview",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:20+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "list_datasets",
+     "arguments": {}
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "3511b82d584586dd5b0fd8ab49e3d02544a6a860948f7f47413938fc8c7c982c",
+   "actual_type": "application/json",
+   "bytes": 26883,
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "05",
+   "group": "A",
+   "title": "MCP get_indicators CPI",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:28+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_indicators",
+     "arguments": {
+      "dataset": "CPI"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "47495d1d80a8b954e571dd8833297de4fe514480b0c4811f59da949a4e9ec7d8",
+   "actual_type": "application/json",
+   "bytes": 998,
+   "data_keys": [
+    "base_year",
+    "level",
+    "series"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 7,
+   "distinct": {
+    "series": [
+     "Back",
+     "Current"
+    ],
+    "base_year": [
+     "2010",
+     "2012",
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 7,
+    "inflation": 7,
+    "index": 7,
+    "index_value": 7
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "06",
+   "group": "A",
+   "title": "MCP get_indicators WPI",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:29+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_indicators",
+     "arguments": {
+      "dataset": "WPI"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "0c21890df3a0342a5e3941dc6e972272818f0fb61affa961df7b1a6a876eb51c",
+   "actual_type": "application/json",
+   "bytes": 981,
+   "api_message": "Data fetched successfully",
+   "records_returned": 4,
+   "null_or_empty_fields": {
+    "growth_rate": 4,
+    "inflation": 4,
+    "index": 4,
+    "index_value": 4
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "07",
+   "group": "A",
+   "title": "MCP get_indicators IIP",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:29+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_indicators",
+     "arguments": {
+      "dataset": "IIP"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "bdce34045dc3f41149a64607ed7ce893a3997e722de8d348754f5c12622c2b42",
+   "actual_type": "application/json",
+   "bytes": 1060,
+   "data_keys": [
+    "base_year",
+    "frequency"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 6,
+   "distinct": {
+    "base_year": [
+     "1993-94",
+     "2004-05",
+     "2011-12",
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 6,
+    "inflation": 6,
+    "index": 6,
+    "index_value": 6
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "08",
+   "group": "A",
+   "title": "MCP get_metadata CPI",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:30+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_metadata",
+     "arguments": {
+      "dataset": "CPI"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "561dc9e37fa65af4b55343407fd90133f29183c91dce2bb64e9ca45104914c07",
+   "actual_type": "application/json",
+   "bytes": 89580,
+   "api_message": "Data fetched successfully",
+   "records_returned": 1,
+   "distinct": {
+    "sector": [
+     "[{'sector_code': 1, 'sector_name': 'Rural'}, {'sector_code': 2, 'sector_name': 'Urban'}, {'sector_code': 3, 'sector_name': 'Combined'}]"
+    ],
+    "series": [
+     "[{'series': 'Current', 'viz': 'line'}, {'series': 'Back', 'viz': 'line'}]"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 1,
+    "inflation": 1,
+    "index": 1,
+    "index_value": 1
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "09",
+   "group": "A",
+   "title": "MCP get_metadata WPI",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:31+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_metadata",
+     "arguments": {
+      "dataset": "WPI"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "f064bdbca1eaeec9f5ae036de5a6a004fc3efbcab36cc983f3a18fe1f422ecda",
+   "actual_type": "application/json",
+   "bytes": 214298,
+   "data_keys": [
+    "group",
+    "item",
+    "major_group",
+    "month",
+    "sub_group",
+    "sub_sub_group",
+    "year"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 1153,
+   "null_or_empty_fields": {
+    "growth_rate": 1153,
+    "inflation": 1153,
+    "index": 1153,
+    "index_value": 1153
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "10",
+   "group": "A",
+   "title": "MCP get_metadata IIP",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:31+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_metadata",
+     "arguments": {
+      "dataset": "IIP"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "49512e1bfc11eb46052aa4edb40946c83baf15ddd8445c68357084042e3531da",
+   "actual_type": "application/json",
+   "bytes": 6880,
+   "data_keys": [
+    "category",
+    "financial_year",
+    "subcategory",
+    "type"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 50,
+   "distinct": {
+    "type": [
+     "General",
+     "Sectoral",
+     "Use-based category"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 50,
+    "inflation": 50,
+    "index": 50,
+    "index_value": 50
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "11",
+   "group": "A",
+   "title": "CPI base years",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON nested",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:32+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCpiBaseYear",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "0fa371b05c39802a61b1157300afc92d5abdf0b11b7ed3cff59b53d944fc2f58",
+   "actual_type": "application/json",
+   "bytes": 314,
+   "data_keys": [
+    "base_year",
+    "level",
+    "series"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 7,
+   "distinct": {
+    "series": [
+     "Back",
+     "Current"
+    ],
+    "base_year": [
+     "2010",
+     "2012",
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 7,
+    "inflation": 7,
+    "index": 7,
+    "index_value": 7
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "12",
+   "group": "A",
+   "title": "WPI base years",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON list",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:33+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiBaseYear",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "09967280a02f0dfce6d739b7acd45053271aa6f5586e4eb26fc316050361796d",
+   "actual_type": "application/json",
+   "bytes": 146,
+   "api_message": "Data fetched successfully",
+   "records_returned": 4,
+   "null_or_empty_fields": {
+    "growth_rate": 4,
+    "inflation": 4,
+    "index": 4,
+    "index_value": 4
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "13",
+   "group": "B",
+   "title": "IIP base years (nested JSON incl. frequency)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON nested",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:33+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipBaseYear",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "c506901f34d7f1ffae9d97b56bcb014b553957dd34616737fce204a79970f5cc",
+   "actual_type": "application/json",
+   "bytes": 289,
+   "data_keys": [
+    "base_year",
+    "frequency"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 6,
+   "distinct": {
+    "base_year": [
+     "1993-94",
+     "2004-05",
+     "2011-12",
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 6,
+    "inflation": 6,
+    "index": 6,
+    "index_value": 6
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "14",
+   "group": "B",
+   "title": "IIP filter metadata, 2022-23 monthly (dimensions and codes)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:34+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipFilter",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "fd846362c7fc817690b7aeff91e7b5e8151a3d984458aca59e17f0a2ecf53e16",
+   "actual_type": "application/json",
+   "bytes": 5433,
+   "data_keys": [
+    "category",
+    "month",
+    "subcategory",
+    "type",
+    "year"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 62,
+   "distinct": {
+    "type": [
+     "General",
+     "Sectoral",
+     "Use-based category"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 62,
+    "inflation": 62,
+    "index": 62,
+    "index_value": 62
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "15",
+   "group": "B",
+   "title": "WPI code dictionary, 2011-12",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:34+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiData",
+    "params": {
+     "base_year": "2011-12"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "7f5ade43b50d785c686c76485bfb30227e293e0d03b5e94d10cf498fc15d46d8",
+   "actual_type": "application/json",
+   "bytes": 143223,
+   "data_keys": [
+    "group",
+    "item",
+    "major_group",
+    "month",
+    "sub_group",
+    "sub_sub_group",
+    "year"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 896,
+   "null_or_empty_fields": {
+    "growth_rate": 896,
+    "inflation": 896,
+    "index": 896,
+    "index_value": 896
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "16",
+   "group": "B",
+   "title": "WPI headline 2025 as JSON (documented Format=JSON)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:35+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "major_group_code": "1000000000",
+     "limit": 200,
+     "Format": "JSON"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "16e470bbd024199f2d5d7feb4943ad761a9032db65e52b6245b9e775e9f63add",
+   "actual_type": "application/json",
+   "bytes": 2252,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "17",
+   "group": "B",
+   "title": "WPI headline 2025 as CSV (documented Format=CSV)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/csv",
+   "expected_type": "CSV",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:35+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "major_group_code": "1000000000",
+     "limit": 200,
+     "Format": "CSV"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "16e470bbd024199f2d5d7feb4943ad761a9032db65e52b6245b9e775e9f63add",
+   "actual_type": "application/json",
+   "bytes": 2252,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "18",
+   "group": "B",
+   "title": "CPI 2012 combined general 2025 as CSV",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2012",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/csv",
+   "expected_type": "CSV",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:36+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2012",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "3",
+     "group_code": "0",
+     "year": 2025,
+     "limit": 50,
+     "Format": "CSV"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "bdb3e3e1001bd98eb7c09e10f5658e0d9cf5407463b7ad6d3deb75c643b22230",
+   "actual_type": "text/csv",
+   "bytes": 72,
+   "csv_columns": [],
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "19",
+   "group": "B",
+   "title": "IIP General 2022-23 2025 as CSV",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/csv",
+   "expected_type": "CSV",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:37+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2025,
+     "limit": 50,
+     "Format": "CSV"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "129c16201c243896a99d940b94d08d45a436c25f92c29449d25c206ab975c4ce",
+   "actual_type": "text/csv",
+   "bytes": 67,
+   "csv_columns": [],
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "20",
+   "group": "B",
+   "title": "Content negotiation only: Accept text/csv without Format param",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/csv",
+   "expected_type": "JSON (header ignored?)",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:37+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "a4c95c56ed17691f3c6a16500a12d238e145b8eef9cd6538f5795ac9eaa396e9",
+   "actual_type": "application/json",
+   "bytes": 2251,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "21",
+   "group": "B",
+   "title": "PDF: MoSPI CPI-2024 FAQ Annexure V (official document)",
+   "source": "www.mospi.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/pdf",
+   "expected_type": "PDF",
+   "evidence_level": "D",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:38+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://www.mospi.gov.in/uploads/documents/documents/1770891066052-Annexure_V.pdf",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "7720b6404da8508dbf0c99ed56eae066a88bf2b873c2113c121326ffb53d69c4",
+   "actual_type": "application/pdf",
+   "bytes": 273029,
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "22",
+   "group": "B",
+   "title": "HTML: NSO IIP 2022-23 metadata catalogue",
+   "source": "microdata.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/html",
+   "expected_type": "HTML",
+   "evidence_level": "D",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:39+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://microdata.gov.in/nada/index.php/catalog/299",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "96eaeda80413f65d2f2c89c1e59a58fae80c905dc7762e8385a5b5585255d99b",
+   "actual_type": "text/html",
+   "bytes": 44223,
+   "html_title": "- Index of Industrial Production (IIP) with Base Year 2022\u201323",
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "23",
+   "group": "B",
+   "title": "HTML: OEA WPI linking-factor page (TLS must verify)",
+   "source": "eaindustry.nic.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "text/html",
+   "expected_type": "HTML",
+   "evidence_level": "D",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:39+00:00",
+   "from_cache": true,
+   "http_status": null,
+   "outcome": "tls_verification_failed",
+   "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)",
+   "records_returned": 0,
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "24",
+   "group": "B",
+   "title": "Alternate encoding: eSankhyiki CMS Swagger bundle (not the data API)",
+   "source": "api.mospi.gov.in",
+   "dataset": "",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "*/*",
+   "expected_type": "JS embedding an OpenAPI doc",
+   "evidence_level": "D",
+   "note": "Documents the CMS admin API only.",
+   "retrieved_at": "2026-11-21T14:39:40+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api-docs/swagger-ui-init.js",
+    "params": {}
+   },
+   "http_status": 200,
+   "raw_sha256": "496d58b65355e13eb1bb12b5b9f7f93d075555115fa90737d4863df314ad296a",
+   "actual_type": "application/javascript",
+   "bytes": 6073,
+   "records_returned": 0,
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "25",
+   "group": "C",
+   "title": "CPI 2024 Current headline 2025",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:40+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Current",
+     "year": 2025,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "95ed020ab69ba78a362485b2744edf56e015b6041bc818c4332f24770a2cec39",
+   "actual_type": "application/json",
+   "bytes": 3223,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Current"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "26",
+   "group": "C",
+   "title": "CPI 2024 Current headline 2026",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:41+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Current",
+     "year": 2026,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "b350fa41f76aaf31e055a05b40e889ce852c4daca835e821922d340c5c601927",
+   "actual_type": "application/json",
+   "bytes": 2725,
+   "total_records_reported": 10,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 10,
+   "earliest": "2026-01",
+   "latest": "2026-10",
+   "distinct_months": 10,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Current"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 10,
+    "index_value": 10
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "27",
+   "group": "C",
+   "title": "CPI 2024 Back 2013 (documented start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:41+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Back",
+     "year": 2013,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ab14063389868a2030e4a6d3f3ab03798cfaba765ecd285ef21495fd451d7282",
+   "actual_type": "application/json",
+   "bytes": 3175,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2013-01",
+   "latest": "2013-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Back"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "28",
+   "group": "C",
+   "title": "CPI 2024 Back 2012 (before documented start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:42+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Back",
+     "year": 2012,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "60fbfafa6cf2416ae5a2f170ba1c8ae21f2c8f7f023cece93ebba482760f61d2",
+   "actual_type": "application/json",
+   "bytes": 125,
+   "total_records_reported": 0,
+   "total_pages_reported": 1,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "29",
+   "group": "C",
+   "title": "CPI 2024 Back 2019",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:43+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Back",
+     "year": 2019,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "94fc934644f3880f26cbafcf7239560785da410abba8e49569c4de5417534e7d",
+   "actual_type": "application/json",
+   "bytes": 3199,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2019-01",
+   "latest": "2019-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Back"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "30",
+   "group": "C",
+   "title": "CPI 2024 Back 2024 (documented end)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:43+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Back",
+     "year": 2024,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "af1f4fbaee8ed0da6732abb3925f723ee71aafc658148f8b35090601ce1d0054",
+   "actual_type": "application/json",
+   "bytes": 3206,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2024-01",
+   "latest": "2024-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Back"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "31",
+   "group": "C",
+   "title": "CPI 2012 combined general 2025 (overlap year, has status flag?)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2012",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:44+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2012",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "3",
+     "group_code": "0",
+     "year": 2025,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "d4b0e210fe269b66ac18b44c500d06a015b6b116757746a898c6854022d32ed7",
+   "actual_type": "application/json",
+   "bytes": 2347,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "status": [
+     "F"
+    ],
+    "baseyear": [
+     "2012"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "32",
+   "group": "C",
+   "title": "CPI 2012 combined general 2013 (legacy start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2012",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:44+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2012",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "3",
+     "group_code": "0",
+     "year": 2013,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "d77d9fcd65f21b7c33a898b1b7d787eb55895816f21306427c06ca52dfa42670",
+   "actual_type": "application/json",
+   "bytes": 2323,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2013-01",
+   "latest": "2013-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "status": [
+     "F"
+    ],
+    "baseyear": [
+     "2012"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "33",
+   "group": "C",
+   "title": "CPI 2012 combined general 2026 (expect none: ended Dec 2025)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2012",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:45+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2012",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "3",
+     "group_code": "0",
+     "year": 2026,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ab8bc9dd51190bee5da5478bd2e8b37074c787b085ca82efe1c6371148ca8c53",
+   "actual_type": "application/json",
+   "bytes": 51,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "34",
+   "group": "C",
+   "title": "CPI 2012 Rural general 2024",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2012",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:46+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2012",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "1",
+     "group_code": "0",
+     "year": 2024,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "1941c5e582e862f7bda282825346fe19c0d6c08d44060c04ac0ffde6ce24d1d0",
+   "actual_type": "application/json",
+   "bytes": 2311,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2024-01",
+   "latest": "2024-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Rural"
+    ],
+    "status": [
+     "F"
+    ],
+    "baseyear": [
+     "2012"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "35",
+   "group": "C",
+   "title": "CPI 2012 Urban general 2024",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2012",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:46+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2012",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "2",
+     "group_code": "0",
+     "year": 2024,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "8f960273d68870e9b7f6af9190bc2acaa95afe9a60b8ac7d717df1df1fd26e75",
+   "actual_type": "application/json",
+   "bytes": 2311,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2024-01",
+   "latest": "2024-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Urban"
+    ],
+    "status": [
+     "F"
+    ],
+    "baseyear": [
+     "2012"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "36",
+   "group": "C",
+   "title": "CPI 2024 Current, division 1 (food & beverages), 2026",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:47+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 1,
+     "series": "Current",
+     "year": 2026,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "aab68219e1a84ac7bf8746621f20884a93c3b2874bae7a80675b93f5801bb064",
+   "actual_type": "application/json",
+   "bytes": 15799,
+   "total_records_reported": 2190,
+   "total_pages_reported": 44,
+   "api_message": "Data fetched successfully",
+   "records_returned": 50,
+   "earliest": "2026-10",
+   "latest": "2026-10",
+   "distinct_months": 1,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Current"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 50,
+    "index_value": 50
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "37",
+   "group": "C",
+   "title": "CPI 2010 base, group level, 2012 (legacy base listed by source)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2010",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:47+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIIndex",
+    "params": {
+     "base_year": "2010",
+     "series": "Current",
+     "state_code": "99",
+     "sector_code": "3",
+     "group_code": "0",
+     "year": 2012,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ab8bc9dd51190bee5da5478bd2e8b37074c787b085ca82efe1c6371148ca8c53",
+   "actual_type": "application/json",
+   "bytes": 51,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "38",
+   "group": "C",
+   "title": "CPI 2024 Current, two years in one call (documented comma list)",
+   "source": "api.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:48+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/cpi/getCPIData",
+    "params": {
+     "base_year": "2024",
+     "state_code": 1,
+     "sector_code": 3,
+     "division_code": 0,
+     "series": "Current",
+     "year": "2025,2026",
+     "limit": 200
+    }
+   },
+   "http_status": 400,
+   "raw_sha256": "b9def4c7bae28a8dbda22e740a9593c12d469fc09c67642132d62afacdef8645",
+   "actual_type": "application/json",
+   "bytes": 62,
+   "records_returned": 0,
+   "outcome": "rejected_http_400",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "39",
+   "group": "D",
+   "title": "WPI 2022-23 headline 2023 (current-base start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:49+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2023,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "cc6cdf100ddf3bfe4a1f2dd8f5c88a4a5828e32de495cff91045d69bbb6ff94c",
+   "actual_type": "application/json",
+   "bytes": 1713,
+   "total_records_reported": 9,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 9,
+   "earliest": "2023-04",
+   "latest": "2023-12",
+   "distinct_months": 9,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 9,
+    "inflation": 9,
+    "index": 9
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "40",
+   "group": "D",
+   "title": "WPI 2022-23 headline 2026",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:49+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2026,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "e000be6b366f8634ba5edde57f42526979f435a15449ede11c74dbff90eda61c",
+   "actual_type": "application/json",
+   "bytes": 1895,
+   "total_records_reported": 10,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 10,
+   "earliest": "2026-01",
+   "latest": "2026-10",
+   "distinct_months": 10,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 10,
+    "inflation": 10,
+    "index": 10
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "41",
+   "group": "D",
+   "title": "WPI 2011-12 headline 2012 (legacy start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:50+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2011-12",
+     "year": 2012,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "50baecfedbd8ac35913a9d8dc3a2dea3a26c0bd00f62dec8e45b3ac7c01bcf86",
+   "actual_type": "application/json",
+   "bytes": 1693,
+   "total_records_reported": 9,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 9,
+   "earliest": "2012-04",
+   "latest": "2012-12",
+   "distinct_months": 9,
+   "missing_months": [],
+   "distinct": {
+    "majorgroup": [
+     "Wholesale price index"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 9,
+    "inflation": 9,
+    "index": 9
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "42",
+   "group": "D",
+   "title": "WPI 2011-12 headline 2021",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:50+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2011-12",
+     "year": 2021,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "e93ced6034b204198d88f88e4603f8266c4c32865b9c8799a3b3cb157586a923",
+   "actual_type": "application/json",
+   "bytes": 2211,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2021-01",
+   "latest": "2021-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "majorgroup": [
+     "Wholesale price index"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "43",
+   "group": "D",
+   "title": "WPI 2011-12 headline 2026 (last served month?)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:51+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2011-12",
+     "year": 2026,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ed8a4c8d3c88fccf4d992dc677aa633f0662d0de3634f3cb9a614a07fca728c4",
+   "actual_type": "application/json",
+   "bytes": 827,
+   "total_records_reported": 4,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 4,
+   "earliest": "2026-01",
+   "latest": "2026-04",
+   "distinct_months": 4,
+   "missing_months": [],
+   "distinct": {
+    "majorgroup": [
+     "Wholesale price index"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 4,
+    "inflation": 4,
+    "index": 4
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "44",
+   "group": "D",
+   "title": "WPI 2011-12 all groups, Mar 2025 (major groups present)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:52+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2011-12",
+     "year": 2025,
+     "month_code": 3,
+     "limit": 200
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "605aead45a0e1cc448774724478d55123dbc37887d4b4b9f75b9307ed97dd87f",
+   "actual_type": "application/json",
+   "bytes": 42029,
+   "total_records_reported": 869,
+   "total_pages_reported": 5,
+   "api_message": "Data fetched successfully",
+   "records_returned": 200,
+   "earliest": "2025-03",
+   "latest": "2025-03",
+   "distinct_months": 1,
+   "missing_months": [],
+   "distinct": {
+    "majorgroup": [
+     "Fuel & power",
+     "Manufactured products",
+     "Primary articles",
+     "Wholesale price index"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 200,
+    "inflation": 200,
+    "index": 200
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "45",
+   "group": "D",
+   "title": "WPI 2022-23 all groups, Mar 2025 (major groups present)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:52+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "month_code": 3,
+     "limit": 200
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "4d32daf33eb2443808ae42345fa49d77a5742e9f837c43a8caf3c3f4fbf5ed67",
+   "actual_type": "application/json",
+   "bytes": 41337,
+   "total_records_reported": 1137,
+   "total_pages_reported": 6,
+   "api_message": "Data fetched successfully",
+   "records_returned": 200,
+   "earliest": "2025-03",
+   "latest": "2025-03",
+   "distinct_months": 1,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Fuel & Power",
+     "Manufactured Products",
+     "Primary Articles",
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 200,
+    "inflation": 200,
+    "index": 200,
+    "index_value": 2
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "46",
+   "group": "D",
+   "title": "WPI 2004-05 headline 2010 (older base listed by source)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2004-05",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:53+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2004-05",
+     "year": 2010,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "60fbfafa6cf2416ae5a2f170ba1c8ae21f2c8f7f023cece93ebba482760f61d2",
+   "actual_type": "application/json",
+   "bytes": 125,
+   "total_records_reported": 0,
+   "total_pages_reported": 1,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "47",
+   "group": "D",
+   "title": "WPI 2011-12 headline, 2011 (before nominal base start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:53+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2011-12",
+     "year": 2011,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ab8bc9dd51190bee5da5478bd2e8b37074c787b085ca82efe1c6371148ca8c53",
+   "actual_type": "application/json",
+   "bytes": 51,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "48",
+   "group": "D",
+   "title": "WPI 2011-12 headline, months 2024-25 two years in one call",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:54+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2011-12",
+     "year": "2024,2025",
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ad6016155ad91a2cfb10384549973329ab0ab6b8726b18d7bb69c6be17f70026",
+   "actual_type": "application/json",
+   "bytes": 4287,
+   "total_records_reported": 24,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 24,
+   "earliest": "2024-01",
+   "latest": "2025-12",
+   "distinct_months": 24,
+   "missing_months": [],
+   "distinct": {
+    "majorgroup": [
+     "Wholesale price index"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 24,
+    "inflation": 24,
+    "index": 24
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "49",
+   "group": "E",
+   "title": "IIP 2022-23 General 2023 (current-base start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:55+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2023,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "3c7189ef6faf5a64c1fcf5602bbcbe7ceb6cb77df09637dd62cb2b36221bd7d6",
+   "actual_type": "application/json",
+   "bytes": 1441,
+   "total_records_reported": 9,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 9,
+   "earliest": "2023-04",
+   "latest": "2023-12",
+   "distinct_months": 9,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 9,
+    "index_value": 9
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "50",
+   "group": "E",
+   "title": "IIP 2022-23 General 2026",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:55+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2026,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "5eb8df6ccb442f52fbb9fb2f6a1f2bc8040e082ceb93525f32f27b0dad5bd306",
+   "actual_type": "application/json",
+   "bytes": 1438,
+   "total_records_reported": 9,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 9,
+   "earliest": "2026-01",
+   "latest": "2026-09",
+   "distinct_months": 9,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 9,
+    "index_value": 9
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "51",
+   "group": "E",
+   "title": "IIP 2011-12 General 2012 (legacy start)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:56+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2012,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "032a0db359fcf50aa081faca83ae9eb978b5acb15b550122a833ae1d057bb203",
+   "actual_type": "application/json",
+   "bytes": 1441,
+   "total_records_reported": 9,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 9,
+   "earliest": "2012-04",
+   "latest": "2012-12",
+   "distinct_months": 9,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 9,
+    "index_value": 9
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "52",
+   "group": "E",
+   "title": "IIP 2011-12 General 2013",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:56+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2013,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "9fc8871b190988ebcfc6444f2a101a18633a523de089419ad7af11d68698591c",
+   "actual_type": "application/json",
+   "bytes": 1881,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2013-01",
+   "latest": "2013-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "53",
+   "group": "E",
+   "title": "IIP 2011-12 General 2021 (April 2021 growth rate raw rows)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:57+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2021,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "39216954976c1a0f9f7989fa45ba8003ce009d6c556e598f5fbbcf018aec995b",
+   "actual_type": "application/json",
+   "bytes": 1885,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2021-01",
+   "latest": "2021-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 1,
+    "inflation": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "54",
+   "group": "E",
+   "title": "IIP 2011-12 General 2026 (last served month?)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:58+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2026,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "b68ec63eaad38f4f407e17d7acd250bb0dd153508ed35ac9b18ba220a79bb605",
+   "actual_type": "application/json",
+   "bytes": 573,
+   "total_records_reported": 3,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 3,
+   "earliest": "2026-01",
+   "latest": "2026-03",
+   "distinct_months": 3,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 3,
+    "index_value": 3
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "55",
+   "group": "E",
+   "title": "IIP 2011-12 Sectoral 2021 (mining, manufacturing, electricity)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:39:58+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Monthly",
+     "type": "Sectoral",
+     "year": 2021,
+     "limit": 200
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "271e98bc068179f1580985aeee16a4cdf409018016080995bb5455de952250e7",
+   "actual_type": "application/json",
+   "bytes": 21476,
+   "total_records_reported": 312,
+   "total_pages_reported": 2,
+   "api_message": "Data fetched successfully",
+   "records_returned": 312,
+   "earliest": "2021-01",
+   "latest": "2021-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "Electricity",
+     "Manufacturing",
+     "Mining"
+    ],
+    "type": [
+     "Sectoral"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 26,
+    "inflation": 312,
+    "index_value": 312
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "56",
+   "group": "E",
+   "title": "IIP 2011-12 filter metadata (categories incl. use-based?)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:00+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipFilter",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Monthly"
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "0ec2e43bb19a9c4b4696528311a0e98cdf42690c15aa3d9a87611eff5f5a55bc",
+   "actual_type": "application/json",
+   "bytes": 4556,
+   "data_keys": [
+    "category",
+    "month",
+    "subcategory",
+    "type",
+    "year"
+   ],
+   "api_message": "Data fetched successfully",
+   "records_returned": 63,
+   "distinct": {
+    "type": [
+     "General",
+     "Sectoral",
+     "Use-based category"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 63,
+    "inflation": 63,
+    "index": 63,
+    "index_value": 63
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "57",
+   "group": "E",
+   "title": "IIP 2022-23 Sectoral 2025",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:00+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly",
+     "type": "Sectoral",
+     "year": 2025,
+     "limit": 200
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "df8c801ffa17bf4f134e7cfdd6a4c7c8866cf548d4c583eebb3e07eac3e4863b",
+   "actual_type": "application/json",
+   "bytes": 6316,
+   "total_records_reported": 432,
+   "total_pages_reported": 3,
+   "api_message": "Data fetched successfully",
+   "records_returned": 432,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "Electricity & Gas Supply",
+     "Manufacturing",
+     "Mining & Quarrying",
+     "Water Supply, Sewerage & Waste Management"
+    ],
+    "type": [
+     "Sectoral"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 432,
+    "index_value": 432
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "58",
+   "group": "E",
+   "title": "IIP 2004-05 General 2010 (older base listed by source)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2004-05",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:02+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2004-05",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 2010,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "13876132155ce0655da0e25acc6791481c446e203337da5859f41ca82f890082",
+   "actual_type": "application/json",
+   "bytes": 1885,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2010-01",
+   "latest": "2010-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2004-05"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 12,
+    "index_value": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "59",
+   "group": "E",
+   "title": "IIP financial_year semantics: 2025-26 General 2022-23",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "Earlier verification doc flagged these semantics as unverified.",
+   "retrieved_at": "2026-11-21T14:40:03+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly",
+     "type": "General",
+     "financial_year": "2025-26",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "d6ef0eebb7d4b3ef64d1812945bcd112465706fd2e4363da48de2d8ab1c17dbe",
+   "actual_type": "application/json",
+   "bytes": 6231,
+   "total_records_reported": 42,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 42,
+   "earliest": "2023-04",
+   "latest": "2026-09",
+   "distinct_months": 42,
+   "missing_months": [],
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 42,
+    "index_value": 42
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "60",
+   "group": "E",
+   "title": "IIP 2011-12 Annual frequency (listed by base-year metadata)",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "2011-12",
+   "frequency": "Annual",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:03+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2011-12",
+     "frequency": "Annually",
+     "type": "General",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "797b8d560cd81f01c66350cde856276620e4d888a3dbf235cc03745a02dca251",
+   "actual_type": "application/json",
+   "bytes": 2002,
+   "total_records_reported": 14,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 14,
+   "distinct": {
+    "category": [
+     "General"
+    ],
+    "type": [
+     "General"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "inflation": 14,
+    "index_value": 14
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "61",
+   "group": "F",
+   "title": "Limit above documented maximum (limit=201)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "HTTP 400",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:04+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "major_group_code": "1000000000",
+     "limit": 201
+    }
+   },
+   "http_status": 400,
+   "raw_sha256": "b7eb2aa816933592ca769501416ad2f11d84d54964372af68b263bf90df2300f",
+   "actual_type": "application/json",
+   "bytes": 62,
+   "api_message": "Limit cannot be greater than 200",
+   "records_returned": 0,
+   "outcome": "rejected_http_400",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "62",
+   "group": "F",
+   "title": "Invalid base year",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "error or empty",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:04+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "1899-00",
+     "year": 2025,
+     "major_group_code": "1000000000",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "8a89985d6487de3b24d4dd0a5df470b6824a5338314d23bbd7229423fa7a9e58",
+   "actual_type": "application/json",
+   "bytes": 2211,
+   "total_records_reported": 12,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 12,
+   "earliest": "2025-01",
+   "latest": "2025-12",
+   "distinct_months": 12,
+   "missing_months": [],
+   "distinct": {
+    "majorgroup": [
+     "Wholesale price index"
+    ],
+    "base_year": [
+     "2011-12"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 12,
+    "inflation": 12,
+    "index": 12
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "63",
+   "group": "F",
+   "title": "Empty result set: year 1900",
+   "source": "api.mospi.gov.in",
+   "dataset": "IIP",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "empty",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:05+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/iip/getIipData",
+    "params": {
+     "base_year": "2022-23",
+     "frequency": "Monthly",
+     "type": "General",
+     "year": 1900,
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "ab8bc9dd51190bee5da5478bd2e8b37074c787b085ca82efe1c6371148ca8c53",
+   "actual_type": "application/json",
+   "bytes": 51,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "64",
+   "group": "F",
+   "title": "Invalid filter code (major_group_code=ZZZ)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "error or empty",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:06+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "major_group_code": "ZZZ",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "60fbfafa6cf2416ae5a2f170ba1c8ae21f2c8f7f023cece93ebba482760f61d2",
+   "actual_type": "application/json",
+   "bytes": 125,
+   "total_records_reported": 0,
+   "total_pages_reported": 1,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "65",
+   "group": "F",
+   "title": "Pagination boundary: limit=10 page 2 of a 2025 all-group query",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:06+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "month_code": 3,
+     "limit": 10,
+     "page": 2
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "a78e0e93e610383974921211afcbb015aa3c7314add5b8195969f835eaf4264b",
+   "actual_type": "application/json",
+   "bytes": 2274,
+   "total_records_reported": 1137,
+   "total_pages_reported": 114,
+   "api_message": "Data fetched successfully",
+   "records_returned": 10,
+   "earliest": "2025-03",
+   "latest": "2025-03",
+   "distinct_months": 1,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Primary Articles"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 10,
+    "inflation": 10,
+    "index": 10
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "66",
+   "group": "F",
+   "title": "Pagination past the end (page=9999)",
+   "source": "api.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "empty or error",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:07+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/wpi/getWpiRecords",
+    "params": {
+     "base_year": "2022-23",
+     "year": 2025,
+     "month_code": 3,
+     "limit": 200,
+     "page": 9999
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "2a89541cda6fc5e0c5f60bdeed919d5b971d20d94d0ee886670fbc0da48ea4c8",
+   "actual_type": "application/json",
+   "bytes": 132,
+   "total_records_reported": 1137,
+   "total_pages_reported": 6,
+   "api_message": "No Data Found",
+   "records_returned": 0,
+   "outcome": "ok_empty",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "67",
+   "group": "F",
+   "title": "MCP get_indicators RBI (planned dataset; repo-rate availability)",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "RBI",
+   "base_year": "",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:55+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_indicators",
+     "arguments": {
+      "dataset": "RBI"
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "3555a8f8a42c6323162e7ec4a4b07ed5a37b60ae0327dde780b7a9cd99107f5b",
+   "actual_type": "application/json",
+   "bytes": 8034,
+   "api_message": "data fetched successfully",
+   "records_returned": 39,
+   "null_or_empty_fields": {
+    "growth_rate": 39,
+    "inflation": 39,
+    "index": 39,
+    "index_value": 39
+   },
+   "outcome": "ok_document",
+   "usable_for_ingestion": false
+  },
+  {
+   "id": "68",
+   "group": "F",
+   "title": "NAS quarterly GDP growth, documented parameters (planned dataset)",
+   "source": "api.mospi.gov.in",
+   "dataset": "NAS",
+   "base_year": "2022-23",
+   "frequency": "Quarterly",
+   "operation": "GET",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:56+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://api.mospi.gov.in/api/nas/getNASData",
+    "params": {
+     "base_year": "2022-23",
+     "series": "Current",
+     "frequency_code": "Quarterly",
+     "indicator_code": 22,
+     "Format": "JSON",
+     "limit": 50
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "f46dd756c92b4f0871bf21112556802e4ba025015398556786981e6c074f8b31",
+   "actual_type": "application/json",
+   "bytes": 2756,
+   "total_records_reported": 13,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 13,
+   "distinct": {
+    "series": [
+     "Current"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 13,
+    "inflation": 13,
+    "index": 13,
+    "index_value": 13
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "69",
+   "group": "F",
+   "title": "MCP get_data WPI headline 2025-03 (cross-check vs REST)",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "WPI",
+   "base_year": "2022-23",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:09+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_data",
+     "arguments": {
+      "dataset": "WPI",
+      "filters": {
+       "base_year": "2022-23",
+       "year": "2025",
+       "month_code": "3",
+       "major_group_code": "1000000000"
+      }
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "2a3e59aff43e840da0a17ac11c92202f58df3a804c0836d6f6e4d0080c15b0e9",
+   "actual_type": "application/json",
+   "bytes": 342,
+   "total_records_reported": 1,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 1,
+   "earliest": "2025-03",
+   "latest": "2025-03",
+   "distinct_months": 1,
+   "missing_months": [],
+   "distinct": {
+    "major_group": [
+     "Wholesale Price Index"
+    ],
+    "base_year": [
+     "2022-23"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 1,
+    "inflation": 1,
+    "index": 1
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  },
+  {
+   "id": "70",
+   "group": "F",
+   "title": "MCP get_data CPI 2024 Current 2026-01 (cross-check vs REST)",
+   "source": "mcp.mospi.gov.in",
+   "dataset": "CPI",
+   "base_year": "2024",
+   "frequency": "Monthly",
+   "operation": "MCP tools/call",
+   "request_format": "application/json",
+   "expected_type": "JSON",
+   "evidence_level": "L",
+   "note": "",
+   "retrieved_at": "2026-11-21T14:40:09+00:00",
+   "from_cache": true,
+   "request": {
+    "url": "https://mcp.mospi.gov.in/",
+    "method": "tools/call",
+    "arguments": {
+     "tool": "get_data",
+     "arguments": {
+      "dataset": "CPI",
+      "filters": {
+       "base_year": "2024",
+       "series": "Current",
+       "year": "2026",
+       "month_code": "1",
+       "state_code": "1",
+       "sector_code": "3",
+       "division_code": "0"
+      }
+     }
+    }
+   },
+   "http_status": 200,
+   "raw_sha256": "54b0e5561270c54b782afc7e576b8ef065ecf304eeed9ebf9306162c2ef53788",
+   "actual_type": "application/json",
+   "bytes": 439,
+   "total_records_reported": 1,
+   "total_pages_reported": 1,
+   "api_message": "Data fetched successfully",
+   "records_returned": 1,
+   "earliest": "2026-01",
+   "latest": "2026-01",
+   "distinct_months": 1,
+   "missing_months": [],
+   "distinct": {
+    "sector": [
+     "Combined"
+    ],
+    "series": [
+     "Current"
+    ],
+    "base_year": [
+     "2024"
+    ]
+   },
+   "null_or_empty_fields": {
+    "growth_rate": 1,
+    "index_value": 1
+   },
+   "outcome": "ok_data",
+   "usable_for_ingestion": true
+  }
+ ]
+}

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-21T14:01:29+00:00",
+  "generated_at": "2026-11-21T15:04:21+00:00",
   "database_host": "127.0.0.1",
   "official_linking_factors_stored": 0,
   "series": [
@@ -9,17 +9,17 @@
       "base_year": "2024",
       "unit": "index (2024=100)",
       "kind": "index",
-      "first": "2020-01",
+      "first": "2013-01",
       "last": "2024-12",
-      "months_stored": 60,
-      "months_in_span": 60,
+      "months_stored": 144,
+      "months_in_span": 144,
       "missing_months": [],
       "off_first_of_month": 0,
-      "observations": 60,
-      "snapshots": 5,
+      "observations": 144,
+      "snapshots": 12,
       "months_with_revised_values": 0,
       "months_present_in_several_snapshots": 0,
-      "observations_without_published_at": 60,
+      "observations_without_published_at": 144,
       "observations_without_source_artifact": 0
     },
     {
@@ -28,17 +28,17 @@
       "base_year": "2024",
       "unit": "percent",
       "kind": "official_rate",
-      "first": "2020-01",
+      "first": "2014-01",
       "last": "2024-12",
-      "months_stored": 60,
-      "months_in_span": 60,
+      "months_stored": 132,
+      "months_in_span": 132,
       "missing_months": [],
       "off_first_of_month": 0,
-      "observations": 60,
-      "snapshots": 5,
+      "observations": 132,
+      "snapshots": 11,
       "months_with_revised_values": 0,
       "months_present_in_several_snapshots": 0,
-      "observations_without_published_at": 60,
+      "observations_without_published_at": 132,
       "observations_without_source_artifact": 0
     },
     {
@@ -77,6 +77,47 @@
       "months_with_revised_values": 0,
       "months_present_in_several_snapshots": 0,
       "observations_without_published_at": 10,
+      "observations_without_source_artifact": 0
+    },
+    {
+      "code": "mospi.cpi.2012.current.all_india.combined.general.index",
+      "indicator": "CPI",
+      "base_year": "2012",
+      "unit": "index (2012=100)",
+      "kind": "index",
+      "first": "2013-01",
+      "last": "2025-12",
+      "months_stored": 156,
+      "months_in_span": 156,
+      "missing_months": [],
+      "off_first_of_month": 0,
+      "observations": 156,
+      "snapshots": 13,
+      "months_with_revised_values": 0,
+      "months_present_in_several_snapshots": 0,
+      "observations_without_published_at": 156,
+      "observations_without_source_artifact": 0
+    },
+    {
+      "code": "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+      "indicator": "CPI",
+      "base_year": "2012",
+      "unit": "percent",
+      "kind": "official_rate",
+      "first": "2014-01",
+      "last": "2025-12",
+      "months_stored": 142,
+      "months_in_span": 144,
+      "missing_months": [
+        "2020-04",
+        "2020-05"
+      ],
+      "off_first_of_month": 0,
+      "observations": 142,
+      "snapshots": 12,
+      "months_with_revised_values": 0,
+      "months_present_in_several_snapshots": 0,
+      "observations_without_published_at": 142,
       "observations_without_source_artifact": 0
     },
     {
@@ -430,6 +471,44 @@
       "observations_without_source_artifact": 0
     },
     {
+      "code": "mospi.iip.2004-05.india.general.index",
+      "indicator": "IIP",
+      "base_year": "2004-05",
+      "unit": "index (2004-05=100)",
+      "kind": "index",
+      "first": "2005-04",
+      "last": "2017-03",
+      "months_stored": 144,
+      "months_in_span": 144,
+      "missing_months": [],
+      "off_first_of_month": 0,
+      "observations": 144,
+      "snapshots": 13,
+      "months_with_revised_values": 0,
+      "months_present_in_several_snapshots": 0,
+      "observations_without_published_at": 144,
+      "observations_without_source_artifact": 0
+    },
+    {
+      "code": "mospi.iip.1993-94.india.general.index",
+      "indicator": "IIP",
+      "base_year": "1993-94",
+      "unit": "index (1993-94=100)",
+      "kind": "index",
+      "first": "1994-04",
+      "last": "2011-06",
+      "months_stored": 207,
+      "months_in_span": 207,
+      "missing_months": [],
+      "off_first_of_month": 0,
+      "observations": 207,
+      "snapshots": 18,
+      "months_with_revised_values": 0,
+      "months_present_in_several_snapshots": 0,
+      "observations_without_published_at": 207,
+      "observations_without_source_artifact": 0
+    },
+    {
       "code": "mospi.wpi.2022-23.india.all_commodities.index",
       "indicator": "WPI",
       "base_year": "2022-23",
@@ -466,15 +545,70 @@
       "months_present_in_several_snapshots": 0,
       "observations_without_published_at": 169,
       "observations_without_source_artifact": 0
+    },
+    {
+      "code": "mospi.wpi.2004-05.india.all_commodities.index",
+      "indicator": "WPI",
+      "base_year": "2004-05",
+      "unit": "index (2004-05=100)",
+      "kind": "index",
+      "first": "2005-01",
+      "last": "2017-03",
+      "months_stored": 147,
+      "months_in_span": 147,
+      "missing_months": [],
+      "off_first_of_month": 0,
+      "observations": 147,
+      "snapshots": 13,
+      "months_with_revised_values": 0,
+      "months_present_in_several_snapshots": 0,
+      "observations_without_published_at": 147,
+      "observations_without_source_artifact": 0
+    },
+    {
+      "code": "mospi.wpi.1993-94.india.all_commodities.index",
+      "indicator": "WPI",
+      "base_year": "1993-94",
+      "unit": "index (1993-94=100)",
+      "kind": "index",
+      "first": "1994-04",
+      "last": "2010-08",
+      "months_stored": 197,
+      "months_in_span": 197,
+      "missing_months": [],
+      "off_first_of_month": 0,
+      "observations": 197,
+      "snapshots": 17,
+      "months_with_revised_values": 0,
+      "months_present_in_several_snapshots": 0,
+      "observations_without_published_at": 197,
+      "observations_without_source_artifact": 0
     }
   ],
   "five_year_window": [
     {
       "indicator": "CPI",
       "window": "2021-11 .. 2026-10",
+      "A_calendar_months_in_window": 60,
+      "B_months_with_an_observation_in_any_series": 60,
+      "C_months_on_one_comparable_series": 50,
+      "D_months_spanning_different_bases": 60,
+      "E_forecast_eligible_months": 22,
+      "forecast_series": "mospi.cpi.2024.current.all_india.combined.general.index",
+      "official_linked_months": 60,
+      "official_linked_pair": [
+        "mospi.cpi.2024.back.all_india.combined.general.index",
+        "mospi.cpi.2024.current.all_india.combined.general.index"
+      ],
       "single_series_covers_window": false,
       "series_covering_whole_window": [],
       "per_series": [
+        {
+          "series": "mospi.cpi.2012.current.all_india.combined.general.index",
+          "base_year": "2012",
+          "months_in_window": 50,
+          "covers_whole_window": false
+        },
         {
           "series": "mospi.cpi.2024.back.all_india.combined.general.index",
           "base_year": "2024",
@@ -490,11 +624,19 @@
       ],
       "months_with_data_in_any_series": 60,
       "union_is_one_comparable_index": false,
-      "note": "A month counted only through a second base year is available but cannot be chained to the first without an official linking factor."
+      "note": "A month counted only through a second base year is available but cannot be chained to the first without a verified linking method. CPI Back + Current is the one pair MoSPI itself publishes as a linked series on base 2024 (see official_linked_months); ArthaSense still keeps them as two segments and does not forecast across them without approval."
     },
     {
       "indicator": "IIP",
       "window": "2021-10 .. 2026-09",
+      "A_calendar_months_in_window": 60,
+      "B_months_with_an_observation_in_any_series": 60,
+      "C_months_on_one_comparable_series": 54,
+      "D_months_spanning_different_bases": 60,
+      "E_forecast_eligible_months": 42,
+      "forecast_series": "mospi.iip.2022-23.india.general.index",
+      "official_linked_months": null,
+      "official_linked_pair": null,
       "single_series_covers_window": false,
       "series_covering_whole_window": [],
       "per_series": [
@@ -509,15 +651,35 @@
           "base_year": "2022-23",
           "months_in_window": 42,
           "covers_whole_window": false
+        },
+        {
+          "series": "mospi.iip.2004-05.india.general.index",
+          "base_year": "2004-05",
+          "months_in_window": 0,
+          "covers_whole_window": false
+        },
+        {
+          "series": "mospi.iip.1993-94.india.general.index",
+          "base_year": "1993-94",
+          "months_in_window": 0,
+          "covers_whole_window": false
         }
       ],
       "months_with_data_in_any_series": 60,
       "union_is_one_comparable_index": false,
-      "note": "A month counted only through a second base year is available but cannot be chained to the first without an official linking factor."
+      "note": "A month counted only through a second base year is available but cannot be chained to the first without a verified linking method. CPI Back + Current is the one pair MoSPI itself publishes as a linked series on base 2024 (see official_linked_months); ArthaSense still keeps them as two segments and does not forecast across them without approval."
     },
     {
       "indicator": "WPI",
       "window": "2021-11 .. 2026-10",
+      "A_calendar_months_in_window": 60,
+      "B_months_with_an_observation_in_any_series": 60,
+      "C_months_on_one_comparable_series": 54,
+      "D_months_spanning_different_bases": 60,
+      "E_forecast_eligible_months": 43,
+      "forecast_series": "mospi.wpi.2022-23.india.all_commodities.index",
+      "official_linked_months": null,
+      "official_linked_pair": null,
       "single_series_covers_window": false,
       "series_covering_whole_window": [],
       "per_series": [
@@ -532,11 +694,23 @@
           "base_year": "2022-23",
           "months_in_window": 43,
           "covers_whole_window": false
+        },
+        {
+          "series": "mospi.wpi.2004-05.india.all_commodities.index",
+          "base_year": "2004-05",
+          "months_in_window": 0,
+          "covers_whole_window": false
+        },
+        {
+          "series": "mospi.wpi.1993-94.india.all_commodities.index",
+          "base_year": "1993-94",
+          "months_in_window": 0,
+          "covers_whole_window": false
         }
       ],
       "months_with_data_in_any_series": 60,
       "union_is_one_comparable_index": false,
-      "note": "A month counted only through a second base year is available but cannot be chained to the first without an official linking factor."
+      "note": "A month counted only through a second base year is available but cannot be chained to the first without a verified linking method. CPI Back + Current is the one pair MoSPI itself publishes as a linked series on base 2024 (see official_linked_months); ArthaSense still keeps them as two segments and does not forecast across them without approval."
     }
   ],
   "metadata_gaps": {

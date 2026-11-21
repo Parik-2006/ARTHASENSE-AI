@@ -58,3 +58,6 @@ backup*.sql
 *.log
 .coverage
 htmlcov/
+
+# discovery evidence (raw government responses, cached)
+data/evidence/

@@ -1,0 +1,777 @@
+{
+ "overflow": [
+  {
+   "page": "/",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/cpi",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/wpi",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/iip",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/cpi",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/wpi",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/iip",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/experiments",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/comparison",
+   "width": 390,
+   "scheme": "light",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/cpi",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/wpi",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/iip",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/cpi",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/wpi",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/iip",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/experiments",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/comparison",
+   "width": 768,
+   "scheme": "light",
+   "scrollW": 753,
+   "vw": 753,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/cpi",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/wpi",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/iip",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/cpi",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/wpi",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/iip",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/experiments",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/comparison",
+   "width": 1024,
+   "scheme": "light",
+   "scrollW": 1009,
+   "vw": 1009,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/cpi",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/wpi",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/iip",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/cpi",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/wpi",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/iip",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/experiments",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/comparison",
+   "width": 1440,
+   "scheme": "light",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/cpi",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/wpi",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/iip",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/cpi",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/wpi",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/iip",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/experiments",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/comparison",
+   "width": 390,
+   "scheme": "dark",
+   "scrollW": 390,
+   "vw": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/cpi",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/wpi",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/indicators/iip",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/cpi",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/wpi",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/iip",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/experiments",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  },
+  {
+   "page": "/forecasting/comparison",
+   "width": 1440,
+   "scheme": "dark",
+   "scrollW": 1425,
+   "vw": 1425,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "n": 0,
+   "console_errors": []
+  }
+ ],
+ "interactions": [
+  {
+   "name": "range 3M click persists to URL",
+   "page": "/indicators/wpi",
+   "result": "clicked ?range=3M"
+  },
+  {
+   "name": "Custom range shows month inputs",
+   "page": "/indicators/wpi",
+   "result": "clicked month inputs=2 url=?range=Custom&from=2025-11&to=2026-10"
+  },
+  {
+   "name": "legacy panel present on WPI",
+   "page": "/indicators/wpi",
+   "result": true
+  },
+  {
+   "name": "legacy panel present on IIP",
+   "page": "/indicators/iip",
+   "result": true
+  },
+  {
+   "name": "CSV controls on Overview",
+   "page": "/",
+   "result": 3
+  },
+  {
+   "name": "deep link ?range=1Y on WPI",
+   "page": "/indicators/wpi?range=1Y",
+   "result": "true"
+  },
+  {
+   "name": "deep link ?range=2Y on Overview",
+   "page": "/?range=2Y",
+   "result": "true"
+  },
+  {
+   "name": "tour opens as non-modal card",
+   "page": "/",
+   "result": "aria-modal=0 STEP 1 OF 10"
+  },
+  {
+   "name": "forecast experiments controls",
+   "page": "/forecasting/experiments",
+   "result": 19
+  }
+ ]
+}

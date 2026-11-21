@@ -32,6 +32,7 @@ import {
   monthNumber,
 } from "@/lib/indicator";
 import type { IndicatorConfig } from "@/lib/indicators";
+import type { SeriesBundle } from "@/lib/series-data";
 import { FORMULA, type SourceInfo, sourceFor as buildSource } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
@@ -156,7 +157,7 @@ const COMPARE_METRICS: Exclude<MetricKey, "index" | "official">[] = ["yoy", "mom
 
 /** Visual hub: hero, summary cards, trend previews, safe comparison, data coverage, navigation.
  *  All values come from the same parsed API results the detail pages use. */
-export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
+export function IndicatorsOverview({ entries, allSeries }: { entries: OverviewEntry[]; allSeries?: Record<string, SeriesBundle[]> }) {
   const [filters, setFilters] = useFilterState(["index", "mom", "yoy"]);
   const [picked, setPicked] = useState<string[]>(entries.map((e) => e.config.key));
   const [cmpMetric, setCmpMetric] = useState<"yoy" | "mom">("yoy");
@@ -364,6 +365,50 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
           in each card&apos;s source details.
         </p>
       </section>
+
+      {allSeries && (
+        <section aria-label="Stored official series">
+          <h2 className="mb-2 font-serif text-xl font-semibold">
+            Stored official series <Help topic="baseYear" />
+          </h2>
+          <p className="mb-2 text-sm text-ink-muted">
+            Every base year is its own series and is never joined to another. Open one to explore it with its own filters and downloads.
+          </p>
+          <div className="overflow-x-auto rounded-md border border-rule bg-surface">
+            <table className="w-full min-w-[40rem] text-sm">
+              <caption className="sr-only">Every stored official series, by indicator and base year</caption>
+              <thead>
+                <tr className="border-b border-rule text-left text-xs">
+                  <th scope="col" className="px-4 py-2 font-semibold">Indicator</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Series</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">First month</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Last month</th>
+                  <th scope="col" className="px-4 py-2 text-right font-semibold">Months</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.flatMap((e) =>
+                  (allSeries[e.config.key] ?? []).map((b) => {
+                    const rows = b.result.ok ? b.result.data.observations.filter((o) => o.index !== null) : [];
+                    const href = b.option.id === "current" ? e.config.path : `${e.config.path}?base=${b.option.id}`;
+                    return (
+                      <tr key={`${e.config.key}-${b.option.id}`} className="border-b border-rule last:border-b-0">
+                        <th scope="row" className="px-4 py-2 text-left font-medium">{e.config.shortName}</th>
+                        <td className="px-4 py-2">
+                          <Link href={href} className="text-accent underline focus-visible:outline-2 focus-visible:outline-accent">{b.option.label}</Link>
+                        </td>
+                        <td className="px-4 py-2">{rows[0] ? formatPeriod(rows[0].period) : "—"}</td>
+                        <td className="px-4 py-2">{rows.length ? formatPeriod(rows[rows.length - 1].period) : "—"}</td>
+                        <td className="figure px-4 py-2 text-right">{rows.length}</td>
+                      </tr>
+                    );
+                  }),
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       <section aria-label="Explore deeper" data-tour="ind-explore" className="grid gap-4 md:grid-cols-3">
         {[

@@ -23,6 +23,7 @@ import {
   windowCsv,
   ymNumber,
 } from "@/lib/overview";
+import { seriesIds } from "@/lib/source";
 
 const STROKE: Record<IndicatorKey, { stroke: string; dash?: string }> = {
   cpi: { stroke: "var(--accent)" },
@@ -290,7 +291,7 @@ export function OverviewExplorer({ bundles }: { bundles: IndicatorBundle[] }) {
                             baseYear: seg?.baseYear ?? "",
                             source: b.source.short,
                             publisher: b.source.publisher,
-                            seriesId: b.source.seriesIds[0],
+                            seriesId: seg ? seriesIds(b.key, seg.baseYear, "general", seg.series ?? null)[0] : b.source.seriesIds[0],
                             rateColumn: b.rateKind === "inflation" ? "yoy_inflation_pct_official" : b.rateKind === "growth" ? "yoy_growth_pct_official" : null,
                           }),
                         )
@@ -330,7 +331,7 @@ export function OverviewExplorer({ bundles }: { bundles: IndicatorBundle[] }) {
                 <SourceAttribution
                   className="mt-3"
                   cls="official"
-                  sources={[{ ...b.source, baseYear: seg?.baseYear ?? b.source.baseYear, coverage: seg?.coverage ?? b.source.coverage }]}
+                  sources={[{ ...b.source, baseYear: seg?.baseYear ?? b.source.baseYear, coverage: seg?.coverage ?? b.source.coverage, seriesIds: seg ? seriesIds(b.key, seg.baseYear, "general", seg.series ?? null) : b.source.seriesIds }]}
                   period={periodSpan(first, last)}
                   units="Index points"
                 />

@@ -113,12 +113,12 @@ describe("toCsvV2", () => {
     const rows = withDerived(series).slice(12, 14);
     const csv = toCsvV2(rows, { source: "MoSPI", indexColumn: "cpi_index", officialColumn: null, baseYear: "2024", seriesId: "s" });
     const [h, a, b] = csv.trim().split("\r\n");
-    expect(h).toBe("period,cpi_index,mom_change_pct_calculated,yoy_change_pct_calculated,base_year,source,series_id,release_key,retrieved_at");
+    expect(h).toBe("period,cpi_index,mom_change_pct_calculated,yoy_change_pct_calculated,base_year,source,series_id,release_key,retrieved_at,source_status");
     expect(a.startsWith("2025-01-01,112,")).toBe(true);
     expect(b.split(",")[3]).toBe("12.0000".replace("12.0000", ((113 / 101 - 1) * 100).toFixed(4)));
     expect(csv.trim().split("\r\n")).toHaveLength(3);
     const blank = toCsvV2(withDerived([obs("2025-01-01", 100)]), { source: "x", indexColumn: "i", officialColumn: "o", baseYear: "b", seriesId: "s" });
-    expect(blank.split("\r\n")[1]).toBe("2025-01-01,100,,,,b,x,s,,");
+    expect(blank.split("\r\n")[1]).toBe("2025-01-01,100,,,,b,x,s,,,");
   });
 });
 
@@ -166,5 +166,20 @@ describe("seedCustom", () => {
     expect(seedCustom(series)).toEqual({ start: "2025-01", end: "2025-12" });
     expect(seedCustom(series.slice(20))).toEqual({ start: "2025-09", end: "2025-12" });
     expect(seedCustom([])).toBeNull();
+  });
+});
+
+describe("toCsvV2 source status", () => {
+  const src = (status: string | null) => ({ releaseKey: "rk", retrievedAt: "2026-01-01T00:00:00Z", publishedAt: null, status });
+  it("exports the SOURCE's own flag verbatim and leaves our default 'retrieved' empty", () => {
+    const rows = withDerived([
+      { period: "2020-04-01", index: 149, rate: null, indexSource: src("source_status_F*"), rateSource: null },
+      { period: "2020-05-01", index: 150, rate: null, indexSource: src("retrieved"), rateSource: null },
+      { period: "2020-06-01", index: 151, rate: null, indexSource: src("source_final"), rateSource: null },
+    ]);
+    const lines = toCsvV2(rows, { source: "MoSPI", indexColumn: "i", officialColumn: null, baseYear: "2012", seriesId: "s" }).trim().split("\r\n");
+    expect(lines[1].endsWith(",source_status_F*")).toBe(true);
+    expect(lines[2].endsWith(",rk,2026-01-01T00:00:00Z,")).toBe(true); // empty, not "retrieved"
+    expect(lines[3].endsWith(",source_final")).toBe(true);
   });
 });

@@ -107,3 +107,9 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/* Horizontal scroll wrappers must contain absolutely positioned children (e.g. visually hidden text in
+   table cells), otherwise those children widen the whole page on narrow screens. */
+.overflow-x-auto {
+  position: relative;
+}

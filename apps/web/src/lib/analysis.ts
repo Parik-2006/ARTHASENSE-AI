@@ -219,7 +219,7 @@ export function toCsvV2(
   const header = [
     "period", meta.indexColumn, "mom_change_pct_calculated", "yoy_change_pct_calculated",
     ...(meta.officialColumn ? [meta.officialColumn] : []),
-    "base_year", "source", "series_id", "release_key", "retrieved_at",
+    "base_year", "source", "series_id", "release_key", "retrieved_at", "source_status",
   ]; // prettier-ignore
   const f4 = (v: number | null) => (v === null ? null : v.toFixed(4));
   const lines = rows.map((r) =>
@@ -228,6 +228,8 @@ export function toCsvV2(
       ...(meta.officialColumn ? [r.rate] : []),
       meta.baseYear, meta.source, meta.seriesId,
       r.indexSource?.releaseKey ?? null, r.indexSource?.retrievedAt ?? null,
+      // the SOURCE's own flag only; our default "retrieved" is not a source statement, so it is left empty
+      r.indexSource?.status && r.indexSource.status !== "retrieved" ? r.indexSource.status : null,
     ]
       .map(csvCell)
       .join(","),

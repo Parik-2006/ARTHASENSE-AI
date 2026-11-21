@@ -6,8 +6,6 @@ export interface IndicatorConfig {
   key: IndicatorKey;
   path: string; // page route
   apiQuery: string; // appended to /api/v1/indicators/<key>
-  /** Optional second request for an official linked Back series on the same base year. */
-  backQuery?: string;
   shortName: string; // "CPI"
   navLabel: string;
   title: string;
@@ -42,7 +40,6 @@ export const CPI_CONFIG: IndicatorConfig = {
   key: "cpi",
   path: "/indicators/cpi",
   apiQuery: "?limit=240",
-  backQuery: "?limit=240&series=back",
   shortName: "CPI",
   navLabel: "CPI Intelligence",
   title: "Consumer Price Index Intelligence",
@@ -66,7 +63,7 @@ export const CPI_CONFIG: IndicatorConfig = {
   definitions: [
     {
       term: "CPI Index",
-      text: "A measure of consumer price levels relative to the base period (2024 = 100). It is a level, not a percentage rate.",
+      text: "A measure of consumer price levels relative to the base period ({base} = 100). It is a level, not a percentage rate.",
     },
     {
       term: "Month-over-Month Change",
@@ -113,7 +110,7 @@ export const WPI_CONFIG: IndicatorConfig = {
     },
     {
       term: "WPI Index",
-      text: "A price level relative to the base period (2022-23 = 100). It is a level, not a percentage rate.",
+      text: "A price level relative to the base period ({base} = 100). It is a level, not a percentage rate.",
     },
     {
       term: "Month-over-Month Change",
@@ -158,7 +155,7 @@ export const IIP_CONFIG: IndicatorConfig = {
   definitions: [
     {
       term: "What IIP measures",
-      text: "The change in the volume of industrial production relative to the base period (2022-23 = 100), across mining, manufacturing and electricity (and, in this base, water supply and waste management).",
+      text: "The change in the volume of industrial production relative to the base period ({base} = 100). The newer base also covers water supply and waste management; the headline covers whatever categories the base defines.",
     },
     {
       term: "IIP Index",

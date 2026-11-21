@@ -14,7 +14,7 @@ const replace = vi.fn((url: string) => {
   search = url.includes("?") ? url.split("?")[1] : "";
 });
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: () => {}, replace }),
+  useRouter: () => ({ refresh: () => {}, replace, push: replace }),
   usePathname: () => "/indicators/cpi",
   useSearchParams: () => new URLSearchParams(search),
 }));

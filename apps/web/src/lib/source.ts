@@ -32,9 +32,12 @@ export interface SourceInfo {
 }
 
 /** Series codes as stored by ArthaSense; mirrors services/api/app/indicators.py. */
-export function seriesIds(kind: IndicatorKey, baseYear: string, sector = "general"): string[] {
+export function seriesIds(kind: IndicatorKey, baseYear: string, sector = "general", cpiSeries: string | null = null): string[] {
   if (kind === "cpi") {
-    const stem = "mospi.cpi.2024.current.all_india.combined.general";
+    const stem =
+      cpiSeries === "legacy2012" || baseYear === "2012"
+        ? "mospi.cpi.2012.current.all_india.combined.general"
+        : `mospi.cpi.2024.${cpiSeries === "back" ? "back" : "current"}.all_india.combined.general`;
     return [`${stem}.index`, `${stem}.inflation_yoy`];
   }
   if (kind === "wpi") return [`mospi.wpi.${baseYear}.india.all_commodities.index`];
@@ -55,7 +58,7 @@ export function sourceFor(config: IndicatorConfig, data: IndicatorData | null): 
     dataset: config.dataset,
     url: data?.sourceUrl ?? null,
     publisherUrl: config.publisherUrl,
-    seriesIds: data ? seriesIds(config.key, data.baseYear) : [],
+    seriesIds: data ? seriesIds(config.key, data.baseYear, "general", data.series ?? null) : [],
     channel: "MoSPI eSankhyiki API, stored in ArthaSense PostgreSQL and served by the ArthaSense API",
     coverage: data?.coverage ?? null,
     baseYear: data?.baseYear ?? null,

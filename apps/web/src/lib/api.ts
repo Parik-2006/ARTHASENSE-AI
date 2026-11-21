@@ -115,16 +115,10 @@ export async function getIndicator(
   }
 }
 
-/** Optional earlier series (CPI official Back series). Kept as its own segment, never merged
- *  into the Current series; null when the indicator has none. */
-export async function getBackSeries(config: { key: IndicatorKey; backQuery?: string }): Promise<IndicatorResult | null> {
-  return config.backQuery ? getIndicator(config.key, config.backQuery) : null;
-}
-
 /** Sector totals of the IIP, one list per sector (a failure degrades gracefully on the page). */
-export async function getIipSectors(timeoutMs?: number): Promise<IipSectorsResult> {
+export async function getIipSectors(baseYear = "2022-23", timeoutMs?: number): Promise<IipSectorsResult> {
   try {
-    const res = await apiGet("/api/v1/indicators/iip/sectors?limit=120", { timeoutMs });
+    const res = await apiGet(`/api/v1/indicators/iip/sectors?limit=240&base_year=${encodeURIComponent(baseYear)}`, { timeoutMs });
     if (res.status < 200 || res.status >= 300) return { ok: false, error: httpError(res) };
     const data = parseIipSectors(res.body);
     return data ? { ok: true, data } : { ok: false, error: "Unexpected response shape from the API" };

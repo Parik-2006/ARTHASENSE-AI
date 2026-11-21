@@ -7,6 +7,8 @@ export interface Provenance {
   releaseKey: string;
   retrievedAt: string; // ISO timestamp of OUR retrieval, not an official publication time
   publishedAt: string | null;
+  /** The SOURCE's own finality flag where it gives one (e.g. "source_final"); null/"retrieved" otherwise. */
+  status?: string | null;
 }
 
 export interface Observation {
@@ -25,6 +27,8 @@ export interface IndicatorData {
   coverage: string;
   geography: string;
   sourceName: string;
+  /** Which stored series this is, as the API names it (CPI: current | back | legacy2012). */
+  series?: string | null;
   /** Source URL exactly as the API reports it; null when absent. */
   sourceUrl?: string | null;
   publisherNote: string | null;
@@ -50,6 +54,7 @@ function parseProvenance(v: unknown): Provenance | null | undefined {
     releaseKey: v.release_key,
     retrievedAt: v.retrieved_at,
     publishedAt: typeof v.published_at === "string" ? v.published_at : null,
+    status: typeof v.status === "string" ? v.status : null,
   };
 }
 
@@ -98,6 +103,7 @@ export function parseIndicatorResponse(json: unknown, kind: IndicatorKey): Indic
     geography: json.geography,
     sourceName: json.source.name,
     sourceUrl: typeof json.source.url === "string" ? json.source.url : null,
+    series: typeof json.series === "string" ? json.series : null,
     publisherNote: typeof json.publisher_note === "string" ? json.publisher_note : null,
     limitations: Array.isArray(json.limitations) ? json.limitations.filter((x) => typeof x === "string") : [],
     observations,

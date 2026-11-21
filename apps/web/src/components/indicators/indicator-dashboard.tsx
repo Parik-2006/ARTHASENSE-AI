@@ -10,6 +10,7 @@ import { IndicatorChart } from "@/components/indicators/indicator-chart";
 import type { ChartMode } from "@/components/indicators/series-chart";
 import { Panel } from "@/components/ui/primitives";
 import { type AnalysisRow, inWindow, type MetricKey, METRIC_KEYS, METRIC_LABEL, resolveWindow, toCsvV2, withDerived } from "@/lib/analysis";
+import { fillBase, type SeriesOption } from "@/lib/series-options";
 import { FORMULA, seriesIds, sourceFor } from "@/lib/source";
 import {
   distinctSnapshots,
@@ -139,10 +140,13 @@ function sortAnalysis(rows: AnalysisRow[], key: TableSort, dir: "asc" | "desc"):
 export function IndicatorDashboard({
   config,
   result,
+  option,
   children,
 }: {
   config: IndicatorConfig;
   result: IndicatorResult;
+  /** Which stored series (base year) this is; used for labels and file names. */
+  option?: SeriesOption;
   /** Extra panels (e.g. IIP sector breakdown) shown between the chart and the table. */
   children?: ReactNode;
 }) {
@@ -198,6 +202,8 @@ export function IndicatorDashboard({
   const rate = latestRate(rows);
   const retrieved = lastRetrievedAt(rows);
   const snapshots = distinctSnapshots(rows);
+  // Series without an official rate say why (archive IIP bases store the index only).
+  const rateMissing = config.key === "iip" && option?.role === "archive" ? "Official growth is not stored for archive base years." : config.rateMissingText;
   const cards: Record<"index" | "mom" | "rate" | "period", { label: string; value: string; sub: string }> = {
     index: {
       label: config.indexCard,
@@ -215,7 +221,7 @@ export function IndicatorDashboard({
     rate: {
       label: config.rateCard ?? "Official year-over-year rate",
       value: rate ? formatPercent(rate.rate, config.rateSigned) : "Not available",
-      sub: rate ? `Official figure for ${formatPeriod(rate.period, true)}` : config.rateMissingText,
+      sub: rate ? `Official figure for ${formatPeriod(rate.period, true)}` : rateMissing,
     },
     period: {
       label: "Latest Observation Period",
@@ -241,6 +247,11 @@ export function IndicatorDashboard({
     );
   };
 
+  // A "Source flag" column appears only when the source supplied its own flag (e.g. CPI 2012 final / F*).
+  const hasFlags = rows.some((r) => !!r.indexSource?.status && r.indexSource.status !== "retrieved");
+  const flagText = (st?: string | null) =>
+    !st || st === "retrieved" ? "—" : st === "source_final" ? "Final" : st === "source_provisional" ? "Provisional" : st.replace("source_status_", "Flag ") + " (meaning not documented)";
+
   const sortBtn = (key: TableSort, label: string) => {
     const on = sort.key === key;
     return (
@@ -264,12 +275,12 @@ export function IndicatorDashboard({
       indexColumn: config.indexCsvColumn,
       officialColumn: config.rateCsvColumn,
       baseYear: data.baseYear,
-      seriesId: seriesIds(config.key, data.baseYear)[0],
+      seriesId: seriesIds(config.key, data.baseYear, "general", data.series ?? null)[0],
     });
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `india-${config.key}-${data.baseYear}-${filters.range.toLowerCase()}.csv`;
+    a.download = `india-${config.key}-${data.baseYear}${option && option.id !== "current" ? `-${option.id}` : ""}-${filters.range.toLowerCase()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -404,6 +415,11 @@ export function IndicatorDashboard({
                 <th scope="col" className="py-2 font-semibold">
                   Source
                 </th>
+                {hasFlags && (
+                  <th scope="col" className="py-2 pl-4 font-semibold">
+                    Source flag
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -445,6 +461,11 @@ export function IndicatorDashboard({
                   <td className="py-2 text-ink-muted">
                     {config.sourceShort} · base {data.baseYear}
                   </td>
+                  {hasFlags && (
+                    <td className="py-2 pl-4 text-xs text-ink-muted" title="The source's own finality flag for this month">
+                      {flagText(r.indexSource?.status)}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -452,7 +473,7 @@ export function IndicatorDashboard({
         </div>
         {hasOfficial && sorted.every((r) => r.rate === null) && (
           <p className="mt-3 text-xs text-ink-muted">
-            {config.rateMissingText} “—” means not provided, not zero.
+            {rateMissing} “—” means not provided, not zero.
           </p>
         )}
       </Panel>
@@ -487,7 +508,7 @@ export function IndicatorDashboard({
           {config.definitions.map((d) => (
             <details key={d.term} className="text-sm">
               <summary className={`cursor-pointer font-medium ${focusRing}`}>{d.term}</summary>
-              <p className="mt-1 text-ink-muted">{d.text}</p>
+              <p className="mt-1 text-ink-muted">{fillBase(d.text, data.baseYear)}</p>
             </details>
           ))}
           {[...config.limits, ...data.limitations].length > 0 && (

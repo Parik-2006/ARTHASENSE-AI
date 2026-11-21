@@ -41,10 +41,18 @@ export function useFilterState(allowedMetrics: MetricKey[]): [FilterState, (patc
   const set = useCallback(
     (patch: Partial<FilterState>) => {
       const next = { ...state, ...patch };
-      const qs = serializeFilters(next).toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      // Keep unrelated parameters (e.g. ?base= for the chosen series); only the filter keys are rewritten.
+      const merged = new URLSearchParams(params?.toString() ?? "");
+      for (const k of ["range", "metric", "from", "to"]) merged.delete(k);
+      serializeFilters(next).forEach((v, k) => merged.set(k, v));
+      const qs = merged.toString();
+      const url = qs ? `${pathname}?${qs}` : pathname;
+      // A new preset/metric is a navigation step (Back undoes it); typing month values only refines the current step.
+      const refine = patch.custom !== undefined && patch.range === undefined;
+      if (refine) router.replace(url, { scroll: false });
+      else router.push(url, { scroll: false });
     },
-    [state, router, pathname],
+    [state, router, pathname, params],
   );
   return [state, set];
 }

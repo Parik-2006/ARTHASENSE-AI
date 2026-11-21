@@ -19,6 +19,8 @@ import {
   parseRange,
   rebasePercent,
   type RangeSel,
+  seedCustomRange,
+  windowCsv,
   ymNumber,
 } from "@/lib/overview";
 
@@ -98,6 +100,15 @@ function windowNote(shown: number, sel: RangeSel): string | null {
   return null;
 }
 
+function downloadCsv(name: string, csv: string) {
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 interface Prepared {
   b: IndicatorBundle;
   rows: Derived[]; // primary (current-base) series, derived within that one base
@@ -139,7 +150,15 @@ export function OverviewExplorer({ bundles }: { bundles: IndicatorBundle[] }) {
 
   const customOrder = fromIn && toIn && ymNumber(fromIn) !== null && ymNumber(toIn) !== null && ymNumber(fromIn)! > ymNumber(toIn)!;
   const setPreset = (key: string) => {
-    if (key === "Custom") push({ range: "Custom", from: fromIn || null, to: toIn || null });
+    if (key === "Custom") {
+      // Seed a valid window from the stored data so the month inputs appear straight away.
+      const valid = fromIn && toIn && ymNumber(fromIn) !== null && ymNumber(toIn) !== null && ymNumber(fromIn)! <= ymNumber(toIn)!;
+      const seed = valid ? { from: fromIn, to: toIn } : seedCustomRange(prepared.map((p) => p.rows));
+      if (!seed) return;
+      setFromIn(seed.from);
+      setToIn(seed.to);
+      push({ range: "Custom", from: seed.from, to: seed.to });
+    }
     else push({ range: key === "All" ? null : key, from: null, to: null });
   };
   const applyCustom = (f: string, t: string) => {
@@ -258,6 +277,54 @@ export function OverviewExplorer({ bundles }: { bundles: IndicatorBundle[] }) {
                   <p className="mt-1 text-xs text-warn">
                     Earlier series ({seg.label}). Its index levels are not comparable with the current base.
                   </p>
+                )}
+                {shown.length > 0 && (
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        downloadCsv(
+                          `${b.key}-${shown[0].period.slice(0, 7)}-to-${shown[shown.length - 1].period.slice(0, 7)}.csv`,
+                          windowCsv(shown, {
+                            indicator: b.shortName,
+                            baseYear: seg?.baseYear ?? "",
+                            source: b.source.short,
+                            retrievedAt: b.source.retrievedAt,
+                            rateColumn: b.rateKind === "inflation" ? "yoy_inflation_pct_official" : b.rateKind === "growth" ? "yoy_growth_pct_official" : null,
+                          }),
+                        )
+                      }
+                      className="rounded border border-rule px-2 py-1 hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"
+                    >
+                      Download CSV
+                    </button>
+                    <details>
+                      <summary className="cursor-pointer text-accent underline focus-visible:outline-2 focus-visible:outline-accent">Monthly data</summary>
+                      <div className="relative mt-2 max-h-64 overflow-auto rounded border border-rule" role="region" aria-label={`${b.shortName} monthly data, scrollable`} tabIndex={0}>
+                        <table className="w-full text-left">
+                          <caption className="sr-only">{b.shortName} monthly values for the selected window. Blank means not available.</caption>
+                          <thead className="sticky top-0 bg-surface text-ink-muted">
+                            <tr>
+                              <th scope="col" className="px-2 py-1 font-medium">Month</th>
+                              <th scope="col" className="px-2 font-medium">Index</th>
+                              <th scope="col" className="px-2 font-medium">MoM % (calc.)</th>
+                              <th scope="col" className="px-2 font-medium">Official YoY %</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...shown].reverse().map((r) => (
+                              <tr key={r.period} className="border-t border-rule">
+                                <th scope="row" className="px-2 py-1 font-normal">{formatPeriod(r.period)}</th>
+                                <td className="figure px-2">{r.index?.toFixed(2) ?? ""}</td>
+                                <td className="figure px-2">{r.mom === null ? "" : r.mom.toFixed(2)}</td>
+                                <td className="figure px-2">{r.rate === null ? "" : r.rate.toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  </div>
                 )}
                 <SourceAttribution
                   className="mt-3"
@@ -425,7 +492,11 @@ export function OverviewExplorer({ bundles }: { bundles: IndicatorBundle[] }) {
           {heatMetric === "rate" && !hasOfficial ? (
             <Empty>{cur.b.rateMissingText}</Empty>
           ) : heatRows.filter((p) => p.v !== null).length === 0 ? (
-            <Empty>Limited history: not enough stored months in this window to show values.</Empty>
+            <Empty>
+              {heatMetric === "rate"
+                ? `No official ${cur.b.shortName} year-on-year figures are stored for this window, so none are shown.`
+                : "Limited history: not enough consecutive stored months in this window to show values."}
+            </Empty>
           ) : (
             <Heatmap rows={heatGrid(heatRows)} unit="%" label={`${cur.b.shortName} ${heatMetric === "mom" ? "monthly change" : "official annual rate"}`} />
           )}

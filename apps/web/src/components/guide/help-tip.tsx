@@ -8,6 +8,7 @@ import { HELP } from "@/lib/guide";
 export function HelpTip({ id, label }: { id: string; label?: string }) {
   const entry = HELP[id];
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ left: number; width: number }>({ left: 0, width: 320 });
   const btn = useRef<HTMLButtonElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const uid = useId();
@@ -41,7 +42,16 @@ export function HelpTip({ id, label }: { id: string; label?: string }) {
         aria-expanded={open}
         aria-controls={open ? uid : undefined}
         aria-label={label ?? `Explain: ${entry.title}`}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          // Clamp the popover inside the viewport (16px gutters), whatever side the button sits on.
+          const r = btn.current?.getBoundingClientRect();
+          if (r) {
+            const width = Math.min(320, window.innerWidth - 32);
+            const left = Math.min(Math.max(r.left, 16), window.innerWidth - 16 - width);
+            setPos({ left: left - r.left, width });
+          }
+          setOpen((o) => !o);
+        }}
         className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-rule text-[11px] font-semibold text-ink-muted hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
       >
         ?
@@ -52,7 +62,8 @@ export function HelpTip({ id, label }: { id: string; label?: string }) {
           id={uid}
           role="dialog"
           aria-label={entry.title}
-          className="absolute left-0 top-7 z-30 w-[min(20rem,calc(100vw-2rem))] rounded-md border border-rule bg-surface p-3 text-left text-xs font-normal normal-case tracking-normal text-ink shadow-lg"
+          style={{ left: pos.left, width: pos.width }}
+          className="absolute top-7 z-30 rounded-md border border-rule bg-surface p-3 text-left text-xs font-normal normal-case tracking-normal text-ink shadow-lg"
         >
           <p className="mb-1.5 text-sm font-semibold">{entry.title}</p>
           <dl className="space-y-1.5">

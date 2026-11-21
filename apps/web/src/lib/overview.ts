@@ -211,3 +211,35 @@ export function fmtPct(v: number | null, digits = 2): string {
   if (v === null) return "Not available";
   return `${v > 0 ? "+" : ""}${v.toFixed(digits)}%`;
 }
+
+// ---------- custom range seed & CSV ----------
+
+const toYm = (n: number) => `${Math.floor(n / 12)}-${String((n % 12) + 1).padStart(2, "0")}`;
+
+/** Initial Custom window: the 12 months ending at the latest stored month of any series. Null when nothing is stored. */
+export function seedCustomRange(seriesRows: { period: string }[][]): { from: string; to: string } | null {
+  const latest = seriesRows.map(latestMonth).filter((n): n is number => n !== null);
+  if (!latest.length) return null;
+  const hi = Math.max(...latest);
+  return { from: toYm(hi - 11), to: toYm(hi) };
+}
+
+function csvCell(v: string | number | null): string {
+  if (v === null) return ""; // missing stays empty, never 0
+  const s = String(v);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/** CSV of the rows on screen. Calculated and official columns are named as such; missing values are empty. */
+export function windowCsv(
+  rows: Derived[],
+  meta: { indicator: string; baseYear: string; source: string; retrievedAt: string | null; rateColumn: string | null },
+): string {
+  const head = ["period", `${meta.indicator.toLowerCase()}_index`, "mom_change_pct_calculated", "yoy_change_pct_calculated", ...(meta.rateColumn ? [meta.rateColumn] : []), "base_year", "source", "source_retrieved_at"];
+  const lines = rows.map((r) =>
+    [r.period, r.index, r.mom === null ? null : r.mom.toFixed(4), r.yoyCalc === null ? null : r.yoyCalc.toFixed(4), ...(meta.rateColumn ? [r.rate] : []), meta.baseYear, meta.source, meta.retrievedAt]
+      .map(csvCell)
+      .join(","),
+  );
+  return [head.join(","), ...lines].join("\r\n") + "\r\n";
+}

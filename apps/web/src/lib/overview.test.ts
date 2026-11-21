@@ -9,7 +9,9 @@ import {
   heatGrid,
   parseRange,
   rebasePercent,
+  seedCustomRange,
   symmetricLimit,
+  windowCsv,
 } from "@/lib/overview";
 import { buildInsights } from "@/lib/overview-insights";
 import type { IndicatorBundle } from "@/lib/overview-data";
@@ -178,5 +180,28 @@ describe("tour reducer", () => {
   it("has unique targets and covers the ten required topics", () => {
     expect(new Set(OVERVIEW_TOUR.map((t) => t.target)).size).toBe(total);
     expect(total).toBe(10);
+  });
+});
+
+describe("custom range seed and CSV", () => {
+  it("seeds a valid 12-month window ending at the latest stored month", () => {
+    const seed = seedCustomRange([monthly(2025 * 12, [1, 2, 3]), monthly(2023 * 12, [1, 2])])!;
+    expect(seed).toEqual({ from: "2024-04", to: "2025-03" });
+    expect(parseRange("Custom", seed.from, seed.to).error).toBeNull();
+    expect(seedCustomRange([[], []])).toBeNull();
+  });
+  it("exports named columns and leaves missing values empty, never zero", () => {
+    const rows = derive(monthly(2025 * 12, [100, null, 102]));
+    const csv = windowCsv(rows, { indicator: "WPI", baseYear: "2022-23", source: "OEA via MoSPI", retrievedAt: null, rateColumn: null });
+    const [head, ...lines] = csv.trim().split(String.fromCharCode(13, 10));
+    expect(head).toBe("period,wpi_index,mom_change_pct_calculated,yoy_change_pct_calculated,base_year,source,source_retrieved_at");
+    expect(lines[1]).toBe("2025-02-01,,,,2022-23,OEA via MoSPI,");
+    expect(lines[2].startsWith("2025-03-01,102,,")).toBe(true);
+  });
+  it("adds the official column only when the source has one", () => {
+    const rows = derive([{ period: "2025-01-01", index: 100, rate: 3.5, indexSource: null, rateSource: null }]);
+    const csv = windowCsv(rows, { indicator: "CPI", baseYear: "2024", source: "MoSPI", retrievedAt: "2025-01-02T00:00:00Z", rateColumn: "yoy_inflation_pct_official" });
+    expect(csv).toContain("yoy_inflation_pct_official");
+    expect(csv).toContain(",3.5,2024,MoSPI,2025-01-02T00:00:00Z");
   });
 });

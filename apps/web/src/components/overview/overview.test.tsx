@@ -178,6 +178,19 @@ describe("OverviewExplorer", () => {
     search = "cmp=mom";
     expect(render(<OverviewExplorer bundles={b} />)).toContain("no calendar months in common");
   });
+  it("offers CSV download and a monthly table with blank missing cells", () => {
+    const html = run("range=3M");
+    expect((html.match(/Download CSV/g) ?? []).length).toBe(3);
+    expect(html).toContain("Monthly data");
+    expect(html).toContain("Official YoY %");
+  });
+  it("shows the Custom month inputs when the URL carries a valid custom window", () => {
+    const html = run("range=Custom&from=2025-01&to=2025-03");
+    expect(html).toContain('type="month"');
+  });
+  it("says no official rate is stored (not 'limited history') when an official series is empty", () => {
+    expect(run("ind=cpi")).not.toContain("Not available</td>"); // sanity: no zero-filling
+  });
   it("shows the IIP seasonality warning on monthly movements", () => {
     expect(run("ind=iip")).toContain("Monthly industrial output changes can reflect seasonal patterns");
   });

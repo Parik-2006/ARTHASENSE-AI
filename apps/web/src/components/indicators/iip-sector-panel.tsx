@@ -1,25 +1,45 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Help } from "@/components/artha/help";
+import { SourceAttribution } from "@/components/artha/source-attribution";
 import { TrendChart } from "@/components/indicators/indicator-dashboard";
+import { SeriesChart } from "@/components/indicators/series-chart";
 import { Panel } from "@/components/ui/primitives";
+import { inWindow, resolveWindow, withDerived, type RangeKey } from "@/lib/analysis";
 import {
   formatIndex,
   formatPercent,
   formatPeriod,
+  lastRetrievedAt,
   latestObservation,
+  monthNumber,
   withMomChange,
 } from "@/lib/indicator";
 import type { IipSectorsResult } from "@/lib/iip-sectors";
+import { MOSPI_PUBLISHER } from "@/lib/indicators";
+import { officialItem, seriesId } from "@/lib/provenance";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+const RANGES: RangeKey[] = ["1Y", "2Y", "3Y", "All"];
 
-/** Sector totals (Mining, Manufacturing, Electricity, ...). Shows only what is stored. */
+/** Latest month in which EVERY given sector has an official growth value (so bars are comparable). */
+export function commonGrowthMonth(sectors: { observations: { period: string; rate: number | null }[] }[]): string | null {
+  if (!sectors.length) return null;
+  const sets = sectors.map((s) => new Set(s.observations.filter((o) => o.rate !== null).map((o) => o.period)));
+  const shared = [...sets[0]].filter((p) => sets.every((s) => s.has(p))).sort();
+  return shared.length ? shared[shared.length - 1] : null;
+}
+
+/** Sector totals (Mining, Manufacturing, Electricity, Water). Shows only what is stored. */
 export function IipSectorPanel({ result }: { result: IipSectorsResult }) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [compare, setCompare] = useState<string[]>([]);
+  const [range, setRange] = useState<RangeKey>("All");
   const sectors = useMemo(() => (result.ok ? result.data.sectors.filter((s) => s.observations.length > 0) : []), [result]);
   const active = sectors.find((s) => s.key === selected) ?? sectors[0];
   const rows = useMemo(() => (active ? withMomChange(active.observations) : []), [active]);
+  const month = useMemo(() => commonGrowthMonth(sectors), [sectors]);
 
   if (!result.ok) {
     return (
@@ -38,10 +58,42 @@ export function IipSectorPanel({ result }: { result: IipSectorsResult }) {
     );
   }
   const base = result.data.baseYear;
+  const retrieved = lastRetrievedAt(sectors.flatMap((s) => s.observations));
+  const sourceItems = sectors.map((s) =>
+    officialItem({
+      label: `${s.label} growth`,
+      publisher: MOSPI_PUBLISHER,
+      dataset: "Index of Industrial Production, monthly, sector totals",
+      seriesId: seriesId("iip", base, "rate", s.key),
+      coverage: `India · ${s.label}`,
+      baseYear: base,
+      period: month ? formatPeriod(month, true) : null,
+      retrievedAt: retrieved,
+      units: "% year-on-year, as published",
+    }),
+  );
+  const toggle = (k: string) => setCompare((c) => (c.includes(k) ? c.filter((x) => x !== k) : [...c, k]));
+  const compared = sectors.filter((s) => compare.includes(s.key));
+  const ranking = month
+    ? sectors
+        .map((s) => ({ s, v: s.observations.find((o) => o.period === month)?.rate ?? null }))
+        .filter((x): x is { s: (typeof sectors)[number]; v: number } => x.v !== null)
+        .sort((a, b) => b.v - a.v)
+    : [];
+  const maxAbs = Math.max(0.0001, ...ranking.map((r) => Math.abs(r.v)));
+
   return (
     <Panel
       title="Industrial breakdown"
-      footnote="Sector totals as published by MoSPI. Each sector has its own index level; levels are not additive and not comparable between sectors."
+      footnote={
+        <>
+          <p className="mb-1">
+            Sector totals as published by MoSPI. Each sector has its own index level; levels are not additive and not
+            comparable between sectors.
+          </p>
+          <SourceAttribution items={sourceItems} />
+        </>
+      }
     >
       <div role="group" aria-label="Sector" className="mb-4 flex flex-wrap gap-2">
         {sectors.map((s) => (
@@ -64,6 +116,101 @@ export function IipSectorPanel({ result }: { result: IipSectorsResult }) {
           <TrendChart rows={rows} axisLabel={`${active.label} index`} name={`${active.label} index`} />
         </>
       )}
+
+      <h3 className="mt-6 text-sm font-semibold">
+        Sector growth ranking <Help topic="sectors" />
+      </h3>
+      {month && ranking.length > 0 ? (
+        <>
+          <p className="mb-2 text-xs text-ink-muted">
+            Official year-on-year growth for {formatPeriod(month, true)}, the latest month in which every sector
+            reports a value.
+          </p>
+          <ul aria-label="Sector growth ranking" className="space-y-1.5">
+            {ranking.map(({ s, v }) => (
+              <li key={s.key} className="grid grid-cols-[minmax(7rem,12rem)_1fr_4.5rem] items-center gap-2 text-sm">
+                <span className="truncate" title={s.label}>{s.label}</span>
+                <span className="flex h-4 items-center">
+                  <span className="relative h-3 w-full rounded bg-bg">
+                    <span
+                      data-testid="rank-bar"
+                      className={`absolute top-0 h-3 rounded ${v < 0 ? "right-1/2 bg-warn" : "left-1/2 bg-accent"}`}
+                      style={{ width: `${(Math.abs(v) / maxAbs) * 50}%` }}
+                    />
+                    <span className="absolute left-1/2 top-0 h-3 w-px bg-ink-muted" />
+                  </span>
+                </span>
+                <span className="figure text-right">
+                  {v < 0 ? "▼ " : "▲ "}
+                  {formatPercent(v, true)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="text-sm text-ink-muted">
+          No month exists in which all stored sectors have an official growth value, so no ranking is shown.
+        </p>
+      )}
+
+      <h3 className="mt-6 text-sm font-semibold">Compare sectors over time</h3>
+      <p className="mb-2 text-xs text-ink-muted">
+        Official year-on-year growth, one aligned chart per selected sector (levels are not comparable).
+      </p>
+      <div className="mb-2 flex flex-wrap items-center gap-3 text-sm">
+        <fieldset className="flex flex-wrap gap-3">
+          <legend className="sr-only">Sectors to compare</legend>
+          {sectors.map((s) => (
+            <label key={s.key} className="inline-flex items-center gap-1.5">
+              <input type="checkbox" checked={compare.includes(s.key)} onChange={() => toggle(s.key)} />
+              {s.label}
+            </label>
+          ))}
+        </fieldset>
+        <div role="group" aria-label="Comparison range" className="flex gap-2">
+          {RANGES.map((r) => (
+            <button
+              key={r}
+              type="button"
+              aria-pressed={range === r}
+              onClick={() => setRange(r)}
+              className={`rounded border px-2 py-0.5 text-xs ${focusRing} ${range === r ? "border-accent bg-accent text-accent-ink" : "border-rule"}`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+      {compared.length === 0 ? (
+        <p className="text-sm text-ink-muted">Select one or more sectors to compare.</p>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {compared.map((s) => {
+            const d = withDerived(s.observations);
+            const vis = inWindow(d, resolveWindow(d, range));
+            const pts = vis.map((r) => ({
+              n: monthNumber(r.period),
+              label: formatPeriod(r.period),
+              value: r.rate,
+              tip: [`Index ${formatIndex(r.index)}`, "Official growth"],
+            }));
+            return (
+              <div key={s.key}>
+                <p className="mb-1 text-sm font-medium">{s.label} · official YoY growth</p>
+                {pts.some((p) => p.value !== null) ? (
+                  <SeriesChart points={pts} mode="bar" name={`${s.label} growth`} yLabel="YoY growth (%)" suffix="%" />
+                ) : (
+                  <p className="rounded border border-dashed border-rule px-3 py-8 text-center text-sm text-ink-muted">
+                    Official growth is not available for this range.
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="mt-5 overflow-x-auto">
         <table className="w-full min-w-[30rem] text-sm">
           <caption className="sr-only">Latest stored value for each IIP sector</caption>

@@ -18,8 +18,9 @@ const renderToStaticMarkup = (el: React.ReactElement) => renderRaw(el).replace(/
 process.env.ARTHASENSE_API_RETRY_DELAY_MS = "0"; // keep retry tests instant
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: () => {} }),
+  useRouter: () => ({ refresh: () => {}, replace: () => {} }),
   usePathname: () => "/indicators/wpi",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const months = ["01", "02", "03", "09", "12"]; // Sep -> Dec is a gap (Oct, Nov not stored)

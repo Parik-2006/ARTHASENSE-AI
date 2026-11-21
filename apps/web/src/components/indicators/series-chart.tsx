@@ -105,7 +105,7 @@ export function SeriesChart({
   const zeroY = y0 <= 0 && y1 >= 0 ? sy(0) : null;
 
   return (
-    <div ref={measure} className="w-full">
+    <div ref={measure} className="w-full min-w-0 overflow-hidden">
       <svg
         width={width}
         height={HEIGHT}

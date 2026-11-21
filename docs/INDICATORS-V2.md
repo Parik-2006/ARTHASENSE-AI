@@ -5,24 +5,32 @@
   only then cut to the visible window (12-month lookback is never lost), 3M/6M/1Y/2Y/3Y/5Y/All/Custom ranges
   anchored to each series' own latest month, common-window clipping for comparisons, trailing 3-month average
   (blank across gaps), heatmap matrix, URL state (`?range=&metric=&from=&to=`), CSV with provenance columns.
-- **Shared components** (`components/artha/*`): `SourceAttribution` (always-visible line + "View source" record),
+- **Shared components**: `SourceAttribution` (always-visible line + source record),
   `Help` (ArthaGuide `?` popover answering four questions), `Tour` (non-modal, keyboard, restartable).
-  Content lives in `lib/guide.ts`; provenance descriptors in `lib/provenance.ts`.
+  Content lives in `lib/guide.ts`; provenance in `lib/source.ts`.
 - **Charts** (`components/indicators/series-chart.tsx`, `explorer.tsx`): line/area/bar with zero line, gaps as
   real breaks, keyboard tooltip; heatmap (colour + printed number); moving-average overlay.
 - **Pages**: Indicators hub (hero, tour, summary cards, trend previews, common-window comparison, coverage,
   explore cards); detail pages (filters, metric selector, chart, heatmap, observations table with search/sort and
   filtered CSV); IIP sector panel (sector trend, multi-sector official-growth comparison, ranking for the latest
   month in which *every* sector reports).
-- **CPI history**: the detail page and hub now load MoSPI's official linked Back series (same 2024 base) next to
-  Current via `getIndicatorHistory`; the join is labelled in the UI, the table and the source record.
+- **CPI history**: MoSPI's official Back series is shown as its OWN labelled segment on the CPI page
+  (`BackSeriesPanel`), the same way Overview V2 keeps it as a separate segment. It is never joined to the Current
+  series: no line, MoM or YoY crosses the boundary (matching base-year labels alone do not prove the join is
+  statistically seamless).
+- **Unified guide / source system** (after merging Overview V2): one `HELP` + tour content file (`lib/guide.ts`),
+  one `HelpTip`/`Tour` (`components/guide`), one `SourceAttribution` + `SourceInfo` (`components/source`,
+  `lib/source.ts`). `components/artha/help.tsx` is only a topic-name shim over `HelpTip`.
+- **Year-by-year overlay** (`seasonal.tsx`) on every detail page; **publisher websites** recorded
+  (MoSPI eSankhyiki portal, OEA site; both verified reachable) and shown in Source details.
 - **Ingestion preview** `python -m pipeline.ingest.preview <cpi|wpi|iip> --start-year Y --end-year Y`:
   read-only (READ ONLY transaction, store step intercepted), refuses non-local DB hosts, prints host only.
 
 ## Local data coverage (Docker PostgreSQL only)
 | Series | Stored months | Span |
 |---|---|---|
-| CPI (Back + Current, base 2024) | 82 | Jan 2020 – Oct 2026 |
+| CPI Back (base 2024, separate segment) | 60 | Jan 2020 – Dec 2024 |
+| CPI Current (base 2024) | 22 | Jan 2025 – Oct 2026 |
 | WPI (2022-23) | 43 | Apr 2023 – Oct 2026 |
 | IIP (2022-23) | 42 | Apr 2023 – Sep 2026 |
 
@@ -36,11 +44,11 @@ CPI: 10 months (Jan–Oct 2026) and 60 Back-series months were missing locally a
   rejects the live response (`major_group` is `None`), so that history is *not* ingested; fixing the validator is
   a separate, reviewed change.
 - Publication dates and provisional/final flags are not provided by the API (shown as "Not provided").
-- No publisher dataset-page URL is recorded; the source record lists the access API and says so.
+- Publisher website URLs are recorded (portal level). Per-dataset page URLs are not, because no authoritative per-series URL was established.
 - WPI commodity groups and CPI categories are not ingested (not in the DB); no controls are shown for them.
-- The seasonal multi-year overlay chart is **not** implemented; the heatmap and moving average are.
-- Overview V2 (`parik`) was not merged: `origin/parik` has no Overview V2 commits yet (identical to the
-  `parik2` base). Shared components here are independent and drop-in for it.
+- Overview V2 (`origin/parik` dd6b3f2) is merged into this branch; see the release notes for the conflict
+  resolution. Calculation helpers still exist in two modules (`lib/overview.ts` for Overview, `lib/analysis.ts`
+  for the detail pages); they agree on range keys and URL names (`range`, `from`, `to`) but are not yet one module.
 
 ## Production import plan (needs explicit approval — nothing has been written to Supabase)
 1. Run the preview against a **copy/staging** restore of production (preview refuses non-local hosts unless

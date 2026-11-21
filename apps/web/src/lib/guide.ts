@@ -1,120 +1,222 @@
-/** ArthaGuide content: short, plain-English answers to the same four questions. */
-export interface GuideEntry {
+/** ArthaGuide content and tour state. Pure, so it can be tested and reused by other pages. */
+
+export interface HelpEntry {
   title: string;
   what: string;
   why: string;
-  read: string;
-  avoid: string;
+  how: string;
+  mistake: string;
 }
 
-export type GuideKey =
-  | "index" | "baseYear" | "mom" | "yoy" | "official" | "range" | "movingAverage"
-  | "heatmap" | "seasonal" | "sectors" | "source" | "missing" | "compare" | "indicators" | "trend"; // prettier-ignore
-
-export const GUIDE: Record<GuideKey, GuideEntry> = {
-  index: {
-    title: "Index value",
-    what: "A price or output level compared with a base period, which is set to 100.",
-    why: "It shows whether things are higher or lower than in the base period.",
-    read: "104.1 with base 2024 means 4.1% above the 2024 level.",
-    avoid: "It is a level, not a rate. Levels of different indicators are not comparable.",
+export const HELP: Record<string, HelpEntry> = {
+  cpi: {
+    title: "Consumer Price Index (CPI)",
+    what: "CPI tracks changes in the prices households pay for a fixed basket of goods and services.",
+    why: "It is the main way to follow consumer inflation.",
+    how: "Compare the index with an earlier month. A rising index means the basket costs more.",
+    mistake: "A CPI index of 104.10 is not 4.10% inflation. Inflation is the percentage change from a year earlier.",
   },
-  baseYear: {
+  wpi: {
+    title: "Wholesale Price Index (WPI)",
+    what: "WPI tracks prices of goods traded in bulk, before they reach shoppers. It covers goods, not services.",
+    why: "Wholesale prices can signal cost pressure for businesses.",
+    how: "Watch whether the index is rising or falling over several months.",
+    mistake: "WPI is not the price you pay in a shop, so it is not a substitute for CPI.",
+  },
+  iip: {
+    title: "Index of Industrial Production (IIP)",
+    what: "IIP measures the volume of output from mining, manufacturing and electricity.",
+    why: "It shows whether factories and utilities are producing more or less.",
+    how: "Prefer the official year-on-year growth, because month-to-month moves follow the seasons.",
+    mistake: "An IIP of 124.30 is not 24.30% growth. It is a level relative to a base period set at 100.",
+  },
+  "index-value": {
+    title: "Index value",
+    what: "An index shows a level relative to a base period, which is set to 100.",
+    why: "It lets us follow change over time without tracking individual prices.",
+    how: "Compare two months of the same index. Do not compare levels of different indices.",
+    mistake: "An index number is not a percentage rate.",
+  },
+  "base-year": {
     title: "Base year",
-    what: "The period an index is measured against (set to 100).",
-    why: "Each series only makes sense inside its own base year.",
-    read: "Check the base year before comparing two numbers.",
-    avoid: "Never join series with different base years into one line.",
+    what: "The period an index is measured against. Its value is set to 100 there.",
+    why: "Index levels from different base years are not on the same scale.",
+    how: "Read levels only within one base year. Charts here keep different bases apart.",
+    mistake: "Joining two base years into one line can look like a jump that never happened.",
   },
   mom: {
-    title: "Month-over-month change",
-    what: "How much the index moved since the previous month, in percent.",
-    why: "Shows short-term momentum.",
-    read: "Positive bars mean the index rose; negative bars mean it fell.",
-    avoid: "It is calculated by ArthaSense, not an official rate, and monthly swings are noisy.",
+    title: "Monthly change",
+    what: "The percentage change of the index from the previous month, calculated by ArthaSense.",
+    why: "It shows short-term movement.",
+    how: "Positive means the index rose compared with last month. Bars below zero mean it fell.",
+    mistake: "It is not an official rate, and for IIP it mostly reflects seasonal patterns.",
   },
   yoy: {
-    title: "Year-over-year change",
-    what: "Change against the same month a year earlier, in percent.",
-    why: "It removes most seasonal effects, so it is the usual way to quote inflation or growth.",
-    read: "A value of 4% means the index is 4% above its level a year ago.",
-    avoid: "It needs 12 months of history. A calculated value is not the official published rate.",
+    title: "Annual change (year over year)",
+    what: "The percentage change from the same month a year earlier.",
+    why: "Comparing the same month removes most seasonal effects.",
+    how: "Official figures are shown as published. Calculated ones are labelled as such.",
+    mistake: "A positive annual rate means a higher level than last year, not necessarily a healthier economy.",
+  },
+  "trend-chart": {
+    title: "Trend chart",
+    what: "One point per month, joined by a line. Missing months leave a gap.",
+    why: "It shows direction over time.",
+    how: "Hover or use the arrow keys to read a month. The vertical axis may not start at zero.",
+    mistake: "Do not compare the height of one indicator's line with another's. Each has its own scale.",
+  },
+  comparison: {
+    title: "Comparing indicators",
+    what: "Compares percentage changes, which are on a common footing, rather than raw index levels.",
+    why: "CPI, WPI and IIP measure different things in different units.",
+    how: "Look at direction and size of change over the same months.",
+    mistake: "Similar movement does not mean one causes the other.",
+  },
+  heatmap: {
+    title: "Monthly heatmap",
+    what: "A grid of years and months. Colour and the printed number show the size and direction of change.",
+    why: "It makes seasonal patterns and unusual months easy to spot.",
+    how: "Blue-leaning cells are negative, warm cells are positive, and hatched cells are missing.",
+    mistake: "A blank cell means no stored value, not zero.",
+  },
+  insight: {
+    title: "Insight statements",
+    what: "Short statements generated by fixed rules from stored numbers. No reasons are guessed.",
+    why: "They turn tables into plain language.",
+    how: "Use 'How was this calculated?' to see the formula and the supporting numbers.",
+    mistake: "They describe what happened, not why it happened or what comes next.",
+  },
+  forecast: {
+    title: "Model-generated forecast",
+    what: "A stored estimate of future values produced by a statistical or machine-learning model.",
+    why: "It gives a reference for what might happen if past patterns continue.",
+    how: "Read the point estimate together with its uncertainty range, the origin and the model.",
+    mistake: "A forecast is not an official statistic and not a promise.",
+  },
+  interval: {
+    title: "Prediction interval",
+    what: "A range expected to contain the true value a stated share of the time, such as 80% or 95%.",
+    why: "It shows how uncertain the forecast is.",
+    how: "A wider band means more uncertainty.",
+    mistake: "The true value can still fall outside it.",
+  },
+  metrics: {
+    title: "Evaluation metrics",
+    what: "MAE is the average size of forecast mistakes in index points. Backtesting replays a model on earlier periods.",
+    why: "It shows how a model behaved on data it had not seen.",
+    how: "Lower MAE means smaller past errors, but only compare models tested on the same data and horizon.",
+    mistake: "Good backtest results do not guarantee future accuracy.",
   },
   official: {
     title: "Official published rate",
     what: "The year-on-year figure that the statistics office itself reports.",
     why: "It is the authoritative number.",
-    read: "If a month is missing, the source did not provide it.",
-    avoid: "We never fill gaps with our own estimate under this label.",
+    how: "If a month is missing, the source did not provide it.",
+    mistake: "ArthaSense never fills gaps with its own estimate under this label.",
   },
   range: {
     title: "Date range",
-    what: "How much history to show. Presets end at the latest stored month of that series.",
+    what: "How much history to show. Presets end at the latest stored month of each series.",
     why: "Short ranges show recent moves; long ranges show the trend.",
-    read: "Use Custom to pick exact months.",
-    avoid: "A range longer than the stored history just shows what exists.",
+    how: "Use Custom to pick exact months.",
+    mistake: "A range longer than the stored history just shows what exists; it does not add data.",
   },
-  movingAverage: {
+  "moving-average": {
     title: "3-month moving average",
-    what: "The average of this month and the two before it.",
+    what: "The average of this month and the two before it, calculated by ArthaSense.",
     why: "It smooths noise so the trend is easier to see.",
-    read: "Compare the smooth line with the raw points.",
-    avoid: "It is calculated, lags the data, and is blank wherever a month is missing.",
-  },
-  heatmap: {
-    title: "Monthly heatmap",
-    what: "A grid of years by month; colour shows the chosen metric.",
-    why: "It spots strong, weak and seasonal months at a glance.",
-    read: "Stronger colour means a larger absolute value. Hover or focus a cell for the exact number.",
-    avoid: "Colours are only comparable within one metric. Grey cells are missing months.",
+    how: "Compare the dashed smooth line with the raw values.",
+    mistake: "It lags the data and is blank wherever any of the three months is missing.",
   },
   seasonal: {
-    title: "Year-on-year overlay",
-    what: "One line per year across January to December.",
+    title: "Year-by-year overlay",
+    what: "One line per year across January to December, for the same metric.",
     why: "It reveals repeating seasonal shapes.",
-    read: "Lines that rise and fall together in the same months show seasonality.",
-    avoid: "IIP is not seasonally adjusted, so some swings are seasonal, not real change.",
+    how: "Lines that rise and fall together in the same months show seasonality.",
+    mistake: "IIP is not seasonally adjusted, so some swings are seasonal rather than real changes in output.",
   },
   sectors: {
     title: "Sector comparison",
     what: "Official growth of Mining, Manufacturing, Electricity and Water for the same month.",
     why: "It shows which parts of industry drive the headline.",
-    read: "Compare the bars for one reporting month.",
-    avoid: "Sector index levels are not additive or comparable; compare growth rates.",
-  },
-  source: {
-    title: "Source details",
-    what: "Who published the data, how we got it, and when.",
-    why: "Every figure should be traceable.",
-    read: "Open View source for the series identifier and formula.",
-    avoid: "Retrieval time is when we downloaded the data, not when it was published.",
+    how: "Compare the bars for one reporting month.",
+    mistake: "Sector index levels are not additive or comparable; compare growth rates.",
   },
   missing: {
     title: "Missing data",
     what: "A month with no stored value or no published rate.",
     why: "Honest gaps are better than invented numbers.",
-    read: "Gaps appear as breaks in a line or as a dash.",
-    avoid: "A dash means not available, not zero.",
-  },
-  compare: {
-    title: "Comparing indicators",
-    what: "CPI, WPI and IIP shown on comparable percentage scales, one chart each.",
-    why: "Percent changes can sit side by side; index levels cannot.",
-    read: "Look at the direction and timing of the changes.",
-    avoid: "They measure different things, and moving together does not prove one causes the other.",
+    how: "Gaps appear as breaks in a line or as a dash.",
+    mistake: "A dash means not available, not zero.",
   },
   indicators: {
     title: "Economic indicators",
-    what: "CPI tracks consumer prices, WPI tracks wholesale prices of goods, IIP tracks industrial output.",
+    what: "CPI tracks consumer prices, WPI wholesale prices of goods, IIP industrial output.",
     why: "Together they describe prices and production in the economy.",
-    read: "Open each page for its history, source and downloadable data.",
-    avoid: "They are different measures with different base years.",
+    how: "Open each page for its history, source and downloadable data.",
+    mistake: "They are different measures with different base years.",
   },
-  trend: {
-    title: "Historical trend",
-    what: "The chosen statistic for each stored month.",
-    why: "It shows direction and turning points over time.",
-    read: "Hover or use the arrow keys to read a month.",
-    avoid: "The vertical axis does not start at zero, so small moves look larger.",
+  source: {
+    title: "Source details",
+    what: "Where a number comes from: publisher, dataset, retrieval time and method.",
+    why: "You should be able to check every figure.",
+    how: "Open 'Source details'. Anything the source does not provide is marked as such.",
+    mistake: "The retrieval time is when ArthaSense fetched the data, not the official release date.",
   },
 };
+
+// ---------- tour ----------
+
+export interface TourStep {
+  target: string; // value of data-tour
+  title: string;
+  body: string;
+}
+
+export const OVERVIEW_TOUR: TourStep[] = [
+  { target: "hero", title: "Welcome to ArthaSense AI", body: "This page shows official Indian economic data, what changed, and clearly labelled model forecasts, each with its source." },
+  { target: "cards", title: "Three indicators", body: "CPI follows consumer prices, WPI wholesale prices and IIP industrial output." },
+  { target: "card-index", title: "Reading an index value", body: "An index is a level against a base period set to 100. It is not a percentage rate." },
+  { target: "trends", title: "Historical charts", body: "Each chart plots one value per month. Hover or use the arrow keys to read a month." },
+  { target: "range", title: "Change the time range", body: "Switch between 3M, 6M, 1Y and longer windows. Charts that use the range update immediately." },
+  { target: "changes", title: "Monthly and annual change", body: "Monthly change compares with last month. Annual change compares with the same month a year ago." },
+  { target: "compare", title: "Compare safely", body: "Index levels of different indicators are not comparable, so we compare percentage changes." },
+  { target: "forecast", title: "Forecasts and uncertainty", body: "Forecasts come from stored model runs. The shaded band is the prediction interval." },
+  { target: "reliability", title: "Forecast reliability", body: "Backtests show how models did on earlier periods. Lower error is better only on the same data and horizon." },
+  { target: "coverage", title: "Verify the source", body: "Every chart has a source line and a 'Source details' panel. This table shows what data is stored." },
+];
+
+/** Indicators page tour. Targets are `data-tour` attributes on the Indicators hub. */
+export const INDICATORS_TOUR: TourStep[] = [
+  { target: "ind-intro", title: "What are economic indicators?", body: "Indicators are official statistics that track the economy over time. Here you can explore CPI, WPI and IIP." },
+  { target: "ind-cards", title: "CPI, WPI and IIP", body: "CPI measures consumer prices, WPI wholesale prices of goods, and IIP industrial output. They are different measures with different base years." },
+  { target: "ind-cards", title: "The latest-value cards", body: "Each card shows the newest stored index, its month and base year, the monthly change ArthaSense calculates, and the official annual rate when the source provides one." },
+  { target: "ind-range", title: "Choosing a date range", body: "Pick 3M to 5Y or All. Ranges end at each series' latest stored month. Custom months and metrics are on each indicator page, and your choice is kept in the page link." },
+  { target: "ind-trends", title: "Reading historical trends", body: "Hover or use the arrow keys on a chart to read each month. Breaks in a line are months with no stored data." },
+  { target: "ind-compare", title: "Comparing indicators", body: "Percentage changes can sit side by side; index levels cannot. Similar movement does not show that one causes the other." },
+  { target: "ind-coverage", title: "Checking coverage and sources", body: "This table shows what is stored. Every chart also has a source line and a 'Source details' panel with the series identifier and formula." },
+  { target: "ind-explore", title: "Going deeper", body: "Open an indicator page for the metric selector, heatmap, moving average, sector explorer, searchable table and CSV download of the months you selected." },
+];
+
+export interface TourState {
+  open: boolean;
+  step: number;
+}
+
+export type TourAction = { type: "start" } | { type: "next" } | { type: "back" } | { type: "close" } | { type: "goto"; step: number };
+
+export function tourReducer(state: TourState, action: TourAction, total: number): TourState {
+  switch (action.type) {
+    case "start":
+      return { open: true, step: 0 };
+    case "next":
+      if (!state.open) return state;
+      return state.step >= total - 1 ? { open: false, step: 0 } : { open: true, step: state.step + 1 };
+    case "back":
+      return state.open ? { open: true, step: Math.max(0, state.step - 1) } : state;
+    case "goto":
+      return { open: true, step: Math.min(Math.max(0, action.step), total - 1) };
+    case "close":
+      return { open: false, step: 0 };
+  }
+}

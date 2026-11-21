@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState, useTransition } from "react";
 import { Help } from "@/components/artha/help";
-import { SourceAttribution } from "@/components/artha/source-attribution";
+import { SourceAttribution } from "@/components/source/source-attribution";
 import { ExplorerChart, FilterBar, Heatmap, modesFor, RangeNotes, useFilterState } from "@/components/indicators/explorer";
+import { SeasonalOverlay } from "@/components/indicators/seasonal";
 import { IndicatorChart } from "@/components/indicators/indicator-chart";
 import type { ChartMode } from "@/components/indicators/series-chart";
 import { Panel } from "@/components/ui/primitives";
-import { type AnalysisRow, inWindow, type MetricKey, METRIC_KEYS, resolveWindow, toCsvV2, withDerived } from "@/lib/analysis";
-import { calculatedItem, FORMULA, officialItem, seriesId, type SourceItem } from "@/lib/provenance";
+import { type AnalysisRow, inWindow, type MetricKey, METRIC_KEYS, METRIC_LABEL, resolveWindow, toCsvV2, withDerived } from "@/lib/analysis";
+import { FORMULA, seriesIds, sourceFor } from "@/lib/source";
 import {
   distinctSnapshots,
   filterRange,
@@ -223,34 +224,22 @@ export function IndicatorDashboard({
     },
   };
 
-  const base = officialItem({
-    label: `${config.shortName} index`,
-    publisher: config.publisher,
-    dataset: config.dataset,
-    seriesId: seriesId(config.key, data.baseYear, "index"),
-    coverage: data.coverage,
-    baseYear: data.baseYear,
-    period: visible.length ? `${formatPeriod(visible[0].period)} – ${formatPeriod(visible[visible.length - 1].period)}` : null,
-    retrievedAt: retrieved,
-    limitations: [
-      ...new Set([...config.limits, ...data.limitations, ...(data.linkedHistory ? [data.linkedHistory.label] : [])]),
-    ],
-  });
-  const rateItem: SourceItem = {
-    ...base,
-    label: config.rateColumn ?? "Official rate",
-    seriesId: seriesId(config.key, data.baseYear, "rate"),
-    units: "% year-on-year, as published",
+  const src = sourceFor(config, data);
+  const span = visible.length ? `${formatPeriod(visible[0].period)} – ${formatPeriod(visible[visible.length - 1].period)}` : "no observations";
+  const attribution = (metric: MetricKey, ma: boolean) => {
+    const calc = ma || metric === "mom" || metric === "yoy";
+    const method = ma ? FORMULA.ma3 : metric === "mom" ? FORMULA.mom : metric === "yoy" ? FORMULA.yoy : undefined;
+    return (
+      <SourceAttribution
+        cls={calc ? "calculated" : "official"}
+        sources={[src]}
+        period={span}
+        units={metric === "index" ? `Index, base ${data.baseYear} = 100` : metric === "official" ? "% year-on-year, as published" : "% change (calculated from the index)"}
+        method={method}
+        note={calc ? "Calculated from the official index values listed above. It is not an official rate." : undefined}
+      />
+    );
   };
-  function sources(metric: MetricKey, ma: boolean): SourceItem[] {
-    const out: SourceItem[] = [];
-    if (metric === "official") out.push(rateItem);
-    else out.push(base);
-    if (metric === "mom") out.push(calculatedItem(base, "Month-over-month change", FORMULA.mom, "% change"));
-    if (metric === "yoy") out.push(calculatedItem(base, "Year-over-year change", FORMULA.yoy, "% change"));
-    if (ma) out.push(calculatedItem(base, "3-month moving average", FORMULA.ma3, "same unit as the plotted metric"));
-    return out;
-  }
 
   const sortBtn = (key: TableSort, label: string) => {
     const on = sort.key === key;
@@ -275,7 +264,7 @@ export function IndicatorDashboard({
       indexColumn: config.indexCsvColumn,
       officialColumn: config.rateCsvColumn,
       baseYear: data.baseYear,
-      seriesId: seriesId(config.key, data.baseYear, "index"),
+      seriesId: seriesIds(config.key, data.baseYear)[0],
     });
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -304,7 +293,7 @@ export function IndicatorDashboard({
         ))}
       </section>
 
-      <Panel title={config.chartTitle} footnote={<SourceAttribution items={sources(filters.metric, average)} />}>
+      <Panel title={config.chartTitle} footnote={attribution(filters.metric, average)}>
         <p className="-mt-1 mb-3 text-sm text-ink-muted">
           {data.coverage} · Base {data.baseYear} <Help topic="baseYear" />
         </p>
@@ -333,11 +322,6 @@ export function IndicatorDashboard({
         {filters.metric === "index" && (
           <p className="mt-2 text-xs text-ink-muted">The vertical axis does not start at zero. Gaps in the line are months with no stored observation.</p>
         )}
-        {data.linkedHistory && (
-          <p role="note" className="mt-3 rounded border border-rule px-2 py-1 text-xs text-ink-muted">
-            {data.linkedHistory.label}
-          </p>
-        )}
         <RangeNotes rows={rows} windowRows={visible} range={filters.range} metric={filters.metric} isIip={config.key === "iip"} />
       </Panel>
 
@@ -345,7 +329,7 @@ export function IndicatorDashboard({
 
       <Panel
         title={`Monthly heatmap · ${config.shortName}`}
-        footnote={<SourceAttribution items={sources(heatMetric, false)} />}
+        footnote={attribution(heatMetric, false)}
       >
         <div role="group" aria-label="Heatmap metric" className="mb-3 flex flex-wrap items-center gap-2 text-sm">
           {(["yoy", "mom"] as const).map((m) => (
@@ -357,6 +341,19 @@ export function IndicatorDashboard({
           <Help topic="heatmap" />
         </div>
         <Heatmap rows={visible} metric={heatMetric} />
+      </Panel>
+
+      <Panel title={`Year-by-year overlay · ${config.shortName}`} footnote={attribution(filters.metric, false)}>
+        <p className="-mt-1 mb-3 text-sm text-ink-muted">
+          Each line is one calendar year, January to December, for the metric chosen above ({METRIC_LABEL[filters.metric]}). All lines
+          come from the same series and base year ({data.baseYear}). <Help topic="seasonal" />
+        </p>
+        <SeasonalOverlay rows={visible} metric={filters.metric} name={`${config.shortName} ${METRIC_LABEL[filters.metric]}`} />
+        {config.key === "iip" && (
+          <p className="mt-2 text-xs text-warn">
+            IIP is not seasonally adjusted: repeating month-by-month patterns here are partly seasonal, not real changes in output.
+          </p>
+        )}
       </Panel>
 
       <Panel title="Observations">
@@ -447,7 +444,6 @@ export function IndicatorDashboard({
                   )}
                   <td className="py-2 text-ink-muted">
                     {config.sourceShort} · base {data.baseYear}
-                    {data.linkedHistory && r.period <= data.linkedHistory.until ? " · Back series" : ""}
                   </td>
                 </tr>
               ))}

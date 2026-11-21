@@ -25,6 +25,8 @@ export interface IndicatorConfig {
   cardOrder: ("index" | "mom" | "rate" | "period")[];
   sourceShort: string; // "MoSPI"
   publisher: string;
+  /** Publisher's own site (verified reachable); null if none is established. */
+  publisherUrl: string | null;
   dataset: string;
   empty: string;
   definitions: { term: string; text: string }[];
@@ -32,6 +34,8 @@ export interface IndicatorConfig {
   overviewBlurb: string;
 }
 
+export const MOSPI_PORTAL = "https://esankhyiki.mospi.gov.in/";
+export const OEA_PORTAL = "https://eaindustry.nic.in/";
 export const MOSPI_PUBLISHER = "Ministry of Statistics and Programme Implementation (MoSPI), Government of India";
 
 export const CPI_CONFIG: IndicatorConfig = {
@@ -55,6 +59,7 @@ export const CPI_CONFIG: IndicatorConfig = {
   indexCsvColumn: "cpi_index",
   cardOrder: ["index", "mom", "rate", "period"],
   sourceShort: "MoSPI",
+  publisherUrl: MOSPI_PORTAL,
   publisher: MOSPI_PUBLISHER,
   dataset: "Consumer Price Index, monthly",
   empty: "No CPI observations have been imported yet.",
@@ -96,6 +101,7 @@ export const WPI_CONFIG: IndicatorConfig = {
   indexCsvColumn: "wpi_index",
   cardOrder: ["index", "rate", "mom", "period"],
   sourceShort: "OEA via MoSPI",
+  publisherUrl: OEA_PORTAL,
   publisher:
     "Office of the Economic Adviser, DPIIT (Ministry of Commerce and Industry), served through the MoSPI eSankhyiki API",
   dataset: "Wholesale Price Index, monthly, all commodities",
@@ -145,6 +151,7 @@ export const IIP_CONFIG: IndicatorConfig = {
   indexCsvColumn: "iip_index",
   cardOrder: ["index", "rate", "mom", "period"],
   sourceShort: "MoSPI",
+  publisherUrl: MOSPI_PORTAL,
   publisher: MOSPI_PUBLISHER,
   dataset: "Index of Industrial Production, monthly",
   empty: "No IIP observations have been imported yet.",

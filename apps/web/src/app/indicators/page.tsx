@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { IndicatorsOverview } from "@/components/indicators/indicators-overview";
 import { PageHeader } from "@/components/ui/primitives";
-import { getIndicatorHistory } from "@/lib/api";
+import { getIndicator } from "@/lib/api";
 import { CONFIG_LIST } from "@/lib/indicators";
 
 export const metadata: Metadata = { title: "Indicators" };
 
 async function Overview() {
   const entries = await Promise.all(
-    CONFIG_LIST.map(async (config) => ({ config, result: await getIndicatorHistory(config) })),
+    CONFIG_LIST.map(async (config) => ({ config, result: await getIndicator(config.key, config.apiQuery) })),
   );
   return <IndicatorsOverview entries={entries} />;
 }

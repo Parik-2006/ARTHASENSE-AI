@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getIndicatorHistory } from "@/lib/api";
+import { getIndicator } from "@/lib/api";
 import {
   formatIndex,
   formatPeriod,
@@ -89,5 +89,5 @@ export function IndicatorSummaryView({ config, result }: { config: IndicatorConf
 }
 
 export async function IndicatorSummary({ config }: { config: IndicatorConfig }) {
-  return <IndicatorSummaryView config={config} result={await getIndicatorHistory(config)} />;
+  return <IndicatorSummaryView config={config} result={await getIndicator(config.key, config.apiQuery)} />;
 }

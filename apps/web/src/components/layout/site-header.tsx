@@ -18,7 +18,7 @@ export function SiteHeader() {
           <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-accent">AI</span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden flex-1 md:block">
+        <nav aria-label="Primary" className="hidden flex-1 lg:block">
           <ul className="flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
@@ -44,14 +44,14 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/status"
-            className="hidden rounded border border-rule px-2 py-1 text-xs text-ink-muted hover:text-ink sm:inline-block"
+            className="hidden rounded border border-rule px-2 py-1 text-xs text-ink-muted hover:text-ink xl:inline-block"
           >
             System status
           </Link>
           <ThemeToggle />
           <button
             type="button"
-            className="rounded border border-rule px-2.5 py-1 text-sm md:hidden"
+            className="rounded border border-rule px-2.5 py-1 text-sm lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
             onClick={() => setOpen((v) => !v)}
@@ -62,7 +62,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <nav id="mobile-nav" aria-label="Primary" className="border-t border-rule md:hidden">
+        <nav id="mobile-nav" aria-label="Primary" className="border-t border-rule lg:hidden">
           <ul className="mx-auto max-w-7xl px-4 py-2 sm:px-6">
             {[...NAV_ITEMS, { href: "/status", label: "System status" }].map((item) => {
               const active = isActive(pathname, item.href);

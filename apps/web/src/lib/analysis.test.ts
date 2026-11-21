@@ -142,3 +142,29 @@ describe("shared windows", () => {
     expect(latestWithMetric(rows, "yoy")).toBeNull();
   });
 });
+
+import { seasonalLines } from "@/lib/analysis";
+describe("seasonalLines", () => {
+  it("groups one series by calendar year with null for missing months", () => {
+    const lines = seasonalLines(withDerived([series[1], series[2], series[13]]), "index");
+    expect(lines.map((l) => l.year)).toEqual([2024, 2025]);
+    expect(lines[0].values[0]).toBeNull();
+    expect(lines[0].values[1]).toBe(101);
+    expect(lines[1].values[1]).toBe(113);
+    expect(lines[1].values[5]).toBeNull();
+  });
+  it("uses the chosen metric (YoY exists only where the prior year is stored)", () => {
+    const lines = seasonalLines(withDerived(series), "yoy");
+    expect(lines[0].values.every((v) => v === null)).toBe(true);
+    expect(lines[1].values[0]).toBeCloseTo(12, 10);
+  });
+});
+
+import { seedCustom } from "@/lib/analysis";
+describe("seedCustom", () => {
+  it("seeds the latest 12 stored months, or everything when fewer", () => {
+    expect(seedCustom(series)).toEqual({ start: "2025-01", end: "2025-12" });
+    expect(seedCustom(series.slice(20))).toEqual({ start: "2025-09", end: "2025-12" });
+    expect(seedCustom([])).toBeNull();
+  });
+});

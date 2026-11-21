@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Help } from "@/components/artha/help";
-import { SourceAttribution } from "@/components/artha/source-attribution";
+import { SourceAttribution } from "@/components/source/source-attribution";
 import { TrendChart } from "@/components/indicators/indicator-dashboard";
 import { SeriesChart } from "@/components/indicators/series-chart";
 import { Panel } from "@/components/ui/primitives";
@@ -17,8 +17,8 @@ import {
   withMomChange,
 } from "@/lib/indicator";
 import type { IipSectorsResult } from "@/lib/iip-sectors";
-import { MOSPI_PUBLISHER } from "@/lib/indicators";
-import { officialItem, seriesId } from "@/lib/provenance";
+import { IIP_CONFIG } from "@/lib/indicators";
+import { seriesIds, sourceFor } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const RANGES: RangeKey[] = ["1Y", "2Y", "3Y", "All"];
@@ -59,19 +59,13 @@ export function IipSectorPanel({ result }: { result: IipSectorsResult }) {
   }
   const base = result.data.baseYear;
   const retrieved = lastRetrievedAt(sectors.flatMap((s) => s.observations));
-  const sourceItems = sectors.map((s) =>
-    officialItem({
-      label: `${s.label} growth`,
-      publisher: MOSPI_PUBLISHER,
-      dataset: "Index of Industrial Production, monthly, sector totals",
-      seriesId: seriesId("iip", base, "rate", s.key),
-      coverage: `India · ${s.label}`,
-      baseYear: base,
-      period: month ? formatPeriod(month, true) : null,
-      retrievedAt: retrieved,
-      units: "% year-on-year, as published",
-    }),
-  );
+  const sectorSource = {
+    ...sourceFor(IIP_CONFIG, null),
+    baseYear: base,
+    retrievedAt: retrieved,
+    coverage: `India · ${sectors.map((s) => s.label).join(", ")} (sector totals)`,
+    seriesIds: sectors.flatMap((s) => seriesIds("iip", base, s.key)),
+  };
   const toggle = (k: string) => setCompare((c) => (c.includes(k) ? c.filter((x) => x !== k) : [...c, k]));
   const compared = sectors.filter((s) => compare.includes(s.key));
   const ranking = month
@@ -91,7 +85,12 @@ export function IipSectorPanel({ result }: { result: IipSectorsResult }) {
             Sector totals as published by MoSPI. Each sector has its own index level; levels are not additive and not
             comparable between sectors.
           </p>
-          <SourceAttribution items={sourceItems} />
+          <SourceAttribution
+            cls="official"
+            sources={[sectorSource]}
+            period={month ? `${formatPeriod(month, true)} (common month) and history` : "history"}
+            units="Index and % year-on-year, as published"
+          />
         </>
       }
     >
@@ -185,7 +184,7 @@ export function IipSectorPanel({ result }: { result: IipSectorsResult }) {
       {compared.length === 0 ? (
         <p className="text-sm text-ink-muted">Select one or more sectors to compare.</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
           {compared.map((s) => {
             const d = withDerived(s.observations);
             const vis = inWindow(d, resolveWindow(d, range));

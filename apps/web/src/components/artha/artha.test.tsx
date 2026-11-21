@@ -2,84 +2,100 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Help } from "@/components/artha/help";
-import { SourceAttribution } from "@/components/artha/source-attribution";
-import { INDICATOR_TOUR, Tour } from "@/components/artha/tour";
+import { Tour, TourButton } from "@/components/guide/tour";
 import { SeriesChart } from "@/components/indicators/series-chart";
-import { calculatedItem, FORMULA, officialItem } from "@/lib/provenance";
+import { SourceAttribution } from "@/components/source/source-attribution";
+import { HELP, INDICATORS_TOUR, OVERVIEW_TOUR } from "@/lib/guide";
+import { IIP_CONFIG } from "@/lib/indicators";
+import { FORMULA, sourceFor } from "@/lib/source";
 
 afterEach(cleanup);
 
-// jsdom has no ResizeObserver
+// jsdom has no ResizeObserver / scrollIntoView
 vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} unobserve() {} });
+Element.prototype.scrollIntoView = () => {};
+window.matchMedia = window.matchMedia || ((() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as never);
 
-describe("Tour", () => {
-  const steps = INDICATOR_TOUR.slice(0, 3);
-  it("opens, moves with Next/Back, shows progress, and restarts after closing", () => {
-    render(<Tour steps={steps} />);
+describe("shared Tour (Overview + Indicators use the same component)", () => {
+  const steps = INDICATORS_TOUR.slice(0, 3);
+  const start = () => {
+    render(<><TourButton>Take a Tour</TourButton><Tour steps={steps} /></>);
+    fireEvent.click(screen.getByText("Take a Tour"));
+  };
+  it("starts from a button, moves with Next/Back, and shows progress", () => {
+    render(<><TourButton>Take a Tour</TourButton><Tour steps={steps} /></>);
     expect(screen.queryByRole("dialog")).toBeNull();
-    fireEvent.click(screen.getByText("Take a tour"));
-    expect(screen.getByText("Step 1 of 3")).toBeTruthy();
+    fireEvent.click(screen.getByText("Take a Tour"));
+    expect(screen.getByText(/Step 1 of 3/)).toBeTruthy();
     expect((screen.getByText("Back") as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByText("Next"));
-    expect(screen.getByText("Step 2 of 3")).toBeTruthy();
-    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("2");
+    expect(screen.getByText(/Step 2 of 3/)).toBeTruthy();
     fireEvent.click(screen.getByText("Back"));
-    expect(screen.getByText("Step 1 of 3")).toBeTruthy();
+    expect(screen.getByText(/Step 1 of 3/)).toBeTruthy();
+  });
+  it("Skip and Close end it; it can be restarted; Finish on the last step", () => {
+    start();
+    fireEvent.click(screen.getByText("Skip tour"));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(screen.getByText("Take a Tour"));
+    expect(screen.getByText(/Step 1 of 3/)).toBeTruthy();
     fireEvent.click(screen.getByLabelText("Close tour"));
     expect(screen.queryByRole("dialog")).toBeNull();
-    fireEvent.click(screen.getByText("Take a tour")); // restart
-    expect(screen.getByText("Step 1 of 3")).toBeTruthy();
-  });
-  it("Skip closes; last step offers Done; arrows and Escape work", () => {
-    render(<Tour steps={steps} />);
-    fireEvent.click(screen.getByText("Take a tour"));
-    const dialog = screen.getByRole("dialog");
-    fireEvent.keyDown(dialog, { key: "ArrowRight" });
-    fireEvent.keyDown(dialog, { key: "ArrowRight" });
-    expect(screen.getByText("Step 3 of 3")).toBeTruthy();
-    expect(screen.getByText("Done")).toBeTruthy();
-    fireEvent.keyDown(dialog, { key: "ArrowLeft" });
-    expect(screen.getByText("Step 2 of 3")).toBeTruthy();
-    fireEvent.keyDown(dialog, { key: "Escape" });
-    expect(screen.queryByRole("dialog")).toBeNull();
-    fireEvent.click(screen.getByText("Take a tour"));
-    fireEvent.click(screen.getByText("Skip"));
+    fireEvent.click(screen.getByText("Take a Tour"));
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Finish"));
     expect(screen.queryByRole("dialog")).toBeNull();
   });
-  it("is non-modal so the page stays usable", () => {
-    render(<Tour steps={steps} />);
-    fireEvent.click(screen.getByText("Take a tour"));
+  it("arrow keys move and Escape closes; the card is non-modal", () => {
+    start();
     expect(screen.getByRole("dialog").getAttribute("aria-modal")).toBe("false");
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    expect(screen.getByText(/Step 2 of 3/)).toBeTruthy();
+    fireEvent.keyDown(document, { key: "ArrowLeft" });
+    expect(screen.getByText(/Step 1 of 3/)).toBeTruthy();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("page tours are independent and every step has a target", () => {
+    for (const t of [OVERVIEW_TOUR, INDICATORS_TOUR]) {
+      expect(t.length).toBeGreaterThan(5);
+      expect(t.every((x) => x.target && x.title && x.body)).toBe(true);
+    }
+    expect(INDICATORS_TOUR.map((x) => x.target)).not.toContain("hero");
   });
 });
 
-describe("Help (ArthaGuide popover)", () => {
+describe("Help (shared ArthaGuide popover)", () => {
   it("answers the four questions, toggles, and closes with Escape", () => {
     render(<Help topic="yoy" />);
-    const btn = screen.getByRole("button", { name: /Explain: Year-over-year/ });
+    const btn = screen.getByRole("button", { name: /Explain/ });
     expect(btn.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(btn);
-    for (const q of ["What is it?", "Why useful?", "How to read it", "Avoid this mistake"]) expect(screen.getByText(q)).toBeTruthy();
+    for (const q of ["What is it?", "Why it matters:", "How to read it:", "Common mistake:"]) expect(screen.getByText(q)).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByText("What is it?")).toBeNull();
   });
+  it("every Indicators topic resolves to a shared HELP entry", () => {
+    for (const id of ["index-value", "base-year", "mom", "yoy", "official", "range", "moving-average", "heatmap", "seasonal", "sectors", "source", "missing", "comparison", "indicators", "trend-chart"]) {
+      expect(HELP[id], id).toBeTruthy();
+    }
+  });
 });
 
-describe("SourceAttribution", () => {
-  const base = officialItem({
-    label: "CPI index", publisher: "MoSPI", dataset: "CPI", seriesId: "mospi.cpi.x", coverage: "All India",
-    baseYear: "2024", period: "Jan 2025 – Dec 2025", retrievedAt: "2026-01-01T00:00:00Z",
+describe("SourceAttribution (shared)", () => {
+  const src = { ...sourceFor(IIP_CONFIG, null), baseYear: "2022-23", seriesIds: ["mospi.iip.2022-23.india.general.index"] };
+  it("shows class, publisher, series id and publisher site; never invents a release date", () => {
+    render(<SourceAttribution cls="calculated" sources={[src]} period="Apr 2023 – Sep 2026" method={FORMULA.yoy} />);
+    expect(screen.getAllByText("Calculated by ArthaSense").length).toBeGreaterThan(0);
+    expect(screen.getByText("mospi.iip.2022-23.india.general.index")).toBeTruthy();
+    expect(screen.getByText("https://esankhyiki.mospi.gov.in/")).toBeTruthy();
+    expect(screen.getByText(/Release date not provided/)).toBeTruthy();
+    expect(screen.getAllByText(/YoY % = /).length).toBeGreaterThan(0);
   });
-  it("lists every contributing source with its class and never invents a publication date", () => {
-    render(<SourceAttribution items={[base, calculatedItem(base, "MoM", FORMULA.mom, "%")]} />);
-    expect(screen.getByText("Official")).toBeTruthy();
-    expect(screen.getByText("Calculated by ArthaSense")).toBeTruthy();
-    expect(screen.getAllByText("Not provided by the source").length).toBeGreaterThan(0);
-    expect(screen.getByText(/MoM % = /)).toBeTruthy();
-  });
-  it("says so explicitly when there is no metadata", () => {
-    render(<SourceAttribution items={[]} />);
-    expect(screen.getByText(/Source metadata is unavailable/)).toBeTruthy();
+  it("says so explicitly when there is no source", () => {
+    render(<SourceAttribution cls="official" sources={[]} period="n/a" />);
+    expect(screen.getAllByText(/unavailable/i).length).toBeGreaterThan(0);
   });
 });
 

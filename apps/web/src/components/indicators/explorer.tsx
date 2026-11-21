@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Help } from "@/components/artha/help";
 import { type ChartMode, type ChartPoint, SeriesChart } from "@/components/indicators/series-chart";
 import {
@@ -19,6 +19,7 @@ import {
   RANGE_KEYS,
   type RangeKey,
   resolveWindow,
+  seedCustom,
   serializeFilters,
 } from "@/lib/analysis";
 import { formatPeriod, missingMonths, monthNumber } from "@/lib/indicator";
@@ -67,7 +68,20 @@ export function FilterBar({
   modes: ChartMode[];
   lastMonth: string | null; // "YYYY-MM"
 }) {
-  const custom: CustomRange = filters.custom ?? { start: "", end: "" };
+  const fromUrl: CustomRange = filters.custom ?? { start: "", end: "" };
+  // Local draft so two quick edits (start, then end) never overwrite each other while the URL catches up.
+  const [draft, setDraft] = useState<CustomRange>(fromUrl);
+  const [seen, setSeen] = useState(JSON.stringify(fromUrl));
+  if (JSON.stringify(fromUrl) !== seen) {
+    setSeen(JSON.stringify(fromUrl)); // URL changed (Back/Forward, link): follow it
+    setDraft(fromUrl);
+  }
+  const custom = draft;
+  const edit = (patch: Partial<CustomRange>) => {
+    const next = { ...draft, ...patch };
+    setDraft(next);
+    onChange({ custom: next });
+  };
   const check = filters.range === "Custom" ? checkCustomRange(filters.custom, rows) : null;
   return (
     <div className="mb-4 space-y-3">
@@ -77,7 +91,7 @@ export function FilterBar({
             key={k}
             type="button"
             aria-pressed={filters.range === k}
-            onClick={() => onChange({ range: k, custom: k === "Custom" ? (filters.custom ?? null) : null })}
+            onClick={() => onChange({ range: k, custom: k === "Custom" ? (filters.custom ?? seedCustom(rows)) : null })}
             className={chip(filters.range === k)}
           >
             {k === "All" ? "All available" : k}
@@ -93,7 +107,7 @@ export function FilterBar({
               type="month"
               value={custom.start}
               max={lastMonth ?? undefined}
-              onChange={(e) => onChange({ custom: { ...custom, start: e.target.value } })}
+              onChange={(e) => edit({ start: e.target.value })}
               className={`rounded border border-rule bg-surface px-2 py-1 ${focusRing}`}
             />
           </label>
@@ -103,7 +117,7 @@ export function FilterBar({
               type="month"
               value={custom.end}
               max={lastMonth ?? undefined}
-              onChange={(e) => onChange({ custom: { ...custom, end: e.target.value } })}
+              onChange={(e) => edit({ end: e.target.value })}
               className={`rounded border border-rule bg-surface px-2 py-1 ${focusRing}`}
             />
           </label>

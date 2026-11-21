@@ -257,3 +257,32 @@ export function latestWithMetric(rows: AnalysisRow[], m: MetricKey): AnalysisRow
   for (const r of rows) if (metricValue(r, m) !== null && (!best || r.period > best.period)) best = r;
   return best;
 }
+
+// ---------- seasonal overlay ----------
+
+export interface SeasonLine {
+  year: number;
+  values: (number | null)[]; // Jan..Dec; null = no stored value (a gap, never zero)
+}
+
+/** One line per calendar year over Jan-Dec for one metric. Rows must come from ONE series and base year. */
+export function seasonalLines(rows: AnalysisRow[], m: MetricKey): SeasonLine[] {
+  const byYear = new Map<number, (number | null)[]>();
+  for (const r of rows) {
+    const n = monthNumber(r.period);
+    const y = Math.floor(n / 12);
+    const arr = byYear.get(y) ?? Array<number | null>(12).fill(null);
+    arr[n % 12] = metricValue(r, m);
+    byYear.set(y, arr);
+  }
+  return [...byYear.entries()].sort((a, b) => a[0] - b[0]).map(([year, values]) => ({ year, values }));
+}
+
+/** Starting dates for a freshly chosen Custom range: the latest 12 stored months (or all, if fewer). */
+export function seedCustom(rows: Observation[]): CustomRange | null {
+  const ns = rows.filter((r) => r.index !== null).map((r) => monthNumber(r.period));
+  if (!ns.length) return null;
+  const [lo, hi] = [Math.min(...ns), Math.max(...ns)];
+  const ym = (n: number) => periodOf(n).slice(0, 7);
+  return { start: ym(Math.max(lo, hi - 11)), end: ym(hi) };
+}

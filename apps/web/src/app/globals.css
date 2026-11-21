@@ -95,3 +95,15 @@ body {
     animation: none !important;
   }
 }
+
+/* ArthaGuide: highlight for the element the tour is describing (no overlay, page stays usable). */
+[data-tour-active="true"] {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

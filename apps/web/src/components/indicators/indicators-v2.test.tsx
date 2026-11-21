@@ -99,11 +99,11 @@ describe("IIP specifics", () => {
 
 describe("source attribution on every visual", () => {
   it("chart and heatmap panels each carry a source line; calculated metrics list the formula separately", () => {
-    search = "metric=yoy";
+    search = "";
     render(<IndicatorDashboard config={CPI_CONFIG} result={cpi()} />);
     expect(screen.getAllByTestId("source-attribution").length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText("Calculated by ArthaSense").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Official").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Official data").length).toBeGreaterThan(0);
   });
 });
 
@@ -217,5 +217,13 @@ describe("IIP sector ranking and comparison", () => {
     fireEvent.click(screen.getByLabelText("Manufacturing"));
     expect(screen.getAllByText(/official YoY growth$/)).toHaveLength(2);
     expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("Custom range is reachable", () => {
+  it("clicking Custom reveals month inputs seeded with the latest 12 months", () => {
+    render(<IndicatorDashboard config={CPI_CONFIG} result={cpi()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Custom" }));
+    expect(replace.mock.calls.at(-1)![0]).toBe("/indicators/cpi?range=Custom&from=2025-10&to=2026-09");
   });
 });

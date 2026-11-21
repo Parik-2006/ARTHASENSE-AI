@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Help } from "@/components/artha/help";
-import { SourceAttribution } from "@/components/artha/source-attribution";
-import { Tour, INDICATOR_TOUR } from "@/components/artha/tour";
+import { Help, type GuideKey } from "@/components/artha/help";
+import { Tour, TourButton } from "@/components/guide/tour";
+import { SourceAttribution } from "@/components/source/source-attribution";
 import { useFilterState } from "@/components/indicators/explorer";
 import { Sparkline } from "@/components/indicators/indicator-summary";
 import { SeriesChart } from "@/components/indicators/series-chart";
@@ -21,19 +21,18 @@ import {
   serializeFilters,
   withDerived,
 } from "@/lib/analysis";
-import type { GuideKey } from "@/lib/guide";
+import { INDICATORS_TOUR } from "@/lib/guide";
 import {
   formatIndex,
   formatPercent,
   formatPeriod,
   type IndicatorResult,
-  lastRetrievedAt,
   latestObservation,
   missingMonths,
   monthNumber,
 } from "@/lib/indicator";
 import type { IndicatorConfig } from "@/lib/indicators";
-import { calculatedItem, FORMULA, officialItem, seriesId, type SourceItem } from "@/lib/provenance";
+import { FORMULA, type SourceInfo, sourceFor as buildSource } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const chip = (on: boolean) =>
@@ -56,24 +55,26 @@ function status(result: IndicatorResult): { tone: StatusTone; text: string } {
   return { tone: "ok", text: "Available" };
 }
 
-function sourceFor(entry: OverviewEntry): SourceItem[] {
+function sourceFor(entry: OverviewEntry): SourceInfo[] {
   const { config, result } = entry;
-  if (!result.ok || !latestObservation(result.data.observations)) return [];
-  const obs = result.data.observations;
-  const latest = latestObservation(obs)!;
-  return [
-    officialItem({
-      label: `${config.shortName} index`,
-      publisher: config.publisher,
-      dataset: config.dataset,
-      seriesId: seriesId(config.key, result.data.baseYear, "index"),
-      coverage: result.data.coverage,
-      baseYear: result.data.baseYear,
-      period: formatPeriod(latest.period, true),
-      retrievedAt: lastRetrievedAt(obs),
-      limitations: [...config.limits],
-    }),
-  ];
+  return result.ok && latestObservation(result.data.observations) ? [buildSource(config, result.data)] : [];
+}
+
+function Provenance({ entries, className = "", calc }: { entries: OverviewEntry[]; className?: string; calc?: "yoy" | "mom" }) {
+  const sources = entries.flatMap(sourceFor);
+  const spans = entries.flatMap((e) => (e.result.ok ? e.result.data.observations.filter((o) => o.index !== null).map((o) => o.period) : []));
+  const period = spans.length ? `${formatPeriod([...spans].sort()[0])} – ${formatPeriod([...spans].sort().pop()!)}` : "no observations";
+  return (
+    <SourceAttribution
+      className={className}
+      cls={calc ? "calculated" : "official"}
+      sources={sources}
+      period={period}
+      units={calc ? "% change (calculated from index values)" : "Index points (each on its own base year)"}
+      method={calc ? FORMULA[calc] : undefined}
+      note={calc ? "Calculated from the official index values of each publisher listed. Not an official rate." : undefined}
+    />
+  );
 }
 
 function Card({ entry, qs }: { entry: OverviewEntry; qs: string }) {
@@ -139,7 +140,7 @@ function Card({ entry, qs }: { entry: OverviewEntry; qs: string }) {
               </dd>
             </div>
           </dl>
-          <SourceAttribution className="mt-3" items={sourceFor(entry)} />
+          <Provenance className="mt-3" entries={[entry]} />
         </>
       )}
       <div className="mt-auto border-t border-rule pt-3">
@@ -173,13 +174,14 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
 
   return (
     <div className="space-y-8">
-      <section aria-label="Introduction" className="rounded-md border border-rule bg-surface p-5">
+      <Tour steps={INDICATORS_TOUR} />
+      <section aria-label="Introduction" data-tour="ind-intro" className="rounded-md border border-rule bg-surface p-5">
         <h2 className="font-serif text-3xl font-semibold tracking-tight">Explore India&apos;s Economic Indicators</h2>
         <p className="mt-2 max-w-2xl text-ink-muted">
           Understand how prices and industrial production have changed using official monthly statistics.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Tour steps={INDICATOR_TOUR} />
+          <TourButton className={`rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a Tour</TourButton>
           {entries.map((e) => (
             <Link key={e.config.key} href={`${e.config.path}${qs}`} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg ${focusRing}`}>
               Explore {e.config.shortName}
@@ -188,7 +190,7 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
         </div>
       </section>
 
-      <section aria-label="Latest values" className="grid gap-4 lg:grid-cols-3">
+      <section aria-label="Latest values" data-tour="ind-cards" className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
         {entries.map((e) => (
           <Card key={e.config.key} entry={e} qs={qs} />
         ))}
@@ -197,7 +199,7 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
         Each index has its own base year and scale, so levels must not be compared between indicators.
       </p>
 
-      <section aria-label="Date range" className="space-y-3">
+      <section aria-label="Date range" data-tour="ind-range" className="space-y-3">
         <div role="group" aria-label="Time range" className="flex flex-wrap items-center gap-2">
           {RANGE_KEYS.filter((k) => k !== "Custom").map((k) => (
             <button key={k} type="button" aria-pressed={filters.range === k} onClick={() => setFilters({ range: k, custom: null })} className={chip(filters.range === k)}>
@@ -209,11 +211,11 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
         </div>
       </section>
 
-      <section aria-label="Trend snapshot" className="space-y-3">
+      <section aria-label="Trend snapshot" data-tour="ind-trends" className="space-y-3">
         <h2 className="font-serif text-xl font-semibold">
           Trends <Help topic="trend" />
         </h2>
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
           {derived.map(({ entry, rows }) => {
             const { config, result } = entry;
             const vis = inWindow(rows, resolveWindow(rows, filters.range, null));
@@ -235,14 +237,14 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
                     {result.ok ? "Not enough stored months in this range to draw a trend." : "Data unavailable."}
                   </p>
                 )}
-                <SourceAttribution className="mt-2" items={sourceFor(entry)} />
+                <Provenance className="mt-2" entries={[entry]} />
               </div>
             );
           })}
         </div>
       </section>
 
-      <section aria-label="Compare indicators" className="rounded-md border border-rule bg-surface p-5">
+      <section aria-label="Compare indicators" data-tour="ind-compare" className="rounded-md border border-rule bg-surface p-5">
         <h2 className="font-serif text-xl font-semibold">
           Compare indicators <Help topic="compare" />
         </h2>
@@ -281,7 +283,7 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
         ) : (
           <p className="mt-2 text-sm text-warn">The selected indicators share no common months in this range.</p>
         )}
-        <div className="mt-3 grid gap-4 lg:grid-cols-3">
+        <div className="mt-3 grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
           {cmpWindow &&
             chosen.map(({ entry, rows }) => {
               const vis = inWindow(rows, cmpWindow);
@@ -302,19 +304,13 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
               );
             })}
         </div>
-        <SourceAttribution
-          className="mt-3"
-          items={chosen.flatMap(({ entry }) => {
-            const [base] = sourceFor(entry);
-            return base ? [base, calculatedItem(base, `${entry.config.shortName} ${cmpMetric === "yoy" ? "YoY" : "MoM"} change`, FORMULA[cmpMetric], "% change")] : [];
-          })}
-        />
+        <Provenance className="mt-3" entries={chosen.map((c) => c.entry)} calc={cmpMetric} />
         <p className="mt-2 text-xs text-ink-muted">
           CPI, WPI and IIP measure different things. Moving together does not show that one causes the other.
         </p>
       </section>
 
-      <section aria-label="Data coverage">
+      <section aria-label="Data coverage" data-tour="ind-coverage">
         <h2 className="mb-2 font-serif text-xl font-semibold">
           Data coverage <Help topic="missing" />
         </h2>
@@ -369,7 +365,7 @@ export function IndicatorsOverview({ entries }: { entries: OverviewEntry[] }) {
         </p>
       </section>
 
-      <section aria-label="Explore deeper" className="grid gap-4 md:grid-cols-3">
+      <section aria-label="Explore deeper" data-tour="ind-explore" className="grid gap-4 md:grid-cols-3">
         {[
           ["cpi", "Month-by-month consumer prices, heatmap, moving average and official source."],
           ["wpi", "Wholesale prices of goods, monthly and yearly change, with limits explained."],

@@ -1,23 +1,23 @@
 # Government data discovery and verification
 
-Run: 2026-11-21 14:42 UTC · source host: `api.mospi.gov.in` · requests sent: 70 · tests: 90
+Run: 2026-11-21 15:05 UTC · source host: `api.mospi.gov.in` · requests sent: 70 · tests: 96
 
 A test is **verified** only when content checks pass (documented fields, numeric values, requested year, no duplicate
 months, expected row counts, or equality with the stored database). HTTP 200 alone never counts. **empty** means the source
 answered but holds no data for that request. TLS verification is never disabled.
 
-**Result:** 81 verified · 7 empty (informative) · 2 failed · 0 skipped
+**Result:** 92 verified · 3 empty (informative) · 1 failed · 0 skipped
 
 | Category | verified | empty | failed | skipped |
 |---|---:|---:|---:|---:|
 | boundary | 10 | 0 | 0 | 0 |
 | catalogue | 14 | 0 | 0 | 0 |
-| cross-check | 6 | 0 | 0 | 0 |
+| cross-check | 12 | 0 | 0 | 0 |
 | freshness | 6 | 0 | 0 | 0 |
 | identity | 7 | 0 | 0 | 0 |
 | portal | 3 | 0 | 1 | 0 |
-| protocol | 9 | 0 | 1 | 0 |
-| retrieval | 23 | 7 | 0 | 0 |
+| protocol | 10 | 0 | 0 | 0 |
+| retrieval | 27 | 3 | 0 | 0 |
 | revision | 3 | 0 | 0 | 0 |
 
 ## All tests
@@ -52,10 +52,10 @@ answered but holds no data for that request. TLS verification is never disabled.
 | 26 | `B-WPI-2011-12-2012` | verified | WPI base 2011-12, headline, 2012: fields, numeric values, requested year, no duplicate months | 9 records, 2012-04 to 2012-12, 9 numeric |
 | 27 | `B-WPI-2011-12-2021` | verified | WPI base 2011-12, headline, 2021: fields, numeric values, requested year, no duplicate months | 12 records, 2021-01 to 2021-12, 12 numeric |
 | 28 | `B-WPI-2011-12-2026` | verified | WPI base 2011-12, headline, 2026: fields, numeric values, requested year, no duplicate months | 4 records, 2026-01 to 2026-04, 4 numeric |
-| 29 | `B-WPI-2004-05-2010` | empty (source has no data) | WPI base 2004-05, headline, 2010: fields, numeric values, requested year, no duplicate months | the source answered but returned no records |
-| 30 | `B-WPI-2004-05-2016` | empty (source has no data) | WPI base 2004-05, headline, 2016: fields, numeric values, requested year, no duplicate months | the source answered but returned no records |
-| 31 | `B-WPI-1993-94-2000` | empty (source has no data) | WPI base 1993-94, headline, 2000: fields, numeric values, requested year, no duplicate months | the source answered but returned no records |
-| 32 | `B-WPI-1993-94-2004` | empty (source has no data) | WPI base 1993-94, headline, 2004: fields, numeric values, requested year, no duplicate months | the source answered but returned no records |
+| 29 | `B-WPI-2004-05-2010` | verified | WPI base 2004-05, headline, 2010: fields, numeric values, requested year, no duplicate months | 12 records, 2010-01 to 2010-12, 12 numeric |
+| 30 | `B-WPI-2004-05-2016` | verified | WPI base 2004-05, headline, 2016: fields, numeric values, requested year, no duplicate months | 12 records, 2016-01 to 2016-12, 12 numeric |
+| 31 | `B-WPI-1993-94-2000` | verified | WPI base 1993-94, headline, 2000: fields, numeric values, requested year, no duplicate months | 12 records, 2000-01 to 2000-12, 12 numeric |
+| 32 | `B-WPI-1993-94-2004` | verified | WPI base 1993-94, headline, 2004: fields, numeric values, requested year, no duplicate months | 12 records, 2004-01 to 2004-12, 12 numeric |
 | 33 | `B-IIP-2022-23-2023` | verified | IIP base 2022-23, General, 2023: fields, numeric values, requested year, no duplicate months | 9 records, 2023-04 to 2023-12, 9 numeric |
 | 34 | `B-IIP-2022-23-2026` | verified | IIP base 2022-23, General, 2026: fields, numeric values, requested year, no duplicate months | 9 records, 2026-01 to 2026-09, 9 numeric |
 | 35 | `B-IIP-2011-12-2013` | verified | IIP base 2011-12, General, 2013: fields, numeric values, requested year, no duplicate months | 12 records, 2013-01 to 2013-12, 12 numeric |
@@ -79,7 +79,7 @@ answered but holds no data for that request. TLS verification is never disabled.
 | 53 | `C-IIP-future` | verified | IIP asked for 2028 (future year): the source must not invent data | no records returned (HTTP 200): the boundary is honest |
 | 54 | `C-CPI-future` | verified | CPI asked for 2028 (future year): the source must not invent data | no records returned (HTTP 200): the boundary is honest |
 | 55 | `D-limit-cap` | verified | page size above 200 is rejected (documented cap) | HTTP 400: None |
-| 56 | `D-cpi-limit-cap` | FAILED | the CPI 2024 endpoint caps page size at 100 (lower than WPI/IIP) | HTTP 200: Limit parameter too large. Maximum allowed is 100. |
+| 56 | `D-cpi-limit-cap` | verified | the CPI 2024 endpoint caps page size at 100 (lower than WPI/IIP) | HTTP 200: Limit parameter too large. Maximum allowed is 100. |
 | 57 | `D-pagination-consistent` | verified | WPI all-level query paginates consistently (meta_data agrees with pages) | totalRecords=3476 recordPerPage=200 totalPages=18 |
 | 58 | `D-page2-differs` | verified | page 2 returns different records from page 1 | 100 + 100 records, 0 overlap |
 | 59 | `D-cpi2012-default-page` | verified | CPI 2012 legacy returns 10 rows by default but 12 exist (pagination is required) | default page has 10 rows, totalRecords=12 |
@@ -101,21 +101,26 @@ answered but holds no data for that request. TLS verification is never disabled.
 | 75 | `F-db-4` | verified | live source equals the stored database values: WPI 2011-12 2021 | 12 months compared, 0 differ, 0 only at the source |
 | 76 | `F-db-5` | verified | live source equals the stored database values: IIP 2022-23 General 2025 | 12 months compared, 0 differ, 0 only at the source |
 | 77 | `F-db-6` | verified | live source equals the stored database values: IIP 2011-12 General 2021 | 12 months compared, 0 differ, 0 only at the source |
-| 78 | `G-stable-1` | verified | WPI 2022-23 2026: a repeated request returns byte-identical data (no intra-day drift) | digest a683ad7970e6 vs a683ad7970e6 |
-| 79 | `G-stable-2` | verified | IIP 2022-23 2026: a repeated request returns byte-identical data (no intra-day drift) | digest 3ac78d79b844 vs 3ac78d79b844 |
-| 80 | `G-stable-3` | verified | CPI 2012 2021: a repeated request returns byte-identical data (no intra-day drift) | digest a0e208ce295e vs a0e208ce295e |
-| 81 | `H-portal-esankhyiki` | verified | https://esankhyiki.mospi.gov.in/ is reachable with verified TLS and has the expected content | HTTP 200, 1198 bytes, missing terms: [] |
-| 82 | `H-portal-mospi` | verified | https://www.mospi.gov.in/ is reachable with verified TLS and has the expected content | HTTP 200, 2608 bytes, missing terms: [] |
-| 83 | `H-portal-api` | verified | https://api.mospi.gov.in/ is reachable with verified TLS and has the expected content | HTTP 200, 486 bytes, missing terms: [] |
-| 84 | `H-portal-oea` | FAILED | https://eaindustry.nic.in/ is reachable with verified TLS and has the expected content | ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000) (TLS verification failed; NOT bypassed) |
-| 85 | `I-fresh-cpi2024` | verified | CPI 2024 Current: latest month the source serves (lag from today recorded, not judged) | latest 2026-10; 1 month(s) before the current month |
-| 86 | `I-fresh-wpi2022` | verified | WPI 2022-23: latest month the source serves (lag from today recorded, not judged) | latest 2026-10; 1 month(s) before the current month |
-| 87 | `I-fresh-iip2022` | verified | IIP 2022-23 General: latest month the source serves (lag from today recorded, not judged) | latest 2026-09; 2 month(s) before the current month |
-| 88 | `I-fresh-wpi2011` | verified | WPI 2011-12 (legacy): latest month the source serves (lag from today recorded, not judged) | latest 2026-04; 7 month(s) before the current month |
-| 89 | `I-fresh-iip2011` | verified | IIP 2011-12 (legacy): latest month the source serves (lag from today recorded, not judged) | latest 2026-03; 8 month(s) before the current month |
-| 90 | `I-fresh-cpi2012` | verified | CPI 2012 (legacy): latest month the source serves (lag from today recorded, not judged) | latest 2025-12; 11 month(s) before the current month |
+| 78 | `F-db-7` | verified | live source equals the stored database values: CPI 2012 legacy index 2021 | 12 months compared, 0 differ, 0 only at the source |
+| 79 | `F-db-8` | verified | live source equals the stored database values: CPI 2012 legacy official inflation 2021 | 12 months compared, 0 differ, 0 only at the source |
+| 80 | `F-db-9` | verified | live source equals the stored database values: WPI 2004-05 archive 2010 | 12 months compared, 0 differ, 0 only at the source |
+| 81 | `F-db-10` | verified | live source equals the stored database values: WPI 1993-94 archive 2000 | 12 months compared, 0 differ, 0 only at the source |
+| 82 | `F-db-11` | verified | live source equals the stored database values: IIP 2004-05 archive General 2010 | 12 months compared, 0 differ, 0 only at the source |
+| 83 | `F-db-12` | verified | live source equals the stored database values: IIP 1993-94 archive General 2000 | 12 months compared, 0 differ, 0 only at the source |
+| 84 | `G-stable-1` | verified | WPI 2022-23 2026: a repeated request returns byte-identical data (no intra-day drift) | digest a683ad7970e6 vs a683ad7970e6 |
+| 85 | `G-stable-2` | verified | IIP 2022-23 2026: a repeated request returns byte-identical data (no intra-day drift) | digest 3ac78d79b844 vs 3ac78d79b844 |
+| 86 | `G-stable-3` | verified | CPI 2012 2021: a repeated request returns byte-identical data (no intra-day drift) | digest a0e208ce295e vs a0e208ce295e |
+| 87 | `H-portal-esankhyiki` | verified | https://esankhyiki.mospi.gov.in/ is reachable with verified TLS and has the expected content | HTTP 200, 1198 bytes, missing terms: [] |
+| 88 | `H-portal-mospi` | verified | https://www.mospi.gov.in/ is reachable with verified TLS and has the expected content | HTTP 200, 2608 bytes, missing terms: [] |
+| 89 | `H-portal-api` | verified | https://api.mospi.gov.in/ is reachable with verified TLS and has the expected content | HTTP 200, 486 bytes, missing terms: [] |
+| 90 | `H-portal-oea` | FAILED | https://eaindustry.nic.in/ is reachable with verified TLS and has the expected content | ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000) (TLS verification failed; NOT bypassed) |
+| 91 | `I-fresh-cpi2024` | verified | CPI 2024 Current: latest month the source serves (lag from today recorded, not judged) | latest 2026-10; 1 month(s) before the current month |
+| 92 | `I-fresh-wpi2022` | verified | WPI 2022-23: latest month the source serves (lag from today recorded, not judged) | latest 2026-10; 1 month(s) before the current month |
+| 93 | `I-fresh-iip2022` | verified | IIP 2022-23 General: latest month the source serves (lag from today recorded, not judged) | latest 2026-09; 2 month(s) before the current month |
+| 94 | `I-fresh-wpi2011` | verified | WPI 2011-12 (legacy): latest month the source serves (lag from today recorded, not judged) | latest 2026-04; 7 month(s) before the current month |
+| 95 | `I-fresh-iip2011` | verified | IIP 2011-12 (legacy): latest month the source serves (lag from today recorded, not judged) | latest 2026-03; 8 month(s) before the current month |
+| 96 | `I-fresh-cpi2012` | verified | CPI 2012 (legacy): latest month the source serves (lag from today recorded, not judged) | latest 2025-12; 11 month(s) before the current month |
 
 ## Failures and what they mean
 
-- `D-cpi-limit-cap`: HTTP 200: Limit parameter too large. Maximum allowed is 100.
 - `H-portal-oea`: ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000) (TLS verification failed; NOT bypassed)

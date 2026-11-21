@@ -1,0 +1,948 @@
+{
+ "generated_at": "2026-11-21T15:06:13+00:00",
+ "series": [
+  {
+   "code": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "indicator": "CPI",
+   "base_year": "2012",
+   "kind": "index",
+   "first": "2013-01",
+   "last": "2025-12",
+   "months": 156,
+   "missing_months": [],
+   "age_months_of_latest": 11,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+   "indicator": "CPI",
+   "base_year": "2012",
+   "kind": "official_rate",
+   "first": "2014-01",
+   "last": "2025-12",
+   "months": 142,
+   "missing_months": [
+    "2020-04",
+    "2020-05"
+   ],
+   "age_months_of_latest": 11,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.cpi.2024.back.all_india.combined.general.index",
+   "indicator": "CPI",
+   "base_year": "2024",
+   "kind": "index",
+   "first": "2013-01",
+   "last": "2024-12",
+   "months": 144,
+   "missing_months": [],
+   "age_months_of_latest": 23,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.cpi.2024.back.all_india.combined.general.inflation_yoy",
+   "indicator": "CPI",
+   "base_year": "2024",
+   "kind": "official_rate",
+   "first": "2014-01",
+   "last": "2024-12",
+   "months": 132,
+   "missing_months": [],
+   "age_months_of_latest": 23,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.cpi.2024.current.all_india.combined.general.index",
+   "indicator": "CPI",
+   "base_year": "2024",
+   "kind": "index",
+   "first": "2025-01",
+   "last": "2026-10",
+   "months": 22,
+   "missing_months": [],
+   "age_months_of_latest": 1,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy",
+   "indicator": "CPI",
+   "base_year": "2024",
+   "kind": "official_rate",
+   "first": "2026-01",
+   "last": "2026-10",
+   "months": 10,
+   "missing_months": [],
+   "age_months_of_latest": 1,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.1993-94.india.general.index",
+   "indicator": "IIP",
+   "base_year": "1993-94",
+   "kind": "index",
+   "first": "1994-04",
+   "last": "2011-06",
+   "months": 207,
+   "missing_months": [],
+   "age_months_of_latest": 185,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": [
+     [
+      "2007-03",
+      16.46
+     ],
+     [
+      "2007-04",
+      -15.09
+     ],
+     [
+      "2011-03",
+      17.37
+     ],
+     [
+      "2011-04",
+      -16.06
+     ]
+    ]
+   }
+  },
+  {
+   "code": "mospi.iip.2004-05.india.general.index",
+   "indicator": "IIP",
+   "base_year": "2004-05",
+   "kind": "index",
+   "first": "2005-04",
+   "last": "2017-03",
+   "months": 144,
+   "missing_months": [],
+   "age_months_of_latest": 116,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.iip.2011-12.india.electricity.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "official_rate",
+   "first": "2013-04",
+   "last": "2026-03",
+   "months": 155,
+   "missing_months": [
+    "2021-04"
+   ],
+   "age_months_of_latest": 8,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2011-12.india.electricity.index",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "index",
+   "first": "2013-01",
+   "last": "2026-03",
+   "months": 159,
+   "missing_months": [],
+   "age_months_of_latest": 8,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": [
+     [
+      "2013-03",
+      16.79
+     ],
+     [
+      "2018-03",
+      15.14
+     ],
+     [
+      "2019-03",
+      16.1
+     ],
+     [
+      "2020-05",
+      19.9
+     ],
+     [
+      "2021-03",
+      16.96
+     ],
+     [
+      "2022-03",
+      18.78
+     ]
+    ]
+   }
+  },
+  {
+   "code": "mospi.iip.2011-12.india.general.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "official_rate",
+   "first": "2013-04",
+   "last": "2026-03",
+   "months": 155,
+   "missing_months": [
+    "2021-04"
+   ],
+   "age_months_of_latest": 8,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2011-12.india.general.index",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "index",
+   "first": "2013-01",
+   "last": "2026-03",
+   "months": 159,
+   "missing_months": [],
+   "age_months_of_latest": 8,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": [
+     [
+      "2020-04",
+      -53.92
+     ],
+     [
+      "2020-05",
+      67.04
+     ],
+     [
+      "2020-06",
+      19.62
+     ]
+    ]
+   }
+  },
+  {
+   "code": "mospi.iip.2011-12.india.manufacturing.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "official_rate",
+   "first": "2013-04",
+   "last": "2026-03",
+   "months": 155,
+   "missing_months": [
+    "2021-04"
+   ],
+   "age_months_of_latest": 8,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2011-12.india.manufacturing.index",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "index",
+   "first": "2013-01",
+   "last": "2026-03",
+   "months": 159,
+   "missing_months": [],
+   "age_months_of_latest": 8,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": [
+     [
+      "2020-03",
+      -16.84
+     ],
+     [
+      "2020-04",
+      -62.28
+     ],
+     [
+      "2020-05",
+      100.48
+     ],
+     [
+      "2020-06",
+      26.9
+     ]
+    ]
+   }
+  },
+  {
+   "code": "mospi.iip.2011-12.india.mining.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "official_rate",
+   "first": "2013-04",
+   "last": "2026-03",
+   "months": 155,
+   "missing_months": [
+    "2021-04"
+   ],
+   "age_months_of_latest": 8,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2011-12.india.mining.index",
+   "indicator": "IIP",
+   "base_year": "2011-12",
+   "kind": "index",
+   "first": "2013-01",
+   "last": "2026-03",
+   "months": 159,
+   "missing_months": [],
+   "age_months_of_latest": 8,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": [
+     [
+      "2013-03",
+      17.8
+     ],
+     [
+      "2013-04",
+      -16.3
+     ],
+     [
+      "2014-03",
+      16.56
+     ],
+     [
+      "2014-04",
+      -17.89
+     ],
+     [
+      "2015-03",
+      16.75
+     ],
+     [
+      "2015-04",
+      -18.86
+     ],
+     [
+      "2016-04",
+      -17.33
+     ],
+     [
+      "2016-10",
+      15.17
+     ],
+     [
+      "2017-03",
+      15.57
+     ],
+     [
+      "2017-04",
+      -22.63
+     ],
+     [
+      "2018-03",
+      19.53
+     ],
+     [
+      "2018-04",
+      -22.04
+     ],
+     [
+      "2019-03",
+      17.96
+     ],
+     [
+      "2019-04",
+      -18.76
+     ],
+     [
+      "2019-10",
+      15.16
+     ],
+     [
+      "2020-04",
+      -39.85
+     ],
+     [
+      "2021-03",
+      17.9
+     ],
+     [
+      "2021-04",
+      -22.59
+     ],
+     [
+      "2021-10",
+      15.46
+     ],
+     [
+      "2022-03",
+      17.11
+     ],
+     [
+      "2022-04",
+      -19.25
+     ],
+     [
+      "2023-03",
+      19.35
+     ],
+     [
+      "2023-04",
+      -20.49
+     ],
+     [
+      "2024-04",
+      -16.2
+     ],
+     [
+      "2024-10",
+      15.04
+     ],
+     [
+      "2025-04",
+      -17.33
+     ]
+    ]
+   }
+  },
+  {
+   "code": "mospi.iip.2022-23.india.electricity.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "official_rate",
+   "first": "2024-04",
+   "last": "2026-09",
+   "months": 30,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2022-23.india.electricity.index",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "index",
+   "first": "2023-04",
+   "last": "2026-09",
+   "months": 42,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.iip.2022-23.india.general.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "official_rate",
+   "first": "2024-04",
+   "last": "2026-09",
+   "months": 30,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2022-23.india.general.index",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "index",
+   "first": "2023-04",
+   "last": "2026-09",
+   "months": 42,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.iip.2022-23.india.manufacturing.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "official_rate",
+   "first": "2024-04",
+   "last": "2026-09",
+   "months": 30,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2022-23.india.manufacturing.index",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "index",
+   "first": "2023-04",
+   "last": "2026-09",
+   "months": 42,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.iip.2022-23.india.mining.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "official_rate",
+   "first": "2024-04",
+   "last": "2026-09",
+   "months": 30,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2022-23.india.mining.index",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "index",
+   "first": "2023-04",
+   "last": "2026-09",
+   "months": 42,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": [
+     [
+      "2023-07",
+      -17.12
+     ],
+     [
+      "2023-10",
+      22.41
+     ],
+     [
+      "2024-04",
+      -16.97
+     ],
+     [
+      "2024-07",
+      -17.69
+     ],
+     [
+      "2024-10",
+      23.65
+     ],
+     [
+      "2026-04",
+      -15.39
+     ]
+    ]
+   }
+  },
+  {
+   "code": "mospi.iip.2022-23.india.water.growth_yoy",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "official_rate",
+   "first": "2024-04",
+   "last": "2026-09",
+   "months": 30,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0
+  },
+  {
+   "code": "mospi.iip.2022-23.india.water.index",
+   "indicator": "IIP",
+   "base_year": "2022-23",
+   "kind": "index",
+   "first": "2023-04",
+   "last": "2026-09",
+   "months": 42,
+   "missing_months": [],
+   "age_months_of_latest": 2,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 15.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.wpi.1993-94.india.all_commodities.index",
+   "indicator": "WPI",
+   "base_year": "1993-94",
+   "kind": "index",
+   "first": "1994-04",
+   "last": "2010-08",
+   "months": 197,
+   "missing_months": [],
+   "age_months_of_latest": 195,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.wpi.2004-05.india.all_commodities.index",
+   "indicator": "WPI",
+   "base_year": "2004-05",
+   "kind": "index",
+   "first": "2005-01",
+   "last": "2017-03",
+   "months": 147,
+   "missing_months": [],
+   "age_months_of_latest": 116,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.wpi.2011-12.india.all_commodities.index",
+   "indicator": "WPI",
+   "base_year": "2011-12",
+   "kind": "index",
+   "first": "2012-04",
+   "last": "2026-04",
+   "months": 169,
+   "missing_months": [],
+   "age_months_of_latest": 7,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  },
+  {
+   "code": "mospi.wpi.2022-23.india.all_commodities.index",
+   "indicator": "WPI",
+   "base_year": "2022-23",
+   "kind": "index",
+   "first": "2023-04",
+   "last": "2026-10",
+   "months": 43,
+   "missing_months": [],
+   "age_months_of_latest": 1,
+   "revised_months": 0,
+   "non_positive_values": 0,
+   "large_moves": {
+    "threshold_pct": 5.0,
+    "months": []
+   }
+  }
+ ],
+ "base_transitions": [
+  {
+   "a": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "b": "mospi.cpi.2024.back.all_india.combined.general.index",
+   "overlap_months": 144,
+   "from": "2013-01",
+   "to": "2024-12",
+   "ratio_min": 1.8972,
+   "ratio_max": 1.9002,
+   "ratio_spread_pct": 0.15,
+   "constant_factor_like": true,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "b": "mospi.cpi.2024.current.all_india.combined.general.index",
+   "overlap_months": 12,
+   "from": "2025-01",
+   "to": "2025-12",
+   "ratio_min": 1.8937,
+   "ratio_max": 1.9027,
+   "ratio_spread_pct": 0.48,
+   "constant_factor_like": true,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.iip.1993-94.india.general.index",
+   "b": "mospi.iip.2004-05.india.general.index",
+   "overlap_months": 75,
+   "from": "2005-04",
+   "to": "2011-06",
+   "ratio_min": 1.8591,
+   "ratio_max": 2.1469,
+   "ratio_spread_pct": 14.13,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.iip.2004-05.india.general.index",
+   "b": "mospi.iip.2011-12.india.general.index",
+   "overlap_months": 51,
+   "from": "2013-01",
+   "to": "2017-03",
+   "ratio_min": 1.4796,
+   "ratio_max": 1.7377,
+   "ratio_spread_pct": 16.29,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.iip.2011-12.india.electricity.index",
+   "b": "mospi.iip.2022-23.india.electricity.index",
+   "overlap_months": 36,
+   "from": "2023-04",
+   "to": "2026-03",
+   "ratio_min": 1.8292,
+   "ratio_max": 1.8633,
+   "ratio_spread_pct": 1.85,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.iip.2011-12.india.general.index",
+   "b": "mospi.iip.2022-23.india.general.index",
+   "overlap_months": 36,
+   "from": "2023-04",
+   "to": "2026-03",
+   "ratio_min": 1.3193,
+   "ratio_max": 1.4014,
+   "ratio_spread_pct": 6.04,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.iip.2011-12.india.manufacturing.index",
+   "b": "mospi.iip.2022-23.india.manufacturing.index",
+   "overlap_months": 36,
+   "from": "2023-04",
+   "to": "2026-03",
+   "ratio_min": 1.2848,
+   "ratio_max": 1.3866,
+   "ratio_spread_pct": 7.62,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.iip.2011-12.india.mining.index",
+   "b": "mospi.iip.2022-23.india.mining.index",
+   "overlap_months": 36,
+   "from": "2023-04",
+   "to": "2026-03",
+   "ratio_min": 1.1301,
+   "ratio_max": 1.3661,
+   "ratio_spread_pct": 18.78,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.wpi.1993-94.india.all_commodities.index",
+   "b": "mospi.wpi.2004-05.india.all_commodities.index",
+   "overlap_months": 68,
+   "from": "2005-01",
+   "to": "2010-08",
+   "ratio_min": 1.84,
+   "ratio_max": 1.8799,
+   "ratio_spread_pct": 2.14,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.wpi.2004-05.india.all_commodities.index",
+   "b": "mospi.wpi.2011-12.india.all_commodities.index",
+   "overlap_months": 60,
+   "from": "2012-04",
+   "to": "2017-03",
+   "ratio_min": 1.5565,
+   "ratio_max": 1.6484,
+   "ratio_spread_pct": 5.75,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  },
+  {
+   "a": "mospi.wpi.2011-12.india.all_commodities.index",
+   "b": "mospi.wpi.2022-23.india.all_commodities.index",
+   "overlap_months": 37,
+   "from": "2023-04",
+   "to": "2026-04",
+   "ratio_min": 1.5148,
+   "ratio_max": 1.5427,
+   "ratio_spread_pct": 1.82,
+   "constant_factor_like": false,
+   "note": "Reported only. No ratio is ever used to link series; they stay separate."
+  }
+ ],
+ "calculation_checks": [
+  {
+   "index": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "official_rate": "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+   "months_compared": 142,
+   "max_abs_diff_pp": 0.005,
+   "mean_abs_diff_pp": 0.002,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.cpi.2024.back.all_india.combined.general.index",
+   "official_rate": "mospi.cpi.2024.back.all_india.combined.general.inflation_yoy",
+   "months_compared": 132,
+   "max_abs_diff_pp": 0.156,
+   "mean_abs_diff_pp": 0.048,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 1,
+   "examples_over_tolerance": [
+    [
+     "2014-03",
+     8.094,
+     8.25
+    ]
+   ]
+  },
+  {
+   "index": "mospi.cpi.2024.current.all_india.combined.general.index",
+   "official_rate": "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy",
+   "months_compared": 10,
+   "max_abs_diff_pp": 0.01,
+   "mean_abs_diff_pp": 0.004,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2011-12.india.electricity.index",
+   "official_rate": "mospi.iip.2011-12.india.electricity.growth_yoy",
+   "months_compared": 146,
+   "max_abs_diff_pp": 0.05,
+   "mean_abs_diff_pp": 0.025,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2011-12.india.general.index",
+   "official_rate": "mospi.iip.2011-12.india.general.growth_yoy",
+   "months_compared": 146,
+   "max_abs_diff_pp": 0.05,
+   "mean_abs_diff_pp": 0.027,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2011-12.india.manufacturing.index",
+   "official_rate": "mospi.iip.2011-12.india.manufacturing.growth_yoy",
+   "months_compared": 146,
+   "max_abs_diff_pp": 0.05,
+   "mean_abs_diff_pp": 0.025,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2011-12.india.mining.index",
+   "official_rate": "mospi.iip.2011-12.india.mining.growth_yoy",
+   "months_compared": 146,
+   "max_abs_diff_pp": 0.05,
+   "mean_abs_diff_pp": 0.024,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2022-23.india.electricity.index",
+   "official_rate": "mospi.iip.2022-23.india.electricity.growth_yoy",
+   "months_compared": 30,
+   "max_abs_diff_pp": 0.049,
+   "mean_abs_diff_pp": 0.024,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2022-23.india.general.index",
+   "official_rate": "mospi.iip.2022-23.india.general.growth_yoy",
+   "months_compared": 30,
+   "max_abs_diff_pp": 0.05,
+   "mean_abs_diff_pp": 0.024,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2022-23.india.manufacturing.index",
+   "official_rate": "mospi.iip.2022-23.india.manufacturing.growth_yoy",
+   "months_compared": 30,
+   "max_abs_diff_pp": 0.044,
+   "mean_abs_diff_pp": 0.021,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2022-23.india.mining.index",
+   "official_rate": "mospi.iip.2022-23.india.mining.growth_yoy",
+   "months_compared": 30,
+   "max_abs_diff_pp": 0.046,
+   "mean_abs_diff_pp": 0.021,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  },
+  {
+   "index": "mospi.iip.2022-23.india.water.index",
+   "official_rate": "mospi.iip.2022-23.india.water.growth_yoy",
+   "months_compared": 30,
+   "max_abs_diff_pp": 0.049,
+   "mean_abs_diff_pp": 0.022,
+   "tolerance_pp": 0.15,
+   "months_over_tolerance": 0,
+   "examples_over_tolerance": []
+  }
+ ],
+ "source_flags": [
+  {
+   "code": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "status": "source_final",
+   "months": 154
+  },
+  {
+   "code": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "status": "source_status_F*",
+   "months": 2
+  },
+  {
+   "code": "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+   "status": "source_final",
+   "months": 142
+  }
+ ],
+ "database_host": "127.0.0.1"
+}

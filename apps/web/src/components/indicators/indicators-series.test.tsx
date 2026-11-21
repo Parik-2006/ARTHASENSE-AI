@@ -150,3 +150,45 @@ describe("IndicatorWorkspace", () => {
     expect(push.mock.calls.at(-1)![0]).toContain("range=2Y");
   });
 });
+
+describe("CSV export order", () => {
+  it("is chronological (oldest first) even though the table shows newest first", async () => {
+    let blob: Blob | null = null;
+    const original = URL.createObjectURL;
+    URL.createObjectURL = (b: Blob | MediaSource) => {
+      blob = b as Blob;
+      return "blob:x";
+    };
+    try {
+      render(<IndicatorWorkspace config={WPI_CONFIG} bundles={[wpiBundles()[0]]} />);
+      fireEvent.click(screen.getByRole("button", { name: "Download CSV" }));
+    } finally {
+      URL.createObjectURL = original;
+    }
+    expect(blob).not.toBeNull();
+    const lines = (await (blob as unknown as Blob).text()).trim().split(/\r?\n/).slice(1);
+    const periods = lines.map((l) => l.split(",")[0]);
+    expect(periods).toEqual([...periods].sort());
+    expect(periods[0]).toBe("2020-01-01");
+    expect(periods.at(-1)).toBe("2022-06-01");
+  });
+});
+
+import { IndicatorsOverview } from "@/components/indicators/indicators-overview";
+describe("hub when the API is down", () => {
+  it("renders every indicator as unavailable and does not crash", () => {
+    const failed = (k: IndicatorKey) => ({ option: SERIES_OPTIONS[k][0], result: { ok: false, error: "ECONNREFUSED" } as IndicatorResult, sectors: null });
+    const { container } = render(
+      <IndicatorsOverview
+        entries={[
+          { config: CPI_CONFIG, result: { ok: false, error: "x" } },
+          { config: WPI_CONFIG, result: { ok: false, error: "x" } },
+          { config: IIP_CONFIG, result: { ok: false, error: "x" } },
+        ]}
+        allSeries={{ cpi: [failed("cpi")], wpi: [failed("wpi")], iip: [failed("iip")] }}
+      />,
+    );
+    expect(container.textContent).toContain("Unable to load CPI data");
+    expect(container.textContent).toContain("share no common months");
+  });
+});

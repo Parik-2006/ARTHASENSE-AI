@@ -225,7 +225,9 @@ def test(id: str, category: str, name: str, request: str):
 
 CPI2024 = lambda series, year: ("cpi_2024", {"base_year": 2024, "series": series, "state_code": 1, "sector_code": 3, "division_code": 0, "year": year})  # noqa: E731
 CPI_LEGACY = lambda base, year, series="Current": ("cpi_group_legacy", {"base_year": base, "series": series, "state_code": 99, "sector_code": 3, "group_code": 0, "year": year})  # noqa: E731
-WPI = lambda base, year: ("wpi", {"base_year": base, "major_group_code": "1000000000", "year": year})  # noqa: E731
+# The headline major_group_code is "1000000000" on the two newest bases and "1" on the archive bases (read from live requests).
+WPI_HEADLINE_CODE = {"2022-23": "1000000000", "2011-12": "1000000000", "2004-05": "1", "1993-94": "1"}
+WPI = lambda base, year: ("wpi", {"base_year": base, "major_group_code": WPI_HEADLINE_CODE.get(base, "1000000000"), "year": year})  # noqa: E731
 IIP_GEN = lambda base, year: ("iip", {"base_year": base, "frequency": "Monthly", "type": "General", "year": year})  # noqa: E731
 
 
@@ -378,8 +380,10 @@ def _d1(ctx: Context) -> Outcome:
 @test("D-cpi-limit-cap", "protocol", "the CPI 2024 endpoint caps page size at 100 (lower than WPI/IIP)", f"GET {ENDPOINTS['cpi_2024']} limit=200")
 def _d1b(ctx: Context) -> Outcome:
     p = ctx.api("cpi_2024", {**CPI2024("Current", 2025)[1], "limit": 200, "page": 1})
-    msg = (p.json or {}).get("error") if isinstance(p.json, dict) else p.text[:100]
-    return Outcome(VERIFIED if p.status == 400 and "100" in str(msg) else FAILED, f"HTTP {p.status}: {msg}")
+    j = p.json if isinstance(p.json, dict) else {}
+    msg = j.get("error") or j.get("msg") or p.text[:100]
+    # the API reports this as an error message in the body (observed: HTTP 200 with the text, or HTTP 400); never data
+    return Outcome(VERIFIED if "100" in str(msg) and not p.rows else FAILED, f"HTTP {p.status}: {msg}")
 
 
 @test("D-pagination-consistent", "protocol", "WPI all-level query paginates consistently (meta_data agrees with pages)", f"GET {ENDPOINTS['wpi']} base_year=2011-12 year=2026 limit=200")
@@ -515,6 +519,12 @@ XCHECK = [
     ("WPI 2011-12 2021", WPI("2011-12", 2021), "index_value", "mospi.wpi.2011-12.india.all_commodities.index", 2021),
     ("IIP 2022-23 General 2025", IIP_GEN("2022-23", 2025), "index", "mospi.iip.2022-23.india.general.index", 2025),
     ("IIP 2011-12 General 2021", IIP_GEN("2011-12", 2021), "index", "mospi.iip.2011-12.india.general.index", 2021),
+    ("CPI 2012 legacy index 2021", CPI_LEGACY("2012", 2021), "index", "mospi.cpi.2012.current.all_india.combined.general.index", 2021),
+    ("CPI 2012 legacy official inflation 2021", CPI_LEGACY("2012", 2021), "inflation", "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy", 2021),
+    ("WPI 2004-05 archive 2010", WPI("2004-05", 2010), "index_value", "mospi.wpi.2004-05.india.all_commodities.index", 2010),
+    ("WPI 1993-94 archive 2000", WPI("1993-94", 2000), "index_value", "mospi.wpi.1993-94.india.all_commodities.index", 2000),
+    ("IIP 2004-05 archive General 2010", IIP_GEN("2004-05", 2010), "index", "mospi.iip.2004-05.india.general.index", 2010),
+    ("IIP 1993-94 archive General 2000", IIP_GEN("1993-94", 2000), "index", "mospi.iip.1993-94.india.general.index", 2000),
 ]
 for _i, (_n, _req, _vk, _code, _yr) in enumerate(XCHECK):
 

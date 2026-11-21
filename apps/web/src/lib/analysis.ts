@@ -103,6 +103,7 @@ export function presetShortfall(rows: Observation[], range: RangeKey): number {
 
 /** Common calendar window: the months every series has data for (intersection of their spans). */
 export function commonWindow(series: Observation[][]): Window | null {
+  if (series.length === 0) return null; // no series, no common months (never an infinite window)
   let start = -Infinity;
   let end = Infinity;
   for (const rows of series) {

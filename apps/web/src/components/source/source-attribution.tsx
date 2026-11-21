@@ -77,8 +77,24 @@ export function SourceAttribution({
             <dl key={`${s.short}-${s.baseYear}`} className="space-y-1.5">
               <Row k="Publisher">{s.publisher}</Row>
               <Row k="Dataset">{s.dataset}</Row>
-              <Row k="Publisher website">{s.publisherUrl ?? "Not recorded"}</Row>
-              <Row k="Data access URL">{s.url ?? "Source URL unavailable"}</Row>
+              <Row k="Publisher website">
+                {s.publisherUrl ? (
+                  <a href={s.publisherUrl} target="_blank" rel="noopener noreferrer" className="break-all text-accent underline focus-visible:outline-2 focus-visible:outline-accent">
+                    {s.publisherUrl}
+                  </a>
+                ) : (
+                  "Not recorded"
+                )}
+              </Row>
+              <Row k="Data access URL">
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="break-all text-accent underline focus-visible:outline-2 focus-visible:outline-accent">
+                    {s.url}
+                  </a>
+                ) : (
+                  "Source URL unavailable"
+                )}
+              </Row>
               <Row k="Access channel">{s.channel}</Row>
               <Row k="Coverage">{s.coverage ?? "Unavailable"}</Row>
               <Row k="Base year">{s.baseYear ?? "Unavailable"}</Row>

@@ -270,7 +270,8 @@ export function IndicatorDashboard({
   const ariaSort = (key: string) => (sort.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : "none");
 
   const download = () => {
-    const csv = toCsvV2(sorted, {
+    // The export is always chronological (oldest first), whatever the table's current sort order.
+    const csv = toCsvV2(sortAnalysis(sorted, "period", "asc"), {
       source: config.sourceShort,
       indexColumn: config.indexCsvColumn,
       officialColumn: config.rateCsvColumn,

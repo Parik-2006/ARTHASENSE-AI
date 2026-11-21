@@ -183,3 +183,9 @@ describe("toCsvV2 source status", () => {
     expect(lines[3].endsWith(",source_final")).toBe(true);
   });
 });
+
+describe("commonWindow with nothing to compare", () => {
+  it("returns null for no series instead of an infinite window (hub crashed when the API was down)", () => {
+    expect(commonWindow([])).toBeNull();
+  });
+});

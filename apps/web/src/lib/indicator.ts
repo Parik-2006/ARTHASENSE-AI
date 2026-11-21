@@ -25,6 +25,8 @@ export interface IndicatorData {
   coverage: string;
   geography: string;
   sourceName: string;
+  /** Source URL exactly as the API reports it; null when absent. */
+  sourceUrl?: string | null;
   publisherNote: string | null;
   limitations: string[];
   observations: Observation[]; // chronological
@@ -95,6 +97,7 @@ export function parseIndicatorResponse(json: unknown, kind: IndicatorKey): Indic
     coverage,
     geography: json.geography,
     sourceName: json.source.name,
+    sourceUrl: typeof json.source.url === "string" ? json.source.url : null,
     publisherNote: typeof json.publisher_note === "string" ? json.publisher_note : null,
     limitations: Array.isArray(json.limitations) ? json.limitations.filter((x) => typeof x === "string") : [],
     observations,

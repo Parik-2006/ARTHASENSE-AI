@@ -6,6 +6,8 @@ export interface IndicatorConfig {
   key: IndicatorKey;
   path: string; // page route
   apiQuery: string; // appended to /api/v1/indicators/<key>
+  /** Optional second request for an official linked Back series on the same base year. */
+  backQuery?: string;
   shortName: string; // "CPI"
   navLabel: string;
   title: string;
@@ -36,6 +38,7 @@ export const CPI_CONFIG: IndicatorConfig = {
   key: "cpi",
   path: "/indicators/cpi",
   apiQuery: "?limit=240",
+  backQuery: "?limit=240&series=back",
   shortName: "CPI",
   navLabel: "CPI Intelligence",
   title: "Consumer Price Index Intelligence",

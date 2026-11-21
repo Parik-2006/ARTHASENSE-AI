@@ -2,13 +2,13 @@ import { Suspense } from "react";
 import { IndicatorDashboard, IndicatorSkeleton } from "@/components/indicators/indicator-dashboard";
 import { IipSectorPanel } from "@/components/indicators/iip-sector-panel";
 import { PageHeader } from "@/components/ui/primitives";
-import { getIipSectors, getIndicator } from "@/lib/api";
+import { getIipSectors, getIndicatorHistory } from "@/lib/api";
 import type { IndicatorConfig } from "@/lib/indicators";
 
 async function Data({ config }: { config: IndicatorConfig }) {
   // Server-side: reads stored observations via FastAPI. MoSPI is never called from here.
   const [result, sectors] = await Promise.all([
-    getIndicator(config.key, config.apiQuery),
+    getIndicatorHistory(config),
     config.key === "iip" ? getIipSectors() : Promise.resolve(null),
   ]);
   return (

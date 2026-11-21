@@ -232,7 +232,9 @@ export function IndicatorDashboard({
     baseYear: data.baseYear,
     period: visible.length ? `${formatPeriod(visible[0].period)} – ${formatPeriod(visible[visible.length - 1].period)}` : null,
     retrievedAt: retrieved,
-    limitations: [...new Set([...config.limits, ...data.limitations])],
+    limitations: [
+      ...new Set([...config.limits, ...data.limitations, ...(data.linkedHistory ? [data.linkedHistory.label] : [])]),
+    ],
   });
   const rateItem: SourceItem = {
     ...base,
@@ -330,6 +332,11 @@ export function IndicatorDashboard({
         </label>
         {filters.metric === "index" && (
           <p className="mt-2 text-xs text-ink-muted">The vertical axis does not start at zero. Gaps in the line are months with no stored observation.</p>
+        )}
+        {data.linkedHistory && (
+          <p role="note" className="mt-3 rounded border border-rule px-2 py-1 text-xs text-ink-muted">
+            {data.linkedHistory.label}
+          </p>
         )}
         <RangeNotes rows={rows} windowRows={visible} range={filters.range} metric={filters.metric} isIip={config.key === "iip"} />
       </Panel>
@@ -438,7 +445,10 @@ export function IndicatorDashboard({
                       )}
                     </td>
                   )}
-                  <td className="py-2 text-ink-muted">{config.sourceShort} · base {data.baseYear}</td>
+                  <td className="py-2 text-ink-muted">
+                    {config.sourceShort} · base {data.baseYear}
+                    {data.linkedHistory && r.period <= data.linkedHistory.until ? " · Back series" : ""}
+                  </td>
                 </tr>
               ))}
             </tbody>

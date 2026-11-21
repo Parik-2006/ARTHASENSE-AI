@@ -158,3 +158,26 @@ describe("sortRows", () => {
     expect(mom.slice(-2)).toEqual([null, null]);
   });
 });
+
+import { mergeLinkedHistory } from "@/lib/indicator";
+
+describe("mergeLinkedHistory (CPI Back + Current)", () => {
+  const mk = (periods: string[], base = "2024") => {
+    const d = parseIndicatorResponse(cpiPayload(periods.map((period, i) => ({ period, index: 100 + i, rate: null }))), "cpi")!;
+    return { ...d, baseYear: base };
+  };
+  it("prepends back months, keeps order, marks the join and lets Current win on overlap", () => {
+    const m = mergeLinkedHistory(mk(["2025-01-01", "2025-02-01"]), mk(["2024-11-01", "2024-12-01", "2025-01-01"]));
+    expect(m.observations.map((o) => o.period)).toEqual(["2024-11-01", "2024-12-01", "2025-01-01", "2025-02-01"]);
+    expect(m.observations[2].index).toBe(100); // Current's value, not Back's 102
+    expect(m.linkedHistory?.until).toBe("2024-12-01");
+  });
+  it("refuses to merge different base years", () => {
+    const cur = mk(["2025-01-01"]);
+    expect(mergeLinkedHistory(cur, mk(["2024-12-01"], "2012"))).toBe(cur);
+  });
+  it("is a no-op when the back series adds nothing", () => {
+    const cur = mk(["2025-01-01"]);
+    expect(mergeLinkedHistory(cur, mk(["2025-01-01"]))).toBe(cur);
+  });
+});

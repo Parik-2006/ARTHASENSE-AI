@@ -17,7 +17,7 @@ import {
   parseSeries,
 } from "@/lib/forecasting";
 import { type IipSectorsResult, parseIipSectors } from "@/lib/iip-sectors";
-import { type IndicatorKey, type IndicatorResult, parseIndicatorResponse } from "@/lib/indicator";
+import { type IndicatorKey, type IndicatorResult, mergeLinkedHistory, parseIndicatorResponse } from "@/lib/indicator";
 import { type HealthResult, parseApiHealth } from "@/lib/health";
 
 import {
@@ -113,6 +113,17 @@ export async function getIndicator(
   } catch (err) {
     return { ok: false, error: errText(err) };
   }
+}
+
+/** One shared loader for every page (Overview, Indicators hub, detail pages) so they always agree.
+ *  Adds the official linked Back series when the indicator has one; it is optional and never
+ *  turns a working Current series into an error. */
+export async function getIndicatorHistory(config: { key: IndicatorKey; apiQuery: string; backQuery?: string }): Promise<IndicatorResult> {
+  const [current, back] = await Promise.all([
+    getIndicator(config.key, config.apiQuery),
+    config.backQuery ? getIndicator(config.key, config.backQuery) : Promise.resolve(null),
+  ]);
+  return current.ok && back?.ok ? { ok: true, data: mergeLinkedHistory(current.data, back.data) } : current;
 }
 
 /** Sector totals of the IIP, one list per sector (a failure degrades gracefully on the page). */

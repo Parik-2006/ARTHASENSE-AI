@@ -29,6 +29,8 @@ export interface IndicatorData {
   limitations: string[];
   observations: Observation[]; // chronological
   note: string | null;
+  /** Set when earlier months come from MoSPI's official linked Back series (same base year). */
+  linkedHistory?: { until: string; label: string };
 }
 
 export type IndicatorResult = { ok: true; data: IndicatorData } | { ok: false; error: string };
@@ -267,4 +269,24 @@ export function toCsv(rows: Row[], meta: { source: string; indexColumn: string; 
       .join(","),
   );
   return [header.join(","), ...lines].join("\r\n") + "\r\n";
+}
+
+/** Prepends MoSPI's official Back series (same base year) to the Current series. The two stay
+ *  distinguishable: `linkedHistory.until` is the last Back month. Months in both: Current wins.
+ *  Refuses to merge when the base years differ (never mix bases silently). */
+export function mergeLinkedHistory(current: IndicatorData, back: IndicatorData): IndicatorData {
+  if (current.baseYear !== back.baseYear || current.kind !== back.kind) return current;
+  const have = new Set(current.observations.map((o) => o.period));
+  const earlier = back.observations.filter((o) => !have.has(o.period) && o.index !== null);
+  if (earlier.length === 0) return current;
+  const observations = [...earlier, ...current.observations].sort((a, b) => a.period.localeCompare(b.period));
+  const until = earlier[earlier.length - 1].period;
+  return {
+    ...current,
+    observations,
+    linkedHistory: {
+      until,
+      label: "Months up to " + formatPeriod(until, true) + " come from MoSPI's official linked Back series on the same base year; later months come from the Current series.",
+    },
+  };
 }

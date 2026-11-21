@@ -19,7 +19,7 @@ const render = (el: React.ReactElement) => renderRaw(el).replace(/<!-- -->/g, ""
 let search = "";
 vi.mock("next/navigation", () => ({
   usePathname: () => "/forecasting/wpi",
-  useRouter: () => ({ refresh: () => {}, replace: () => {} }),
+  useRouter: () => ({ refresh: () => {}, replace: () => {}, push: () => {} }),
   useSearchParams: () => new URLSearchParams(search),
 }));
 
@@ -171,7 +171,7 @@ describe("ExperimentsView and RunDetailView", () => {
     expect(html).toContain('href="/forecasting/experiments/1"');
     expect(html).toContain("unavailable: weights");
     expect(html).toContain("Download CSV");
-    expect(html).toContain("2 of 2 shown");
+    expect(html).toContain("2 of 2 loaded runs match");
   });
   it("empty state", () => {
     expect(render(<ExperimentsView runs={[]} total={0} />)).toContain("No forecasting experiments have been stored yet.");

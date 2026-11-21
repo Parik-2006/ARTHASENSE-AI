@@ -309,7 +309,7 @@ async function OverviewData() {
                     <Link href={`/forecasting/experiments/${r.id}`} className="underline focus-visible:outline-2 focus-visible:outline-accent">
                       {r.indicator?.toUpperCase()} · {r.model_name} · {r.horizon}-month {r.kind}
                     </Link>
-                    <span className="figure text-xs text-ink-muted">{r.n_origins ? `${r.n_origins} origins · ` : ""}{r.created_at.slice(0, 10)} · run #{r.id}</span>
+                    <span className="figure text-xs text-ink-muted">{r.n_origins ? `${r.n_origins} origin${r.n_origins === 1 ? "" : "s"} · ` : ""}{r.created_at.slice(0, 10)} · run #{r.id}</span>
                   </li>
                 ))}
               </ul>

@@ -133,9 +133,12 @@ export function ForecastExplorer({
 
   const push = (patch: Partial<ForecastFilters>) => {
     const qs = serializeForecastFilters({ ...filters, ...patch }).toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    const url = qs ? `${pathname}?${qs}` : pathname;
+    // Presets, model and horizon are navigation steps (Back undoes them); month typing only refines one.
+    if (patch.custom !== undefined && patch.range === undefined && patch.model === undefined && patch.horizon === undefined) router.replace(url, { scroll: false });
+    else router.push(url, { scroll: false });
   };
-  const reset = () => router.replace(pathname, { scroll: false });
+  const reset = () => router.push(pathname, { scroll: false });
   const hasFilters = params ? [...params.keys()].length > 0 : false;
 
   const win = resolveWindow(obs, filters.range, filters.custom);
@@ -197,7 +200,7 @@ export function ForecastExplorer({
       <div data-tour="fx-controls" className="rounded-md border border-rule bg-surface p-4">
         <FilterBar
           filters={filters}
-          onChange={(p) => push({ range: p.range ?? filters.range, custom: p.custom === undefined ? filters.custom : p.custom })}
+          onChange={(p) => push({ ...(p.range !== undefined ? { range: p.range } : {}), ...(p.custom !== undefined ? { custom: p.custom } : {}) })}
           metrics={["index"]}
           rows={derived}
           mode="line"
@@ -309,7 +312,7 @@ export function ForecastExplorer({
         </Panel>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr] [&>*]:min-w-0">
         <div data-tour="fx-table">
           <Panel title="Forecast table">
             <div className="-mt-1 mb-3 flex items-center justify-between gap-2">

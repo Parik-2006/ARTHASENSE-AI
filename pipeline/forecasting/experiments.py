@@ -186,6 +186,8 @@ def backtest_records(
         "n_failures": len(res.failures),
         "warnings": sorted({w for o in res.origins for w in o.diagnostics.get("warnings", [])})[:10],
         "non_converged_origins": sum(1 for o in res.origins if o.diagnostics.get("converged") is False),
+        # origins whose AR part was explosive (|root| < 1); recorded for transparency, scores unchanged
+        "explosive_ar_origins": sum(1 for o in res.origins if o.diagnostics.get("explosive_ar") is True),
     }
     for h in horizons:
         ev = evaluate_horizon(res, y, periods, h)

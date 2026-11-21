@@ -110,7 +110,7 @@ export function ForecastChart({
   const tipY = a ? Math.min(Math.max(a.y - 28, M.t), HEIGHT - M.b - tipH) : 0;
 
   return (
-    <div ref={measure} className="w-full">
+    <div ref={measure} className="w-full min-w-0 overflow-hidden">
       <svg
         width={width}
         height={HEIGHT}
@@ -148,8 +148,6 @@ export function ForecastChart({
           {axisLabel}
         </text>
 
-        <line x1={sx(last.n)} x2={sx(last.n)} y1={M.t} y2={HEIGHT - M.b} className="stroke-ink-muted" strokeDasharray="2 4" data-testid="origin-divider" />
-        <text x={sx(last.n) - 4} y={M.t + 10} textAnchor="end" className="fill-ink-muted text-[10px]">last official month</text>
         {b95 && <polygon points={b95} style={{ fill: "var(--band-95)" }} />}
         {b80 && <polygon points={b80} style={{ fill: "var(--band-80)" }} />}
         <line x1={sx(last.n)} x2={sx(last.n)} y1={M.t} y2={HEIGHT - M.b} className="stroke-ink-muted" strokeDasharray="2 4" />

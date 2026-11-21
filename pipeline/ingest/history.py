@@ -19,7 +19,7 @@ from datetime import UTC, datetime
 
 import psycopg
 
-from pipeline.ingest import cpi, iip, wpi
+from pipeline.ingest import cpi, cpi_legacy, iip, wpi
 from pipeline.ingest.common import FetchError, ValidationError
 from pipeline.ingest.config import database_url
 from pipeline.ingest.runner import Ingester, fetch_range, make_client
@@ -27,7 +27,7 @@ from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 from pipeline.ingest.store_common import release_exists
 from pipeline.sources.mospi import MospiClient
 
-INGESTERS: dict[str, Ingester] = {"cpi": cpi.INGESTER, "wpi": wpi.INGESTER, "iip": iip.INGESTER}
+INGESTERS: dict[str, Ingester] = {"cpi": cpi.INGESTER, "cpi2012": cpi_legacy.INGESTER, "wpi": wpi.INGESTER, "iip": iip.INGESTER}
 MAX_HISTORY_YEARS = 20
 
 

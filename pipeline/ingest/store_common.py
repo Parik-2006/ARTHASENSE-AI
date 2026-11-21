@@ -74,7 +74,8 @@ class ConflictingObservation(RuntimeError):
 
 
 def _upsert_observation(
-    conn: psycopg.Connection, series_id: int, rel_id: int, period: date, value: Decimal
+    conn: psycopg.Connection, series_id: int, rel_id: int, period: date, value: Decimal,
+    status: str = OBSERVATION_STATUS,
 ) -> str:
     """Insert one observation. An existing identical value is 'unchanged'; a different value for the
     same (series, release, period) is refused, never overwritten. Revisions arrive as a NEW release."""
@@ -83,7 +84,7 @@ def _upsert_observation(
            VALUES (%s, %s, %s, %s, %s)
            ON CONFLICT (series_id, release_id, period_date) DO NOTHING
            RETURNING id""",
-        (series_id, rel_id, period, value, OBSERVATION_STATUS),
+        (series_id, rel_id, period, value, status),
     ).fetchone()
     if row is not None:
         return "inserted"
@@ -109,9 +110,12 @@ def store_snapshot(
     retrieved_at: datetime,
     source_url: str,
     specs: dict[str, SeriesSpec],
-    observations: Iterable[tuple[str, date, Decimal | None]],
+    observations: Iterable[tuple],
 ) -> IngestStats:
-    """All-or-nothing. `observations` = (series code, period, value or None for missing)."""
+    """All-or-nothing. `observations` = (series code, period, value or None[, status]).
+
+    The optional 4th element is the SOURCE's own finality flag (for example CPI 2012 `status`); when it is
+    absent the observation is marked 'retrieved' (we cannot verify an official release date)."""
     obs = list(observations)
     with conn.transaction():
         source_id = _id(
@@ -121,7 +125,7 @@ def store_snapshot(
             (source_code, source_name, base_url),
         )
         # Only register series that actually have at least one value.
-        with_data = {code for code, _, v in obs if v is not None}
+        with_data = {o[0] for o in obs if o[2] is not None}
         series_ids = {
             code: _upsert_series(conn, source_id, specs[code]) for code in specs if code in with_data
         }
@@ -143,12 +147,14 @@ def store_snapshot(
         )
         stats = IngestStats(release_key=release_key, release_created=created is not None)
         expected = 0
-        for code, period, value in obs:
+        for item in obs:
+            code, period, value = item[0], item[1], item[2]
+            status = item[3] if len(item) > 3 and item[3] else OBSERVATION_STATUS
             if value is None:
                 stats.skipped_missing += 1
                 continue
             expected += 1
-            outcome = _upsert_observation(conn, series_ids[code], rel_id, period, value)
+            outcome = _upsert_observation(conn, series_ids[code], rel_id, period, value, status)
             setattr(stats, outcome, getattr(stats, outcome) + 1)
         stored = _id(conn, "SELECT count(*) FROM observations WHERE release_id = %s", (rel_id,))
         if stored != expected:  # integrity check; raising rolls the transaction back

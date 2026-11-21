@@ -1,0 +1,1287 @@
+{
+ "meta": {
+  "generated_at": "2026-11-21 14:42 UTC",
+  "source_host": "api.mospi.gov.in",
+  "database_host": "127.0.0.1",
+  "requests": 70
+ },
+ "summary": {
+  "total": 90,
+  "verified": 81,
+  "empty": 7,
+  "failed": 2,
+  "skipped": 0,
+  "by_category": {
+   "boundary": {
+    "verified": 10
+   },
+   "catalogue": {
+    "verified": 14
+   },
+   "cross-check": {
+    "verified": 6
+   },
+   "freshness": {
+    "verified": 6
+   },
+   "identity": {
+    "verified": 7
+   },
+   "portal": {
+    "verified": 3,
+    "failed": 1
+   },
+   "protocol": {
+    "verified": 9,
+    "failed": 1
+   },
+   "retrieval": {
+    "verified": 23,
+    "empty": 7
+   },
+   "revision": {
+    "verified": 3
+   }
+  }
+ },
+ "results": [
+  {
+   "id": "A-CPI-catalogue",
+   "category": "catalogue",
+   "name": "CPI base-year catalogue endpoint answers with the documented structure",
+   "request": "GET /api/cpi/getCpiBaseYear",
+   "status": "verified",
+   "detail": "3 base years: ['2010', '2012', '2024']",
+   "evidence": {
+    "base_years": [
+     "2010",
+     "2012",
+     "2024"
+    ],
+    "content_type": "application/json; charset=utf-8"
+   },
+   "seconds": 0.75
+  },
+  {
+   "id": "A-IIP-catalogue",
+   "category": "catalogue",
+   "name": "IIP base-year catalogue endpoint answers with the documented structure",
+   "request": "GET /api/iip/getIipBaseYear",
+   "status": "verified",
+   "detail": "4 base years: ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {
+    "base_years": [
+     "2022-23",
+     "2011-12",
+     "2004-05",
+     "1993-94"
+    ],
+    "content_type": "application/json; charset=utf-8"
+   },
+   "seconds": 0.46
+  },
+  {
+   "id": "A-WPI-catalogue",
+   "category": "catalogue",
+   "name": "WPI base-year catalogue endpoint answers with the documented structure",
+   "request": "GET /api/wpi/getWpiBaseYear",
+   "status": "verified",
+   "detail": "4 base years: ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {
+    "base_years": [
+     "2022-23",
+     "2011-12",
+     "2004-05",
+     "1993-94"
+    ],
+    "content_type": "application/json; charset=utf-8"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "A-CPI-base-2024",
+   "category": "catalogue",
+   "name": "CPI base 2024 is advertised by the source's own catalogue",
+   "request": "GET /api/cpi/getCpiBaseYear",
+   "status": "verified",
+   "detail": "2024 listed in ['2010', '2012', '2024']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-CPI-base-2012",
+   "category": "catalogue",
+   "name": "CPI base 2012 is advertised by the source's own catalogue",
+   "request": "GET /api/cpi/getCpiBaseYear",
+   "status": "verified",
+   "detail": "2012 listed in ['2010', '2012', '2024']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-CPI-base-2010",
+   "category": "catalogue",
+   "name": "CPI base 2010 is advertised by the source's own catalogue",
+   "request": "GET /api/cpi/getCpiBaseYear",
+   "status": "verified",
+   "detail": "2010 listed in ['2010', '2012', '2024']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-IIP-base-2022-23",
+   "category": "catalogue",
+   "name": "IIP base 2022-23 is advertised by the source's own catalogue",
+   "request": "GET /api/iip/getIipBaseYear",
+   "status": "verified",
+   "detail": "2022-23 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-IIP-base-2011-12",
+   "category": "catalogue",
+   "name": "IIP base 2011-12 is advertised by the source's own catalogue",
+   "request": "GET /api/iip/getIipBaseYear",
+   "status": "verified",
+   "detail": "2011-12 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-IIP-base-2004-05",
+   "category": "catalogue",
+   "name": "IIP base 2004-05 is advertised by the source's own catalogue",
+   "request": "GET /api/iip/getIipBaseYear",
+   "status": "verified",
+   "detail": "2004-05 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-IIP-base-1993-94",
+   "category": "catalogue",
+   "name": "IIP base 1993-94 is advertised by the source's own catalogue",
+   "request": "GET /api/iip/getIipBaseYear",
+   "status": "verified",
+   "detail": "1993-94 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-WPI-base-2022-23",
+   "category": "catalogue",
+   "name": "WPI base 2022-23 is advertised by the source's own catalogue",
+   "request": "GET /api/wpi/getWpiBaseYear",
+   "status": "verified",
+   "detail": "2022-23 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-WPI-base-2011-12",
+   "category": "catalogue",
+   "name": "WPI base 2011-12 is advertised by the source's own catalogue",
+   "request": "GET /api/wpi/getWpiBaseYear",
+   "status": "verified",
+   "detail": "2011-12 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-WPI-base-2004-05",
+   "category": "catalogue",
+   "name": "WPI base 2004-05 is advertised by the source's own catalogue",
+   "request": "GET /api/wpi/getWpiBaseYear",
+   "status": "verified",
+   "detail": "2004-05 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "A-WPI-base-1993-94",
+   "category": "catalogue",
+   "name": "WPI base 1993-94 is advertised by the source's own catalogue",
+   "request": "GET /api/wpi/getWpiBaseYear",
+   "status": "verified",
+   "detail": "1993-94 listed in ['2022-23', '2011-12', '2004-05', '1993-94']",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "B-CPI2024-Current-2025",
+   "category": "retrieval",
+   "name": "CPI base 2024, series Current, 2025: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Current', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2025}",
+   "status": "verified",
+   "detail": "12 records, 2025-01 to 2025-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2025-01",
+    "last": "2025-12",
+    "null_values": 0,
+    "min": 101.32,
+    "max": 104.1,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-CPI2024-Current-2026",
+   "category": "retrieval",
+   "name": "CPI base 2024, series Current, 2026: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Current', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2026}",
+   "status": "verified",
+   "detail": "10 records, 2026-01 to 2026-10, 10 numeric",
+   "evidence": {
+    "rows": 10,
+    "first": "2026-01",
+    "last": "2026-10",
+    "null_values": 0,
+    "min": 104.45,
+    "max": 110.05,
+    "pages": 1,
+    "api_total_records": 10
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2024-Back-2013",
+   "category": "retrieval",
+   "name": "CPI base 2024, series Back, 2013: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Back', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2013}",
+   "status": "verified",
+   "detail": "12 records, 2013-01 to 2013-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2013-01",
+    "last": "2013-12",
+    "null_values": 0,
+    "min": 55.1,
+    "max": 61.3,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.49
+  },
+  {
+   "id": "B-CPI2024-Back-2020",
+   "category": "retrieval",
+   "name": "CPI base 2024, series Back, 2020: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Back', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2020}",
+   "status": "verified",
+   "detail": "12 records, 2020-01 to 2020-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2020-01",
+    "last": "2020-12",
+    "null_values": 0,
+    "min": 78.3,
+    "max": 83.7,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.49
+  },
+  {
+   "id": "B-CPI2024-Back-2024",
+   "category": "retrieval",
+   "name": "CPI base 2024, series Back, 2024: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Back', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2024}",
+   "status": "verified",
+   "detail": "12 records, 2024-01 to 2024-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2024-01",
+    "last": "2024-12",
+    "null_values": 0,
+    "min": 97.7,
+    "max": 103.7,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.49
+  },
+  {
+   "id": "B-CPI2012-2013",
+   "category": "retrieval",
+   "name": "CPI base 2012 (legacy), 2013: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIIndex {'base_year': '2012', 'series': 'Current', 'state_code': 99, 'sector_code': 3, 'group_code': 0, 'year': 2013}",
+   "status": "verified",
+   "detail": "12 records, 2013-01 to 2013-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2013-01",
+    "last": "2013-12",
+    "null_values": 0,
+    "min": 104.6,
+    "max": 116.3,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2012-2017",
+   "category": "retrieval",
+   "name": "CPI base 2012 (legacy), 2017: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIIndex {'base_year': '2012', 'series': 'Current', 'state_code': 99, 'sector_code': 3, 'group_code': 0, 'year': 2017}",
+   "status": "verified",
+   "detail": "12 records, 2017-01 to 2017-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2017-01",
+    "last": "2017-12",
+    "null_values": 0,
+    "min": 130.3,
+    "max": 137.6,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2012-2021",
+   "category": "retrieval",
+   "name": "CPI base 2012 (legacy), 2021: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIIndex {'base_year': '2012', 'series': 'Current', 'state_code': 99, 'sector_code': 3, 'group_code': 0, 'year': 2021}",
+   "status": "verified",
+   "detail": "12 records, 2021-01 to 2021-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2021-01",
+    "last": "2021-12",
+    "null_values": 0,
+    "min": 156.3,
+    "max": 166.7,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2012-2025",
+   "category": "retrieval",
+   "name": "CPI base 2012 (legacy), 2025: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/cpi/getCPIIndex {'base_year': '2012', 'series': 'Current', 'state_code': 99, 'sector_code': 3, 'group_code': 0, 'year': 2025}",
+   "status": "verified",
+   "detail": "12 records, 2025-01 to 2025-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2025-01",
+    "last": "2025-12",
+    "null_values": 0,
+    "min": 192.0,
+    "max": 198.0,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.49
+  },
+  {
+   "id": "B-WPI-2022-23-2023",
+   "category": "retrieval",
+   "name": "WPI base 2022-23, headline, 2023: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2022-23', 'major_group_code': '1000000000', 'year': 2023}",
+   "status": "verified",
+   "detail": "9 records, 2023-04 to 2023-12, 9 numeric",
+   "evidence": {
+    "rows": 9,
+    "first": "2023-04",
+    "last": "2023-12",
+    "null_values": 0,
+    "min": 98.3,
+    "max": 100.1,
+    "pages": 1,
+    "api_total_records": 9
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-WPI-2022-23-2026",
+   "category": "retrieval",
+   "name": "WPI base 2022-23, headline, 2026: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2022-23', 'major_group_code': '1000000000', 'year': 2026}",
+   "status": "verified",
+   "detail": "10 records, 2026-01 to 2026-10, 10 numeric",
+   "evidence": {
+    "rows": 10,
+    "first": "2026-01",
+    "last": "2026-10",
+    "null_values": 0,
+    "min": 102.3,
+    "max": 113.3,
+    "pages": 1,
+    "api_total_records": 10
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-WPI-2011-12-2012",
+   "category": "retrieval",
+   "name": "WPI base 2011-12, headline, 2012: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2011-12', 'major_group_code': '1000000000', 'year': 2012}",
+   "status": "verified",
+   "detail": "9 records, 2012-04 to 2012-12, 9 numeric",
+   "evidence": {
+    "rows": 9,
+    "first": "2012-04",
+    "last": "2012-12",
+    "null_values": 0,
+    "min": 104.7,
+    "max": 107.6,
+    "pages": 1,
+    "api_total_records": 9
+   },
+   "seconds": 0.49
+  },
+  {
+   "id": "B-WPI-2011-12-2021",
+   "category": "retrieval",
+   "name": "WPI base 2011-12, headline, 2021: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2011-12', 'major_group_code': '1000000000', 'year': 2021}",
+   "status": "verified",
+   "detail": "12 records, 2021-01 to 2021-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2021-01",
+    "last": "2021-12",
+    "null_values": 0,
+    "min": 126.5,
+    "max": 143.7,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-WPI-2011-12-2026",
+   "category": "retrieval",
+   "name": "WPI base 2011-12, headline, 2026: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2011-12', 'major_group_code': '1000000000', 'year': 2026}",
+   "status": "verified",
+   "detail": "4 records, 2026-01 to 2026-04, 4 numeric",
+   "evidence": {
+    "rows": 4,
+    "first": "2026-01",
+    "last": "2026-04",
+    "null_values": 0,
+    "min": 157.6,
+    "max": 167.0,
+    "pages": 1,
+    "api_total_records": 4
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-WPI-2004-05-2010",
+   "category": "retrieval",
+   "name": "WPI base 2004-05, headline, 2010: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2004-05', 'major_group_code': '1000000000', 'year': 2010}",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": 0
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-WPI-2004-05-2016",
+   "category": "retrieval",
+   "name": "WPI base 2004-05, headline, 2016: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2004-05', 'major_group_code': '1000000000', 'year': 2016}",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": 0
+   },
+   "seconds": 0.49
+  },
+  {
+   "id": "B-WPI-1993-94-2000",
+   "category": "retrieval",
+   "name": "WPI base 1993-94, headline, 2000: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '1993-94', 'major_group_code': '1000000000', 'year': 2000}",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": 0
+   },
+   "seconds": 0.54
+  },
+  {
+   "id": "B-WPI-1993-94-2004",
+   "category": "retrieval",
+   "name": "WPI base 1993-94, headline, 2004: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '1993-94', 'major_group_code': '1000000000', 'year': 2004}",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": 0
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-IIP-2022-23-2023",
+   "category": "retrieval",
+   "name": "IIP base 2022-23, General, 2023: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2022-23', 'frequency': 'Monthly', 'type': 'General', 'year': 2023}",
+   "status": "verified",
+   "detail": "9 records, 2023-04 to 2023-12, 9 numeric",
+   "evidence": {
+    "rows": 9,
+    "first": "2023-04",
+    "last": "2023-12",
+    "null_values": 0,
+    "min": 100.4,
+    "max": 109.0,
+    "pages": 1,
+    "api_total_records": 9
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-IIP-2022-23-2026",
+   "category": "retrieval",
+   "name": "IIP base 2022-23, General, 2026: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2022-23', 'frequency': 'Monthly', 'type': 'General', 'year': 2026}",
+   "status": "verified",
+   "detail": "9 records, 2026-01 to 2026-09, 9 numeric",
+   "evidence": {
+    "rows": 9,
+    "first": "2026-01",
+    "last": "2026-09",
+    "null_values": 0,
+    "min": 117.9,
+    "max": 129.7,
+    "pages": 1,
+    "api_total_records": 9
+   },
+   "seconds": 0.46
+  },
+  {
+   "id": "B-IIP-2011-12-2013",
+   "category": "retrieval",
+   "name": "IIP base 2011-12, General, 2013: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2011-12', 'frequency': 'Monthly', 'type': 'General', 'year': 2013}",
+   "status": "verified",
+   "detail": "12 records, 2013-01 to 2013-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2013-01",
+    "last": "2013-12",
+    "null_values": 0,
+    "min": 101.3,
+    "max": 115.2,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.46
+  },
+  {
+   "id": "B-IIP-2011-12-2021",
+   "category": "retrieval",
+   "name": "IIP base 2011-12, General, 2021: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2011-12', 'frequency': 'Monthly', 'type': 'General', 'year': 2021}",
+   "status": "verified",
+   "detail": "12 records, 2021-01 to 2021-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2021-01",
+    "last": "2021-12",
+    "null_values": 0,
+    "min": 115.1,
+    "max": 145.6,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-IIP-2011-12-2026",
+   "category": "retrieval",
+   "name": "IIP base 2011-12, General, 2026: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2011-12', 'frequency': 'Monthly', 'type': 'General', 'year': 2026}",
+   "status": "verified",
+   "detail": "3 records, 2026-01 to 2026-03, 3 numeric",
+   "evidence": {
+    "rows": 3,
+    "first": "2026-01",
+    "last": "2026-03",
+    "null_values": 0,
+    "min": 158.8,
+    "max": 173.2,
+    "pages": 1,
+    "api_total_records": 3
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-IIP-2004-05-2010",
+   "category": "retrieval",
+   "name": "IIP base 2004-05, General, 2010: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2004-05', 'frequency': 'Monthly', 'type': 'General', 'year': 2010}",
+   "status": "verified",
+   "detail": "12 records, 2010-01 to 2010-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2010-01",
+    "last": "2010-12",
+    "null_values": 0,
+    "min": 156.1,
+    "max": 176.5,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-IIP-2004-05-2016",
+   "category": "retrieval",
+   "name": "IIP base 2004-05, General, 2016: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '2004-05', 'frequency': 'Monthly', 'type': 'General', 'year': 2016}",
+   "status": "verified",
+   "detail": "12 records, 2016-01 to 2016-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2016-01",
+    "last": "2016-12",
+    "null_values": 0,
+    "min": 175.3,
+    "max": 198.7,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "B-IIP-1993-94-2000",
+   "category": "retrieval",
+   "name": "IIP base 1993-94, General, 2000: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '1993-94', 'frequency': 'Monthly', 'type': 'General', 'year': 2000}",
+   "status": "verified",
+   "detail": "12 records, 2000-01 to 2000-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2000-01",
+    "last": "2000-12",
+    "null_values": 0,
+    "min": 154.9,
+    "max": 174.5,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.51
+  },
+  {
+   "id": "B-IIP-1993-94-2004",
+   "category": "retrieval",
+   "name": "IIP base 1993-94, General, 2004: fields, numeric values, requested year, no duplicate months",
+   "request": "GET /api/iip/getIipData {'base_year': '1993-94', 'frequency': 'Monthly', 'type': 'General', 'year': 2004}",
+   "status": "verified",
+   "detail": "12 records, 2004-01 to 2004-12, 12 numeric",
+   "evidence": {
+    "rows": 12,
+    "first": "2004-01",
+    "last": "2004-12",
+    "null_values": 0,
+    "min": 194.3,
+    "max": 226.9,
+    "pages": 1,
+    "api_total_records": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2010-2011",
+   "category": "retrieval",
+   "name": "CPI base 2010, all-India combined general, 2011",
+   "request": "GET /api/cpi/getCPIIndex base_year=2010 year=2011",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": null
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2010-2013",
+   "category": "retrieval",
+   "name": "CPI base 2010, all-India combined general, 2013",
+   "request": "GET /api/cpi/getCPIIndex base_year=2010 year=2013",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": null
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "B-CPI2010-2015",
+   "category": "retrieval",
+   "name": "CPI base 2010, all-India combined general, 2015",
+   "request": "GET /api/cpi/getCPIIndex base_year=2010 year=2015",
+   "status": "empty",
+   "detail": "the source answered but returned no records",
+   "evidence": {
+    "pages": 1,
+    "api_total_records": null
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "C-WPI-2022-23-before",
+   "category": "boundary",
+   "name": "WPI 2022-23 asked for 2022 (before its first month, Apr 2023): the source must not invent data",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2022-23', 'major_group_code': '1000000000', 'year': 2022}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "C-WPI-2011-12-before",
+   "category": "boundary",
+   "name": "WPI 2011-12 asked for 2011 (before its first month, Apr 2012): the source must not invent data",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2011-12', 'major_group_code': '1000000000', 'year': 2011}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "C-IIP-2022-23-before",
+   "category": "boundary",
+   "name": "IIP 2022-23 asked for 2022 (before Apr 2023): the source must not invent data",
+   "request": "GET /api/iip/getIipData {'base_year': '2022-23', 'frequency': 'Monthly', 'type': 'General', 'year': 2022}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "C-IIP-2011-12-before",
+   "category": "boundary",
+   "name": "IIP 2011-12 asked for 2011 (before Apr 2012): the source must not invent data",
+   "request": "GET /api/iip/getIipData {'base_year': '2011-12', 'frequency': 'Monthly', 'type': 'General', 'year': 2011}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "C-CPI2024-Current-2024",
+   "category": "boundary",
+   "name": "CPI 2024 Current asked for 2024 (starts Jan 2025): the source must not invent data",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Current', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2024}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "C-CPI2024-Back-2012",
+   "category": "boundary",
+   "name": "CPI 2024 Back asked for 2012 (starts Jan 2013): the source must not invent data",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Back', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2012}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "C-CPI2012-2012",
+   "category": "boundary",
+   "name": "CPI 2012 asked for 2012 (base year itself): the source must not invent data",
+   "request": "GET /api/cpi/getCPIIndex {'base_year': '2012', 'series': 'Current', 'state_code': 99, 'sector_code': 3, 'group_code': 0, 'year': 2012}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "C-WPI-future",
+   "category": "boundary",
+   "name": "WPI asked for 2028 (future year): the source must not invent data",
+   "request": "GET /api/wpi/getWpiRecords {'base_year': '2022-23', 'major_group_code': '1000000000', 'year': 2028}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "C-IIP-future",
+   "category": "boundary",
+   "name": "IIP asked for 2028 (future year): the source must not invent data",
+   "request": "GET /api/iip/getIipData {'base_year': '2022-23', 'frequency': 'Monthly', 'type': 'General', 'year': 2028}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "C-CPI-future",
+   "category": "boundary",
+   "name": "CPI asked for 2028 (future year): the source must not invent data",
+   "request": "GET /api/cpi/getCPIData {'base_year': 2024, 'series': 'Current', 'state_code': 1, 'sector_code': 3, 'division_code': 0, 'year': 2028}",
+   "status": "verified",
+   "detail": "no records returned (HTTP 200): the boundary is honest",
+   "evidence": {
+    "http": 200,
+    "msg": "No Data Found"
+   },
+   "seconds": 0.47
+  },
+  {
+   "id": "D-limit-cap",
+   "category": "protocol",
+   "name": "page size above 200 is rejected (documented cap)",
+   "request": "GET /api/wpi/getWpiRecords limit=201",
+   "status": "verified",
+   "detail": "HTTP 400: None",
+   "evidence": {},
+   "seconds": 0.48
+  },
+  {
+   "id": "D-cpi-limit-cap",
+   "category": "protocol",
+   "name": "the CPI 2024 endpoint caps page size at 100 (lower than WPI/IIP)",
+   "request": "GET /api/cpi/getCPIData limit=200",
+   "status": "failed",
+   "detail": "HTTP 200: Limit parameter too large. Maximum allowed is 100.",
+   "evidence": {},
+   "seconds": 0.47
+  },
+  {
+   "id": "D-pagination-consistent",
+   "category": "protocol",
+   "name": "WPI all-level query paginates consistently (meta_data agrees with pages)",
+   "request": "GET /api/wpi/getWpiRecords base_year=2011-12 year=2026 limit=200",
+   "status": "verified",
+   "detail": "totalRecords=3476 recordPerPage=200 totalPages=18",
+   "evidence": {
+    "meta": {
+     "page": 1,
+     "totalRecords": 3476,
+     "totalPages": 18,
+     "recordPerPage": 200
+    }
+   },
+   "seconds": 0.53
+  },
+  {
+   "id": "D-page2-differs",
+   "category": "protocol",
+   "name": "page 2 returns different records from page 1",
+   "request": "GET /api/wpi/getWpiRecords base_year=2011-12 year=2026 limit=100",
+   "status": "verified",
+   "detail": "100 + 100 records, 0 overlap",
+   "evidence": {},
+   "seconds": 0.94
+  },
+  {
+   "id": "D-cpi2012-default-page",
+   "category": "protocol",
+   "name": "CPI 2012 legacy returns 10 rows by default but 12 exist (pagination is required)",
+   "request": "GET /api/cpi/getCPIIndex year=2021",
+   "status": "verified",
+   "detail": "default page has 10 rows, totalRecords=12",
+   "evidence": {
+    "rows": 10,
+    "total": 12
+   },
+   "seconds": 0.48
+  },
+  {
+   "id": "D-invalid-base",
+   "category": "protocol",
+   "name": "an unknown base year is rejected or empty, never silently mapped to another base",
+   "request": "GET /api/wpi/getWpiRecords base_year=1999-00",
+   "status": "verified",
+   "detail": "HTTP 200, 0 rows, msg='No Data Found'",
+   "evidence": {},
+   "seconds": 0.46
+  },
+  {
+   "id": "D-invalid-year",
+   "category": "protocol",
+   "name": "a non-numeric year is rejected or empty",
+   "request": "GET /api/iip/getIipData year=abcd",
+   "status": "verified",
+   "detail": "HTTP 200, 0 rows",
+   "evidence": {},
+   "seconds": 0.47
+  },
+  {
+   "id": "D-unknown-param",
+   "category": "protocol",
+   "name": "an unknown query parameter does not change the result",
+   "request": "GET /api/wpi/getWpiRecords +foo=bar",
+   "status": "verified",
+   "detail": "HTTP 200; identical body: True",
+   "evidence": {},
+   "seconds": 0.93
+  },
+  {
+   "id": "D-content-type",
+   "category": "protocol",
+   "name": "data endpoints answer JSON (not HTML error pages)",
+   "request": "GET /api/iip/getIipData",
+   "status": "verified",
+   "detail": "content-type 'application/json; charset=utf-8'",
+   "evidence": {},
+   "seconds": 0.47
+  },
+  {
+   "id": "D-csv-not-offered",
+   "category": "protocol",
+   "name": "no CSV/other format is offered by the data endpoint: a format=csv request still returns JSON",
+   "request": "GET /api/wpi/getWpiRecords format=csv",
+   "status": "verified",
+   "detail": "content-type 'application/json; charset=utf-8': JSON is the only supported format",
+   "evidence": {},
+   "seconds": 0.46
+  },
+  {
+   "id": "E-cpi2012-headline-unique",
+   "category": "identity",
+   "name": "CPI 2012: exactly one all-India/combined/General row per month",
+   "request": "GET /api/cpi/getCPIIndex year=2021",
+   "status": "verified",
+   "detail": "12 months, row counts {1}",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "E-cpi2012-status-flags",
+   "category": "identity",
+   "name": "CPI 2012 rows carry a finality flag (status); record the observed values",
+   "request": "GET /api/cpi/getCPIIndex years 2021 and 2025",
+   "status": "verified",
+   "detail": "status values observed: {'F': 24} (F=final; meaning of other codes not documented here)",
+   "evidence": {
+    "flags": {
+     "F": 24
+    }
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "E-cpi2012-first-year-null-inflation",
+   "category": "identity",
+   "name": "CPI 2012: no YoY inflation exists for the first year (2013); source gives null, not a value",
+   "request": "GET /api/cpi/getCPIIndex year=2013",
+   "status": "verified",
+   "detail": "12 of 12 months have null inflation (Jan 2013 lacks a prior year)",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "E-wpi-headline-unique",
+   "category": "identity",
+   "name": "WPI 2022-23: one headline row per month (no group/item rows leak in)",
+   "request": "GET /api/wpi/getWpiRecords year=2026",
+   "status": "verified",
+   "detail": "10 rows",
+   "evidence": {},
+   "seconds": 0.0
+  },
+  {
+   "id": "E-iip-first-12-growth",
+   "category": "identity",
+   "name": "IIP 2011-12: growth_rate in the first served year equals index-100 (change from base, not YoY)",
+   "request": "GET /api/iip/getIipData base_year=2011-12 year=2013",
+   "status": "verified",
+   "detail": "max |growth - (index-100)| = 5.773159728050814e-15",
+   "evidence": {
+    "months": 3
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "E-iip-sector-set-2022-23",
+   "category": "identity",
+   "name": "IIP 2022-23 sectors: General plus four sector totals can be requested (category codes 4, 12, 2, 13, 14)",
+   "request": "GET /api/iip/getIipData per category",
+   "status": "verified",
+   "detail": "category-total rows per sector (2026): {'Mining & Quarrying': 9, 'Manufacturing': 9, 'Electricity & Gas Supply': 9, 'Water Supply, Sewerage & Waste Management': 9}",
+   "evidence": {
+    "Mining & Quarrying": 9,
+    "Manufacturing": 9,
+    "Electricity & Gas Supply": 9,
+    "Water Supply, Sewerage & Waste Management": 9
+   },
+   "seconds": 2.79
+  },
+  {
+   "id": "E-schema-stable-cpi2024",
+   "category": "identity",
+   "name": "CPI 2024 Current and Back share the same documented field names",
+   "request": "GET /api/cpi/getCPIData",
+   "status": "verified",
+   "detail": "common fields 15; only Current: []; only Back: []",
+   "evidence": {},
+   "seconds": 0.94
+  },
+  {
+   "id": "F-db-1",
+   "category": "cross-check",
+   "name": "live source equals the stored database values: CPI 2024 Current index 2025",
+   "request": "GET /api/cpi/getCPIData vs series mospi.cpi.2024.current.all_india.combined.general.index",
+   "status": "verified",
+   "detail": "12 months compared, 0 differ, 0 only at the source",
+   "evidence": {
+    "differ": [],
+    "only_at_source": []
+   },
+   "seconds": 0.06
+  },
+  {
+   "id": "F-db-2",
+   "category": "cross-check",
+   "name": "live source equals the stored database values: CPI 2024 Back index 2022",
+   "request": "GET /api/cpi/getCPIData vs series mospi.cpi.2024.back.all_india.combined.general.index",
+   "status": "verified",
+   "detail": "12 months compared, 0 differ, 0 only at the source",
+   "evidence": {
+    "differ": [],
+    "only_at_source": []
+   },
+   "seconds": 0.54
+  },
+  {
+   "id": "F-db-3",
+   "category": "cross-check",
+   "name": "live source equals the stored database values: WPI 2022-23 2025",
+   "request": "GET /api/wpi/getWpiRecords vs series mospi.wpi.2022-23.india.all_commodities.index",
+   "status": "verified",
+   "detail": "12 months compared, 0 differ, 0 only at the source",
+   "evidence": {
+    "differ": [],
+    "only_at_source": []
+   },
+   "seconds": 0.51
+  },
+  {
+   "id": "F-db-4",
+   "category": "cross-check",
+   "name": "live source equals the stored database values: WPI 2011-12 2021",
+   "request": "GET /api/wpi/getWpiRecords vs series mospi.wpi.2011-12.india.all_commodities.index",
+   "status": "verified",
+   "detail": "12 months compared, 0 differ, 0 only at the source",
+   "evidence": {
+    "differ": [],
+    "only_at_source": []
+   },
+   "seconds": 0.04
+  },
+  {
+   "id": "F-db-5",
+   "category": "cross-check",
+   "name": "live source equals the stored database values: IIP 2022-23 General 2025",
+   "request": "GET /api/iip/getIipData vs series mospi.iip.2022-23.india.general.index",
+   "status": "verified",
+   "detail": "12 months compared, 0 differ, 0 only at the source",
+   "evidence": {
+    "differ": [],
+    "only_at_source": []
+   },
+   "seconds": 0.53
+  },
+  {
+   "id": "F-db-6",
+   "category": "cross-check",
+   "name": "live source equals the stored database values: IIP 2011-12 General 2021",
+   "request": "GET /api/iip/getIipData vs series mospi.iip.2011-12.india.general.index",
+   "status": "verified",
+   "detail": "12 months compared, 0 differ, 0 only at the source",
+   "evidence": {
+    "differ": [],
+    "only_at_source": []
+   },
+   "seconds": 0.04
+  },
+  {
+   "id": "G-stable-1",
+   "category": "revision",
+   "name": "WPI 2022-23 2026: a repeated request returns byte-identical data (no intra-day drift)",
+   "request": "GET /api/wpi/getWpiRecords twice",
+   "status": "verified",
+   "detail": "digest a683ad7970e6 vs a683ad7970e6",
+   "evidence": {},
+   "seconds": 0.46
+  },
+  {
+   "id": "G-stable-2",
+   "category": "revision",
+   "name": "IIP 2022-23 2026: a repeated request returns byte-identical data (no intra-day drift)",
+   "request": "GET /api/iip/getIipData twice",
+   "status": "verified",
+   "detail": "digest 3ac78d79b844 vs 3ac78d79b844",
+   "evidence": {},
+   "seconds": 0.46
+  },
+  {
+   "id": "G-stable-3",
+   "category": "revision",
+   "name": "CPI 2012 2021: a repeated request returns byte-identical data (no intra-day drift)",
+   "request": "GET /api/cpi/getCPIIndex twice",
+   "status": "verified",
+   "detail": "digest a0e208ce295e vs a0e208ce295e",
+   "evidence": {},
+   "seconds": 0.96
+  },
+  {
+   "id": "H-portal-esankhyiki",
+   "category": "portal",
+   "name": "https://esankhyiki.mospi.gov.in/ is reachable with verified TLS and has the expected content",
+   "request": "GET https://esankhyiki.mospi.gov.in/",
+   "status": "verified",
+   "detail": "HTTP 200, 1198 bytes, missing terms: []",
+   "evidence": {},
+   "seconds": 0.24
+  },
+  {
+   "id": "H-portal-mospi",
+   "category": "portal",
+   "name": "https://www.mospi.gov.in/ is reachable with verified TLS and has the expected content",
+   "request": "GET https://www.mospi.gov.in/",
+   "status": "verified",
+   "detail": "HTTP 200, 2608 bytes, missing terms: []",
+   "evidence": {},
+   "seconds": 0.17
+  },
+  {
+   "id": "H-portal-api",
+   "category": "portal",
+   "name": "https://api.mospi.gov.in/ is reachable with verified TLS and has the expected content",
+   "request": "GET https://api.mospi.gov.in/",
+   "status": "verified",
+   "detail": "HTTP 200, 486 bytes, missing terms: []",
+   "evidence": {},
+   "seconds": 1.44
+  },
+  {
+   "id": "H-portal-oea",
+   "category": "portal",
+   "name": "https://eaindustry.nic.in/ is reachable with verified TLS and has the expected content",
+   "request": "GET https://eaindustry.nic.in/",
+   "status": "failed",
+   "detail": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000) (TLS verification failed; NOT bypassed)",
+   "evidence": {},
+   "seconds": 0.1
+  },
+  {
+   "id": "I-fresh-cpi2024",
+   "category": "freshness",
+   "name": "CPI 2024 Current: latest month the source serves (lag from today recorded, not judged)",
+   "request": "GET /api/cpi/getCPIData",
+   "status": "verified",
+   "detail": "latest 2026-10; 1 month(s) before the current month",
+   "evidence": {
+    "latest": "2026-10",
+    "lag_months": 1
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "I-fresh-wpi2022",
+   "category": "freshness",
+   "name": "WPI 2022-23: latest month the source serves (lag from today recorded, not judged)",
+   "request": "GET /api/wpi/getWpiRecords",
+   "status": "verified",
+   "detail": "latest 2026-10; 1 month(s) before the current month",
+   "evidence": {
+    "latest": "2026-10",
+    "lag_months": 1
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "I-fresh-iip2022",
+   "category": "freshness",
+   "name": "IIP 2022-23 General: latest month the source serves (lag from today recorded, not judged)",
+   "request": "GET /api/iip/getIipData",
+   "status": "verified",
+   "detail": "latest 2026-09; 2 month(s) before the current month",
+   "evidence": {
+    "latest": "2026-09",
+    "lag_months": 2
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "I-fresh-wpi2011",
+   "category": "freshness",
+   "name": "WPI 2011-12 (legacy): latest month the source serves (lag from today recorded, not judged)",
+   "request": "GET /api/wpi/getWpiRecords",
+   "status": "verified",
+   "detail": "latest 2026-04; 7 month(s) before the current month",
+   "evidence": {
+    "latest": "2026-04",
+    "lag_months": 7
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "I-fresh-iip2011",
+   "category": "freshness",
+   "name": "IIP 2011-12 (legacy): latest month the source serves (lag from today recorded, not judged)",
+   "request": "GET /api/iip/getIipData",
+   "status": "verified",
+   "detail": "latest 2026-03; 8 month(s) before the current month",
+   "evidence": {
+    "latest": "2026-03",
+    "lag_months": 8
+   },
+   "seconds": 0.0
+  },
+  {
+   "id": "I-fresh-cpi2012",
+   "category": "freshness",
+   "name": "CPI 2012 (legacy): latest month the source serves (lag from today recorded, not judged)",
+   "request": "GET /api/cpi/getCPIIndex",
+   "status": "verified",
+   "detail": "latest 2025-12; 11 month(s) before the current month",
+   "evidence": {
+    "latest": "2025-12",
+    "lag_months": 11
+   },
+   "seconds": 0.0
+  }
+ ]
+}

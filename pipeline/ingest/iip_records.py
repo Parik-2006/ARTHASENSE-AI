@@ -69,6 +69,11 @@ IIP_BASES: dict[str, IipBase] = {
         date(2013, 4, 1),
     ),
 }
+# Archive bases: General only, index only. Official growth is withheld (rate_valid_from far in the future)
+# because how the source defines growth in a base's first served year was not verified for these bases.
+_NEVER = date(9999, 12, 1)
+IIP_BASES["2004-05"] = IipBase(2005, (IipCategory("general", "General", 4, "General"),), _NEVER)
+IIP_BASES["1993-94"] = IipBase(1994, (IipCategory("general", "General", 4, "General"),), _NEVER)
 DEFAULT_BASE = "2022-23"
 
 

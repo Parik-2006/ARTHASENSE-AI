@@ -36,7 +36,7 @@ from pipeline.ingest.runner import fetch_range, make_client
 from pipeline.ingest.store_common import IngestStats
 from pipeline.sources.mospi import MospiClient
 
-_STORE_MODULES = ("pipeline.ingest.wpi", "pipeline.ingest.iip", "pipeline.ingest.cpi_store")
+_STORE_MODULES = ("pipeline.ingest.wpi", "pipeline.ingest.iip", "pipeline.ingest.cpi_store", "pipeline.ingest.cpi_legacy")
 
 LATEST_SQL = """
 SELECT DISTINCT ON (o.period_date) o.period_date, o.value
@@ -65,7 +65,7 @@ class Capture:
     """What the intercepted store step would have written."""
 
     specs: dict[str, Any]
-    observations: list[tuple[str, date, Decimal | None]]
+    observations: list[tuple]
     release_key: str
     sha256: str
     source_url: str
@@ -145,7 +145,8 @@ def diff_series(
 
 def preview_year(conn: psycopg.Connection, cap: Capture) -> list[SeriesPreview]:
     by_code: dict[str, list[tuple[date, Decimal | None]]] = defaultdict(list)
-    for code, period, value in cap.observations:
+    for o in cap.observations:  # (code, period, value[, source status])
+        code, period, value = o[0], o[1], o[2]
         by_code[code].append((period, value))
     out = []
     for code, fetched in sorted(by_code.items()):

@@ -27,7 +27,7 @@ from typing import Any
 
 import psycopg
 
-from pipeline.ingest import cpi, iip, wpi
+from pipeline.ingest import cpi, cpi_legacy, iip, wpi
 from pipeline.ingest.common import FetchError, ValidationError
 from pipeline.ingest.config import database_url
 from pipeline.ingest.preview import SeriesPreview, capture_store, preview_year
@@ -52,6 +52,7 @@ class Target:
 TARGETS: tuple[Target, ...] = (
     Target("cpi:current", "CPI", cpi.INGESTER, ("--series", "Current"), "2024"),
     Target("cpi:back", "CPI", cpi.INGESTER, ("--series", "Back"), "2024", last_year=2024),
+    Target("cpi:2012", "CPI", cpi_legacy.INGESTER, (), "2012", last_year=2025),
     Target("wpi:2022-23", "WPI", wpi.INGESTER, ("--base-year", "2022-23"), "2022-23"),
     Target("wpi:2011-12", "WPI", wpi.INGESTER, ("--base-year", "2011-12"), "2011-12"),
     Target("iip:2022-23", "IIP", iip.INGESTER, ("--base-year", "2022-23"), "2022-23"),

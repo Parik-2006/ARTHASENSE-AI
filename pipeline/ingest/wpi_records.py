@@ -40,6 +40,9 @@ class WpiBase:
 WPI_BASES: dict[str, WpiBase] = {
     "2022-23": WpiBase("1000000000", "Wholesale Price Index", 2023),
     "2011-12": WpiBase("1000000000", "Wholesale price index", 2012),
+    # Archive bases (headline code "1" read from live requests; see docs/GOVDATA-DISCOVERY.md). Separate series.
+    "2004-05": WpiBase("1", "Wholesale Price Index", 2005),
+    "1993-94": WpiBase("1", "Wholesale Price Index", 1994),
 }
 DEFAULT_BASE = "2022-23"
 

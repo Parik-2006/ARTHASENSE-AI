@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Machine-readable historical coverage report from the LOCAL database (read-only).
 
     python -m pipeline.ingest.coverage_report                   # JSON on stdout
@@ -23,6 +24,19 @@ from pipeline.ingest.config import database_url
 from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 
 WINDOW_MONTHS = 60
+# The only pair the publisher itself links (Annexure V of the CPI-2024 FAQs: Back = old series x linking factor).
+OFFICIAL_LINKED = {
+    "CPI": (
+        "mospi.cpi.2024.back.all_india.combined.general.index",
+        "mospi.cpi.2024.current.all_india.combined.general.index",
+    )
+}
+# The series the forecasting registry trains on (pipeline.forecasting.experiments.INDICATORS).
+FORECAST_SERIES = {
+    "CPI": "mospi.cpi.2024.current.all_india.combined.general.index",
+    "WPI": "mospi.wpi.2022-23.india.all_commodities.index",
+    "IIP": "mospi.iip.2022-23.india.general.index",
+}
 HEADLINE = {"CPI": ".general.index", "WPI": ".all_commodities.index", "IIP": ".india.general.index"}
 
 SERIES_SQL = """
@@ -88,9 +102,24 @@ def five_year_analysis(
                      "covers_whole_window": covered == WINDOW_MONTHS})  # fmt: skip
     one = [r["series"] for r in rows if r["covers_whole_window"]]
     union = set().union(*(window & month_sets[s["code"]] for s in head))
+    best_single = max((r["months_in_window"] for r in rows), default=0)
+    forecast_code = FORECAST_SERIES.get(indicator)
+    linked = OFFICIAL_LINKED.get(indicator)
+    linked_months = None
+    if linked and all(c in month_sets for c in linked):
+        linked_months = len(window & set().union(*(month_sets[c] for c in linked)))
     return {
         "indicator": indicator,
         "window": f"{_ym(min(window))} .. {_ym(end)}",
+        # Requirement 2 matrix: these five numbers are NOT interchangeable.
+        "A_calendar_months_in_window": WINDOW_MONTHS,
+        "B_months_with_an_observation_in_any_series": len(union),
+        "C_months_on_one_comparable_series": best_single,
+        "D_months_spanning_different_bases": len(union) if len(union) > best_single else None,
+        "E_forecast_eligible_months": len(month_sets.get(forecast_code, set())) if forecast_code else None,
+        "forecast_series": forecast_code,
+        "official_linked_months": linked_months,
+        "official_linked_pair": list(linked) if linked else None,
         "single_series_covers_window": bool(one),
         "series_covering_whole_window": one,
         "per_series": sorted(rows, key=lambda r: -r["months_in_window"]),
@@ -98,7 +127,9 @@ def five_year_analysis(
         "union_is_one_comparable_index": False,
         "note": (
             "A month counted only through a second base year is available but cannot be chained to the "
-            "first without an official linking factor."
+            "first without a verified linking method. CPI Back + Current is the one pair MoSPI itself "
+            "publishes as a linked series on base 2024 (see official_linked_months); ArthaSense still "
+            "keeps them as two segments and does not forecast across them without approval."
         ),
     }
 

@@ -1,0 +1,59 @@
+{
+ "runs_total": 176,
+ "by_series": {
+  "mospi.cpi.2024.current.all_india.combined.general.index": {
+   "no_action_not_completed": 56
+  },
+  "mospi.iip.2022-23.india.general.index": {
+   "reproducible_on_current_data": 43,
+   "no_action_not_completed": 17
+  },
+  "mospi.wpi.2022-23.india.all_commodities.index": {
+   "reproducible_on_current_data": 47,
+   "no_action_not_completed": 13
+  }
+ },
+ "runs_on_series_outside_the_forecast_registry": {},
+ "series_state": {
+  "mospi.cpi.2024.current.all_india.combined.general.index": {
+   "months_now": 22,
+   "latest_period": "2026-10-01"
+  },
+  "mospi.wpi.2022-23.india.all_commodities.index": {
+   "months_now": 43,
+   "latest_period": "2026-10-01"
+  },
+  "mospi.iip.2022-23.india.general.index": {
+   "months_now": 42,
+   "latest_period": "2026-09-01"
+  }
+ },
+ "origins_upper_bound_now": {
+  "mospi.cpi.2024.current.all_india.combined.general.index": {
+   "h1": 10,
+   "h3": 8,
+   "h6": 5,
+   "h12": 0
+  },
+  "mospi.wpi.2022-23.india.all_commodities.index": {
+   "h1": 31,
+   "h3": 29,
+   "h6": 26,
+   "h12": 20
+  },
+  "mospi.iip.2022-23.india.general.index": {
+   "h1": 30,
+   "h3": 28,
+   "h6": 25,
+   "h12": 19
+  }
+ },
+ "origins_upper_bound_if_cpi_had_166_months": {
+  "h1": 154,
+  "h3": 152,
+  "h6": 149,
+  "h12": 143
+ },
+ "upper_bound_note": "Upper bounds from n - 12 - h + 1. Real models need more initial training than 12 months: the stored CPI runs recorded 0 usable origins and were skipped ('at least 5 needed'). Do not read these as promises.",
+ "note": "More history makes more backtest origins possible; it does not by itself improve accuracy. A CPI series that joins Back and Current is a separate, approval-gated decision."
+}

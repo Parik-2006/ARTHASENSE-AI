@@ -1,5 +1,13 @@
 # Government economic data foundation (branch `govdata/foundation`)
 
+> **CORRECTION, 2026-11-21 (audit branch).** Two statements below were wrong and are kept for the record, struck out:
+> 1. "~~I found no official factor in the source~~": **official linking factors exist.** CPI's are in MoSPI's Annexure V
+>    (read and reproduced); IIP and WPI factors are documented in `docs/m1-data-verification.md` and reproduce exactly from
+>    the stored data. 2. "~~CPI: Back 38/60 months~~": MoSPI publishes the Back series **Jan 2013 – Dec 2024** (it is now
+>    stored from 2013), so CPI Back + Current is an **official linked 60-month headline on base 2024**. WPI and IIP remain
+>    without a single published series covering five years. See `docs/GOVERNMENT-SOURCE-DISCOVERY.md` §0 and
+>    `docs/HISTORICAL-COVERAGE-AUDIT.md`.
+
 Branched from `c2be85e` (the merged Overview V2 + Indicators V2 tip, identical on `main`, `parik`, `parik2`).
 Everything below was run against the **local Docker PostgreSQL only**. Nothing was written to Supabase.
 
@@ -58,7 +66,7 @@ Full detail: `reports/data-coverage-2026-11-21.json`. Latest five-year window pe
 | WPI | 2021-11 … 2026-10 | 2011-12 base | 54 / 60 | 2022-23 base 43 / 60 |
 | IIP | 2021-10 … 2026-09 | 2011-12 base | 54 / 60 | 2022-23 base 42 / 60 |
 
-**No single comparable series covers the latest five years for any indicator.** The union of two bases does contain every
+**~~No single comparable series covers the latest five years for any indicator.~~ (Corrected: true for WPI and IIP; CPI has an official linked 60-month series. See the note at the top.)** The union of two bases does contain every
 month, but it is two series. The report records `union_is_one_comparable_index: false`, and **0 official linking factors are
 stored**: I did not derive one from the overlapping months, because an overlap ratio is not an official methodology.
 
@@ -130,7 +138,7 @@ those files (you have uncommitted changes in them).
 
 ## 9. Unresolved limitations
 
-1. No five-year comparable single series exists for CPI/WPI/IIP (above). Official linking factors were not found in the API; a methodology document from MoSPI/OEA would be needed.
+1. ~~No five-year comparable single series exists for CPI/WPI/IIP.~~ Corrected: none for WPI/IIP; CPI has one (official linked). Official linking factors are documented (CPI primary-verified; WPI/IIP level D); see the note at the top.
 2. No publication dates, provisional/final flags or revision notes from the API.
 3. OEA site TLS chain not verifiable here; per-dataset URLs unknown.
 4. WPI commodity groups, CPI categories, 2004-05 / 1993-94 / CPI 2012 and 2010 bases not ingested.

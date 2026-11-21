@@ -22,6 +22,7 @@ import psycopg
 from pipeline.ingest import cpi, cpi_legacy, iip, wpi
 from pipeline.ingest.common import FetchError, ValidationError
 from pipeline.ingest.config import database_url
+from pipeline.ingest.evidence import attach_evidence, make_recording_client
 from pipeline.ingest.runner import Ingester, fetch_range, make_client
 from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 from pipeline.ingest.store_common import release_exists
@@ -74,7 +75,7 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None) -> int
     for line in ing.header(a):
         print(line)
     own = client is None
-    mospi = client or make_client()
+    mospi = client or (make_client() if a.dry_run else make_recording_client())
     done = skipped = 0
     try:
         for year in range(a.start_year, a.end_year + 1):
@@ -87,6 +88,8 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None) -> int
             if done or skipped:
                 time.sleep(a.delay)
             try:
+                if hasattr(mospi, "take"):
+                    mospi.take()
                 records, fetched, at = fetch_range(ing, mospi, year, year, a.delay, a)
                 line = f"{year}: fetched {fetched}, validated {len(records)}"
                 if a.dry_run:
@@ -94,6 +97,8 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None) -> int
                 else:
                     with psycopg.connect(url, connect_timeout=5) as conn:
                         st = ing.store(conn, records, year, year, at, a)
+                        if hasattr(mospi, "take"):
+                            attach_evidence(conn, st.release_key, mospi.take())
                     counts = f"inserted {st.inserted}, unchanged {st.unchanged}"
                     print(f"{line}, {counts}, skipped missing {st.skipped_missing}")
                 done += 1

@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { type ForecastRow, fmt, monthLabel } from "@/lib/forecasting";
 import { monthNumber } from "@/lib/indicator";
 
-const HEIGHT = 320;
+const FULL_HEIGHT = 320;
+const COMPACT_HEIGHT = 190;
 const M = { l: 52, r: 16, t: 16, b: 34 };
 
 export interface HistoryPoint {
@@ -28,12 +29,16 @@ export function ForecastChart({
   forecast,
   axisLabel,
   name,
+  compact = false,
 }: {
   history: HistoryPoint[];
   forecast: ForecastRow[];
   axisLabel: string;
   name: string;
+  /** Small card version: shorter, same data and keyboard access. */
+  compact?: boolean;
 }) {
+  const HEIGHT = compact ? COMPACT_HEIGHT : FULL_HEIGHT;
   const [width, setWidth] = useState(720);
   const [active, setActive] = useState<number | null>(null);
   const measure = useCallback((el: HTMLDivElement | null) => {
@@ -105,7 +110,7 @@ export function ForecastChart({
   const tipY = a ? Math.min(Math.max(a.y - 28, M.t), HEIGHT - M.b - tipH) : 0;
 
   return (
-    <div ref={measure} className="w-full">
+    <div ref={measure} className="w-full min-w-0 overflow-hidden">
       <svg
         width={width}
         height={HEIGHT}

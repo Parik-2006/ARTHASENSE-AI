@@ -210,3 +210,37 @@ def test_same_release_never_silently_changes_a_value(db):
         assert _upsert_observation(c, ser, rel, d, Decimal("1.0")) == "unchanged"
         with pytest.raises(ConflictingObservation):
             _upsert_observation(c, ser, rel, d, Decimal("2.0"))
+
+
+@integration
+def test_store_crash_is_logged_and_does_not_stop_other_targets(db, monkeypatch, capsys):
+    import pipeline.ingest.wpi as wpi_mod
+
+    real = wpi_mod.store_snapshot
+    calls = []
+
+    def flaky(conn, **kw):
+        calls.append(kw["release_key"])
+        if len(calls) == 1:  # the first target's store blows up mid-way
+            raise RuntimeError("integrity check failed: simulated")
+        return real(conn, **kw)
+
+    monkeypatch.setattr(wpi_mod, "store_snapshot", flaky)
+
+    def handler(req):
+        base = req.url.params["base_year"]
+        rows = [wpi_row(2026, m, "100.0", base_year=base) for m in (1, 2)]
+        return paged(rows if int(req.url.params["year"]) == 2026 else [], req.url.params)
+
+    argv = ["--only", "wpi:2022-23", "--only", "wpi:2011-12", "--years-back", "0", "--delay", "0", "--apply"]
+    assert monitor.run(argv, client(handler), TODAY) == 1
+    with psycopg.connect(db) as c:
+        runs = c.execute("SELECT indicator, status, error FROM ingestion_runs ORDER BY id").fetchall()
+        stored = c.execute(
+            "SELECT s.base_year, count(*) FROM observations o JOIN series s ON s.id = o.series_id GROUP BY 1"
+        ).fetchall()
+    assert [r[0] for r in runs] == ["wpi:2022-23", "wpi:2011-12"]  # both attempted, both logged
+    assert runs[0][1] == "failed" and "integrity check failed" in runs[0][2]
+    assert runs[1][1] == "success"
+    assert stored == [("2011-12", 2)]  # the failed target left nothing behind
+    assert json.loads(capsys.readouterr().out)["targets"][0]["failures"]

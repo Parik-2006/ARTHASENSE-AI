@@ -263,7 +263,9 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None, today:
                 with psycopg.connect(url, connect_timeout=5) as conn:
                     conn.read_only = not a.apply
                     for t in targets:
-                        run_id = _log_start(conn, t, a, years) if a.apply else None
+                        # Run logging uses the autocommit connection, so a failed or rolled-back data
+                        # transaction can never erase the record that the run happened.
+                        run_id = _log_start(lock_conn, t, a, years) if a.apply else None
                         try:
                             rep = check_target(t, mospi, conn, years, a.delay, a.apply)
                             status = (
@@ -274,20 +276,20 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None, today:
                             if rep["failures"]:
                                 exit_code = 1
                             if a.apply:
-                                _log_finish(conn, run_id, status, rep)
                                 conn.commit()
+                                _log_finish(lock_conn, run_id, status, rep)
                             else:
                                 conn.rollback()
-                        except psycopg.Error as exc:
+                        except Exception as exc:  # noqa: BLE001 - one broken target must not stop the others
                             conn.rollback()
+                            text = str(exc).strip().splitlines()
                             rep = {
                                 "target": t.key,
-                                "failures": [f"database error: {str(exc).splitlines()[0]}"],
+                                "failures": [f"{type(exc).__name__}: {text[0] if text else 'no detail'}"],
                             }
                             exit_code = 1
                             if a.apply:
-                                _log_finish(conn, run_id, "failed", rep)
-                                conn.commit()
+                                _log_finish(lock_conn, run_id, "failed", rep)
                         summary["targets"].append(rep)
                     rows = conn.execute(
                         "SELECT indicator, expected_lag_months, grace_days FROM freshness_policy"

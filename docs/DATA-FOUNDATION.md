@@ -66,7 +66,8 @@ Other findings:
 - Zero missing months in any index series. Four IIP 2011-12 **official growth** series lack April 2021 (the source returned no value; stored as a gap).
 - The legacy 2011-12 series have stopped updating at the source: WPI ends Apr 2026, IIP Mar 2026, while the 2022-23 series run to Oct / Sep 2026. Treat them as closed history.
 - `published_at` is empty on every observation (not provided by the API).
-- WPI 2011-12 Apr 2026 = 167.0 after Mar 2026 = 160.8 (+3.9 %). This is source data and is shown unchanged; the monitor's large-move check flags such moves for human review and never rejects or edits them.
+- WPI 2011-12 Apr 2026 = 167.0 after Mar 2026 = 160.8 (+3.9 %). That is below the monitor's 5 % review threshold, so it is not flagged, but it is a large step for a price index; it is source data and shown unchanged.
+- Live monitor run (after the fix that limits the move check to index levels): CPI and WPI raise no flags. IIP raises review flags in both bases and both years (March up about 7-14 %, April down about 9-17 %). The pattern repeats and matches the fiscal-year-end seasonality the app already warns about, so these are review notes, not errors; the check is noisy for IIP and never rejects or edits data.
 - CPI Back series (60 months) is MoSPI's own back-cast onto the 2024 base; the UI keeps it as a separate segment, and so does this branch.
 
 ## 5. Local backfill performed (additive, idempotent)
@@ -96,15 +97,26 @@ deliberately did **not** add a GitHub Actions `schedule:` trigger or any credent
 
 | Check | Command | Result |
 |---|---|---|
-| Pipeline + DB migration + integration | `ARTHASENSE_TEST_DATABASE_URL=<local test db> python -m pytest pipeline/tests db/tests -q` | all pass (183 before this branch's tests; monitor, safety and report tests added after) |
-| API | `cd services/api && python -m pytest tests -q` | 70 passed, 5 skipped |
+| Pipeline + DB migration + integration | `ARTHASENSE_TEST_DATABASE_URL=<local test db> python -m pytest pipeline/tests db/tests -q` | 203 passed |
+| API | `cd services/api && python -m pytest tests -q` | 75 passed with the test DB set (70 passed, 5 skipped without it) |
 | Web unit | `cd apps/web && npx vitest run` | 11 files, 198 passed |
 | Types / lint / build | `npx tsc --noEmit`, `npx eslint src`, `npm run build` | clean / clean / success |
-| Real-data render | local API + `next start`, fetched `/` | 200; Overview shows a "Base 2011-12" segment for WPI and IIP |
+| Real-data render | local API + `next start`, fetched `/`, `/indicators/wpi`, `/indicators/iip` | all 200; the Overview HTML now contains a "Base 2011-12" option (I did not check per card which indicators show it); the WPI and IIP detail pages do not mention 2011-12 |
 
 Only integration tests that need the throwaway test DB are skipped when `ARTHASENSE_TEST_DATABASE_URL` is unset.
 
-## 8. Production import preview — NOT performed
+## 8. Side effect on your local database, and production preview (NOT performed)
+
+**The local Docker database I wrote to is the same one `.env.example` names as the source for `python -m db.transfer`.** It now
+holds migration `0003` (tables, views, a `schema_migrations` row that a checkout without this branch has no file for) and the
+2011-12 WPI/IIP observations. If you re-run your transfer tooling from that database, those rows would be copied toward the
+target. I did not run the transfer. To return the local DB to its earlier state (documented, **not executed**):
+
+1. `DELETE FROM observations WHERE release_id IN (SELECT id FROM releases WHERE release_key LIKE 'mospi-wpi-2011-12-%' OR release_key LIKE 'mospi-iip-2011-12-%');`
+2. `DELETE FROM releases WHERE release_key LIKE 'mospi-wpi-2011-12-%' OR release_key LIKE 'mospi-iip-2011-12-%';`
+3. Then the now-empty 2011-12 `series` rows (`code LIKE 'mospi.wpi.2011-12.%' OR code LIKE 'mospi.iip.2011-12.%'`).
+4. `DROP VIEW current_observations, observation_revisions; DROP TABLE quality_checks, ingestion_runs, freshness_policy; DELETE FROM schema_migrations WHERE version = '0003_data_foundation';`
+
 
 I had no read-only production connection and did not use the Supabase tooling (it can write). Nothing was compared to or
 written to production. Expected effect when you approve a preview (`pipeline.ingest.preview … --allow-host <host>` against a
@@ -124,6 +136,8 @@ those files (you have uncommitted changes in them).
 4. WPI commodity groups, CPI categories, 2004-05 / 1993-94 / CPI 2012 and 2010 bases not ingested.
 5. WPI and IIP **detail pages** show only the current base; only Overview shows the 2011-12 segment (CPI has its own Back panel). A legacy-base panel for WPI/IIP detail pages is a frontend task.
 6. `freshness_policy` lags are assumptions.
+7. **Original artifacts are not archived.** `releases.content_sha256` hashes the canonicalised, validated records, not the raw API response, and we store the request URL, not the response body. A byte-exact copy of what MoSPI returned is not kept.
+8. The monitor needs migration 0003 on the database it runs against (it reads `freshness_policy` and, with `--apply`, writes the run log).
 
 ## 10. Next steps that need your approval
 

@@ -69,21 +69,33 @@ def _upsert_series(conn: psycopg.Connection, source_id: int, spec: SeriesSpec) -
     )
 
 
+class ConflictingObservation(RuntimeError):
+    """A stored official value differs from the incoming one inside the SAME release. Never overwritten."""
+
+
 def _upsert_observation(
     conn: psycopg.Connection, series_id: int, rel_id: int, period: date, value: Decimal
 ) -> str:
+    """Insert one observation. An existing identical value is 'unchanged'; a different value for the
+    same (series, release, period) is refused, never overwritten. Revisions arrive as a NEW release."""
     row = conn.execute(
         """INSERT INTO observations (series_id, release_id, period_date, value, status)
            VALUES (%s, %s, %s, %s, %s)
-           ON CONFLICT (series_id, release_id, period_date)
-           DO UPDATE SET value = EXCLUDED.value
-             WHERE observations.value IS DISTINCT FROM EXCLUDED.value
-           RETURNING (xmax = 0)""",
+           ON CONFLICT (series_id, release_id, period_date) DO NOTHING
+           RETURNING id""",
         (series_id, rel_id, period, value, OBSERVATION_STATUS),
     ).fetchone()
-    if row is None:
-        return "unchanged"
-    return "inserted" if row[0] else "updated"
+    if row is not None:
+        return "inserted"
+    stored = conn.execute(
+        "SELECT value FROM observations WHERE series_id = %s AND release_id = %s AND period_date = %s",
+        (series_id, rel_id, period),
+    ).fetchone()[0]
+    if stored != value:
+        raise ConflictingObservation(
+            f"refusing to overwrite stored value for {period.isoformat()} in an existing release"
+        )
+    return "unchanged"
 
 
 def store_snapshot(

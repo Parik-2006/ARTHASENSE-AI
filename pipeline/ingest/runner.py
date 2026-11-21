@@ -19,6 +19,7 @@ import psycopg
 
 from pipeline.ingest.common import FetchError, PagedResult, ValidationError, resolve_years
 from pipeline.ingest.config import database_url
+from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 from pipeline.ingest.store_common import IngestStats
 from pipeline.sources.mospi import USER_AGENT, MospiClient
 
@@ -50,6 +51,7 @@ def build_parser(ing: Ingester) -> argparse.ArgumentParser:
     p.add_argument(
         "--delay", type=float, default=0.5, help="seconds to wait between API requests (default 0.5)"
     )
+    p.add_argument("--allow-host", default=None, help="comma list of DB hosts accepted (default: local only)")
     ing.add_args(p)
     return p
 
@@ -97,6 +99,11 @@ def run_cli(ing: Ingester, argv: list[str] | None = None, client: MospiClient | 
         url = database_url()
         if not url:
             print("Error: ARTHASENSE_DATABASE_URL is not set (see .env.example)", file=sys.stderr)
+            return 2
+        try:
+            require_allowed_host(url, args.allow_host)
+        except RemoteTargetRefused as exc:
+            print(str(exc), file=sys.stderr)
             return 2
 
     own_client = client is None

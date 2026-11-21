@@ -58,10 +58,12 @@ def validate_record(raw: dict[str, Any], start_year: int, end_year: int, base_ye
     base = WPI_BASES[base_year]
     if raw.get("base_year") != base_year:
         raise ValidationError(f"base_year: expected {base_year!r}, got {raw.get('base_year')!r}")
-    label = raw.get("major_group")
+    # The 2022-23 base names its fields major_group / sub_group / sub_sub_group; the 2011-12 base uses
+    # majorgroup / subgroup / sub_subgroup (verified live). Either spelling, same meaning.
+    label = raw.get("major_group", raw.get("majorgroup"))
     if not isinstance(label, str) or label.strip().casefold() != base.headline_label.casefold():
         raise ValidationError(f"major_group: expected headline {base.headline_label!r}, got {label!r}")
-    for level in ("group", "sub_group", "sub_sub_group", "item"):
+    for level in ("group", "sub_group", "subgroup", "sub_sub_group", "sub_subgroup", "item"):
         if raw.get(level) not in (None, ""):
             raise ValidationError(f"{level}: expected empty for the headline row, got {raw.get(level)!r}")
     year = parse_year(raw.get("year"), start_year, end_year)

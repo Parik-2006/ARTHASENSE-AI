@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from app import __version__
 from app.config import get_settings, parse_cors_origins
+from app.data_status import router as data_status_router
 from app.db import DbStatus, check_database
 from app.forecasting import router as forecasting_router
 from app.indicators import router as indicators_router
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(indicators_router)
     app.include_router(forecasting_router)
+    app.include_router(data_status_router)
 
     @app.get("/healthz", response_model=Alive, tags=["health"])
     def healthz() -> Alive:

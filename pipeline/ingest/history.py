@@ -23,6 +23,7 @@ from pipeline.ingest import cpi, iip, wpi
 from pipeline.ingest.common import FetchError, ValidationError
 from pipeline.ingest.config import database_url
 from pipeline.ingest.runner import Ingester, fetch_range, make_client
+from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 from pipeline.ingest.store_common import release_exists
 from pipeline.sources.mospi import MospiClient
 
@@ -42,6 +43,7 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None) -> int
     p.add_argument("--dry-run", action="store_true", help="fetch and validate every year; DB untouched")
     p.add_argument("--resume", action="store_true", help="skip years whose snapshot is already stored")
     p.add_argument("--delay", type=float, default=0.5)
+    p.add_argument("--allow-host", default=None, help="comma list of DB hosts accepted (default: local only)")
     ing.add_args(p)
     a = p.parse_args(rest)
 
@@ -58,6 +60,11 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None) -> int
         url = database_url()
         if not url:
             print("Error: ARTHASENSE_DATABASE_URL is not set (see .env.example)", file=sys.stderr)
+            return 2
+        try:
+            require_allowed_host(url, a.allow_host)
+        except RemoteTargetRefused as exc:
+            print(str(exc), file=sys.stderr)
             return 2
 
     print(

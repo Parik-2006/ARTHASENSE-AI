@@ -28,7 +28,6 @@ from typing import Any
 from unittest import mock
 
 import psycopg
-from psycopg.conninfo import conninfo_to_dict
 
 from pipeline.ingest.common import FetchError, ValidationError
 from pipeline.ingest.config import database_url
@@ -73,8 +72,7 @@ class Capture:
     retrieved_at: datetime
 
 
-def host_of(url: str) -> str:
-    return conninfo_to_dict(url).get("host") or "(unix socket)"
+from pipeline.ingest.safety import host_of  # noqa: E402  (shared guard)
 
 
 def capture_store(ing, records: list[Any], year: int, at: datetime, args: argparse.Namespace) -> Capture:

@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { type ForecastRow, fmt, monthLabel } from "@/lib/forecasting";
 import { monthNumber } from "@/lib/indicator";
 
-const HEIGHT = 320;
+const FULL_HEIGHT = 320;
+const COMPACT_HEIGHT = 190;
 const M = { l: 52, r: 16, t: 16, b: 34 };
 
 export interface HistoryPoint {
@@ -28,12 +29,16 @@ export function ForecastChart({
   forecast,
   axisLabel,
   name,
+  compact = false,
 }: {
   history: HistoryPoint[];
   forecast: ForecastRow[];
   axisLabel: string;
   name: string;
+  /** Small card version: shorter, same data and keyboard access. */
+  compact?: boolean;
 }) {
+  const HEIGHT = compact ? COMPACT_HEIGHT : FULL_HEIGHT;
   const [width, setWidth] = useState(720);
   const [active, setActive] = useState<number | null>(null);
   const measure = useCallback((el: HTMLDivElement | null) => {
@@ -143,6 +148,8 @@ export function ForecastChart({
           {axisLabel}
         </text>
 
+        <line x1={sx(last.n)} x2={sx(last.n)} y1={M.t} y2={HEIGHT - M.b} className="stroke-ink-muted" strokeDasharray="2 4" data-testid="origin-divider" />
+        <text x={sx(last.n) - 4} y={M.t + 10} textAnchor="end" className="fill-ink-muted text-[10px]">last official month</text>
         {b95 && <polygon points={b95} style={{ fill: "var(--band-95)" }} />}
         {b80 && <polygon points={b80} style={{ fill: "var(--band-80)" }} />}
         <line x1={sx(last.n)} x2={sx(last.n)} y1={M.t} y2={HEIGHT - M.b} className="stroke-ink-muted" strokeDasharray="2 4" />

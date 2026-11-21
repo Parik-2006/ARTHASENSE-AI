@@ -8,13 +8,20 @@ import { RunDetailView } from "@/components/forecasting/run-detail";
 import { ForecastingSubNav } from "@/components/forecasting/subnav";
 import { ScenarioCalculator } from "@/components/intelligence/scenario";
 import { type Comparison, type ComparisonGroup, type ModelInfo } from "@/lib/forecasting";
+import { WPI_CONFIG } from "@/lib/indicators";
+import { sourceFor } from "@/lib/source";
 import { isActive, NAV_ITEMS } from "@/lib/nav";
 import { fc, run } from "@/lib/forecasting-fixtures";
 
 /** React inserts <!-- --> between adjacent text nodes; strip them so assertions read naturally. */
 const render = (el: React.ReactElement) => renderRaw(el).replace(/<!-- -->/g, "");
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/forecasting/comparison", useRouter: () => ({ refresh: () => {} }) }));
+let search = "";
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/forecasting/wpi",
+  useRouter: () => ({ refresh: () => {}, replace: () => {} }),
+  useSearchParams: () => new URLSearchParams(search),
+}));
 
 const history = Array.from({ length: 20 }, (_, i) => ({ period: `${2025 + Math.floor((i + 3) / 12)}-${String(((i + 3) % 12) + 1).padStart(2, "0")}-01`, index: 100 + i }));
 const models: ModelInfo[] = [
@@ -23,11 +30,16 @@ const models: ModelInfo[] = [
 ];
 const stored = [{ model: "ets", run: run({ kind: "forecast", horizon: 3 }), items: [fc("2026-11-01", 120, 1, 118), fc("2026-12-01", 121, 2, 118), fc("2027-01-01", 122, 3, 117)] }];
 
-describe("ForecastExplorer", () => {
-  const html = render(
-    <ForecastExplorer indicator="wpi" indexName="WPI index" axisLabel="WPI index" history={history} forecasts={stored} backtests={[run({ horizon: 3 })]} models={models} />,
-  );
-  it("shows stored forecasts with model, origin, intervals and backtest accuracy", () => {
+const obs = history.map((h) => ({ period: h.period, index: h.index, rate: null, indexSource: null, rateSource: null }));
+const source = sourceFor(WPI_CONFIG, null);
+const props = (over: Record<string, unknown> = {}) => ({
+  indicator: "wpi" as const, shortName: "WPI", indexName: "WPI index", axisLabel: "WPI index", baseYear: "2022-23",
+  observations: obs, source, stored, runs: [run({ horizon: 3 })], models, comparisons: {}, ...over,
+}); // prettier-ignore
+
+describe("ForecastExplorer (synthetic fixtures)", () => {
+  const html = render(<ForecastExplorer {...props()} />);
+  it("shows stored forecasts with model, origin, intervals, run id and backtest accuracy", () => {
     expect(html).toContain("Forecast table");
     expect(html).toContain("ETS (damped trend)");
     expect(html).toContain("120.00");
@@ -36,25 +48,62 @@ describe("ForecastExplorer", () => {
     expect(html).toContain("Exponential smoothing explained.");
     expect(html).toContain("ETS state-space");
     expect(html).toContain("Download CSV");
-    expect(html).toContain("not guaranteed outcomes");
+    expect(html).toContain("not official");
+    expect(html).toContain("Reset filters");
   });
-  it("only offers genuinely evaluated models, and says when a horizon was not backtested", () => {
-    expect(html).not.toContain("Chronos");
-    const none = render(<ForecastExplorer indicator="wpi" indexName="WPI index" axisLabel="x" history={history} forecasts={stored} backtests={[]} models={models} />);
-    expect(none).toContain("No stored forecast exists");
-    expect(none).not.toContain("Forecast table");
-    const unvalidated = render(<ForecastExplorer indicator="wpi" indexName="WPI index" axisLabel="x" history={history} forecasts={stored} backtests={[run({ horizon: 6 })]} models={models} />);
-    expect(unvalidated).toContain("not backtested");
-    expect(unvalidated).toContain("has not been backtested, so no accuracy is claimed");
+  it("separates official history and the model forecast in source attribution", () => {
+    expect(html).toContain("Official data");
+    expect(html).toContain("Model-generated forecast");
+    expect(html).toContain("run #");
+  });
+  it("always shows a reliability assessment with reasons, and never calls a 7-origin run supported", () => {
+    expect(html).toContain('data-testid="reliability"');
+    const few = render(<ForecastExplorer {...props({ runs: [run({ horizon: 3, n_origins: 7 })] })} />);
+    expect(few).not.toContain("Supported by available backtests");
+    expect(few).toContain("indicative");
+  });
+  it("lists a stored forecast even without a backtest, labelled insufficient evidence (nothing hidden)", () => {
+    const none = render(<ForecastExplorer {...props({ runs: [] })} />);
+    expect(none).toContain("Insufficient evidence");
+    expect(none).toContain("No backtest was stored");
+    expect(none).toContain("has not been backtested, so no accuracy is claimed");
+  });
+  it("says so when there is no stored forecast at all", () => {
+    const out = render(<ForecastExplorer {...props({ stored: [] })} />);
+    expect(out).toContain("No stored forecast exists");
+    expect(out).not.toContain("Forecast table");
   });
   it("warns when intervals are missing", () => {
     const noIv = [{ ...stored[0], items: stored[0].items.map((i) => ({ ...i, lower_80: null, upper_80: null })) }];
-    const out = render(<ForecastExplorer indicator="wpi" indexName="WPI" axisLabel="x" history={history} forecasts={noIv} backtests={[run({ horizon: 3 })]} models={models} />);
-    expect(out).toContain("provides no prediction interval");
+    expect(render(<ForecastExplorer {...props({ stored: noIv })} />)).toContain("provides no prediction interval");
   });
-  it("flags indicative backtests", () => {
-    const out = render(<ForecastExplorer indicator="wpi" indexName="WPI" axisLabel="x" history={history} forecasts={stored} backtests={[run({ horizon: 3, n_origins: 7 })]} models={models} />);
-    expect(out).toContain("Only 7 origins: indicative");
+  it("flags indicative backtests and WPI-like concerning performance prominently", () => {
+    const bad = run({ horizon: 3, n_origins: 7, metrics: { mae: 13.1, rmse: 19, mase: 33, smape: 11, coverage_80: 0, coverage_95: 0 } });
+    const out = render(<ForecastExplorer {...props({ runs: [bad] })} />);
+    expect(out).toContain('data-level="concerning"');
+    expect(out).toContain('role="alert"');
+    expect(out).toContain("only 0%");
+    expect(out).toContain("only 7 origins");
+  });
+  it("URL filters: model/horizon in the link are honoured, unavailable ones are reported", () => {
+    search = "model=chronos2&horizon=12";
+    const out = render(<ForecastExplorer {...props()} />);
+    search = "";
+    expect(out).toContain('No stored forecast exists for model &quot;chronos2&quot;');
+    expect(out).toContain("12-month horizon");
+  });
+  it("history window is separate from the horizon: a 3M window keeps the 3-month forecast", () => {
+    search = "range=3M";
+    const out = render(<ForecastExplorer {...props()} />);
+    search = "";
+    expect(out).toContain("Backtest accuracy, 3-month horizon");
+    expect(out).toMatch(/Selection: .*Changing the history window does not change the forecast horizon/);
+  });
+  it("links back to the historical indicator page carrying only the window", () => {
+    search = "range=3Y&model=ets&horizon=3";
+    const out = render(<ForecastExplorer {...props()} />);
+    search = "";
+    expect(out).toContain('href="/indicators/wpi?range=3Y"');
   });
 });
 

@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (registry text and long literals are kept on readable lines)
 """CPI 2012 legacy series, archive WPI/IIP bases and source status flags. No database (query layer is faked)."""
 
 import os
@@ -61,7 +62,11 @@ def test_2024_series_keep_base_2024_and_no_legacy_limitations(client, monkeypatc
 
 
 def test_rows_without_a_status_column_still_work(client, monkeypatch):
-    monkeypatch.setattr(indicators, "query_cpi_rows", lambda *a, **k: [(indicators.CPI_INDEX_SERIES, date(2025, 1, 1), Decimal("100"), "k", T1, None)])
+    monkeypatch.setattr(
+        indicators,
+        "query_cpi_rows",
+        lambda *a, **k: [(indicators.CPI_INDEX_SERIES, date(2025, 1, 1), Decimal("100"), "k", T1, None)],
+    )
     body = client.get("/api/v1/indicators/cpi").json()
     assert body["observations"][0]["index_source"]["status"] is None
 
@@ -72,8 +77,14 @@ def test_unknown_cpi_series_is_rejected(client):
 
 @pytest.mark.parametrize("base", ["2004-05", "1993-94"])
 def test_archive_bases_are_accepted_for_wpi_and_iip_general_only(client, monkeypatch, base):
-    monkeypatch.setattr(indicators, "query_series_rows", lambda *a, **k: [(indicators.wpi_code(base), date(2010, 1, 1), Decimal("135.2"), "k", T1, None)])
+    monkeypatch.setattr(
+        indicators,
+        "query_series_rows",
+        lambda *a, **k: [(indicators.wpi_code(base), date(2010, 1, 1), Decimal("135.2"), "k", T1, None)],
+    )
     assert client.get(f"/api/v1/indicators/wpi?base_year={base}").json()["base_year"] == base
     assert client.get(f"/api/v1/indicators/iip?base_year={base}&sector=general").status_code == 200
-    assert client.get(f"/api/v1/indicators/iip?base_year={base}&sector=mining").status_code == 422  # no such sector on this base
+    assert (
+        client.get(f"/api/v1/indicators/iip?base_year={base}&sector=mining").status_code == 422
+    )  # no such sector on this base
     assert client.get("/api/v1/indicators/wpi?base_year=1999-00").status_code == 422

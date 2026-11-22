@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (registry text and long literals are kept on readable lines)
 """CLI: python -m pipeline.discovery [--only ID-substring] [--delay 0.4] [--no-db]
 
 Writes reports/discovery-<YYYY-MM-DD>.json (machine-readable) and docs/GOVDATA-DISCOVERY.md (human summary).
@@ -15,7 +16,7 @@ from pathlib import Path
 
 import httpx
 
-from pipeline.discovery.suite import EMPTY, FAILED, SKIPPED, TESTS, VERIFIED, Context, run_all, summarize
+from pipeline.discovery.suite import EMPTY, FAILED, SKIPPED, VERIFIED, Context, run_all, summarize
 from pipeline.ingest.config import database_url
 from pipeline.sources.mospi import USER_AGENT, MospiClient
 
@@ -38,8 +39,16 @@ def render_markdown(results, summary, meta) -> str:
         "|---|---:|---:|---:|---:|",
     ]
     for cat, c in summary["by_category"].items():
-        lines.append(f"| {cat} | {c.get(VERIFIED, 0)} | {c.get(EMPTY, 0)} | {c.get(FAILED, 0)} | {c.get(SKIPPED, 0)} |")
-    lines += ["", "## All tests", "", "| # | ID | Result | What was checked | Evidence |", "|---:|---|---|---|---|"]
+        lines.append(
+            f"| {cat} | {c.get(VERIFIED, 0)} | {c.get(EMPTY, 0)} | {c.get(FAILED, 0)} | {c.get(SKIPPED, 0)} |"
+        )
+    lines += [
+        "",
+        "## All tests",
+        "",
+        "| # | ID | Result | What was checked | Evidence |",
+        "|---:|---|---|---|---|",
+    ]
     for i, r in enumerate(results, 1):
         lines.append(f"| {i} | `{r.id}` | {ICON[r.status]} | {r.name} | {r.detail.replace('|', '/')} |")
     failed = [r for r in results if r.status == FAILED]
@@ -65,19 +74,31 @@ def main(argv: list[str] | None = None) -> int:
         if host not in LOCAL_HOSTS:
             print(f"Refusing the database cross-check: host {host!r} is not local.", file=sys.stderr)
             db_url = None
-    client = MospiClient(httpx.Client(timeout=40.0, headers={"User-Agent": USER_AGENT, "Accept": "application/json"}))
+    client = MospiClient(
+        httpx.Client(timeout=40.0, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
+    )
     ctx = Context(client, delay_s=a.delay, db_url=db_url)
     try:
         results = run_all(ctx, a.only)
     finally:
         client.close()
     summary = summarize(results)
-    meta = {"generated_at": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"), "source_host": "api.mospi.gov.in", "database_host": host, "requests": ctx.requests}
+    meta = {
+        "generated_at": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
+        "source_host": "api.mospi.gov.in",
+        "database_host": host,
+        "requests": ctx.requests,
+    }
     out = Path(a.out_dir)
     (out / "reports").mkdir(exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y-%m-%d")
-    (out / "reports" / f"discovery-{stamp}.json").write_text(json.dumps({"meta": meta, "summary": summary, "results": [asdict(r) for r in results]}, indent=1), encoding="utf-8")
-    (out / "docs" / "GOVDATA-DISCOVERY.md").write_text(render_markdown(results, summary, meta), encoding="utf-8")
+    (out / "reports" / f"discovery-{stamp}.json").write_text(
+        json.dumps({"meta": meta, "summary": summary, "results": [asdict(r) for r in results]}, indent=1),
+        encoding="utf-8",
+    )
+    (out / "docs" / "GOVDATA-DISCOVERY.md").write_text(
+        render_markdown(results, summary, meta), encoding="utf-8"
+    )
     print(json.dumps({**summary, "requests": ctx.requests}, indent=1))
     for r in results:
         if r.status == FAILED:

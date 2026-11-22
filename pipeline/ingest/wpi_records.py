@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Validate raw MoSPI WPI records (headline index only). Pure functions, no I/O.
 
 Verified live (Phase 4 discovery, /api/wpi/getWpiRecords + /api/wpi/getWpiData):

@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (registry and limitation text stay on readable lines)
 """Read-only indicator endpoints (CPI, WPI, IIP). They serve only what is stored in PostgreSQL.
 
 Selection policy (the same for every indicator): for each series and month the observation from
@@ -27,7 +28,9 @@ SOURCE_NAME = "Ministry of Statistics and Programme Implementation (MoSPI), eSan
 CPI_INDEX_SERIES = "mospi.cpi.2024.current.all_india.combined.general.index"
 CPI_INFLATION_SERIES = "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy"
 CPI_SERIES = ("current", "back")  # the two series on the 2024 base
-CPI_LEGACY = "legacy2012"  # separate series on the 2012 base (Jan 2013 - Dec 2025); never merged with the above
+CPI_LEGACY = (
+    "legacy2012"  # separate series on the 2012 base (Jan 2013 - Dec 2025); never merged with the above
+)
 
 
 def cpi_codes(series: str) -> tuple[str, str]:
@@ -120,7 +123,9 @@ class Provenance(BaseModel):
     release_key: str
     retrieved_at: datetime
     published_at: datetime | None = None  # NULL: MoSPI's API gives no publication date
-    status: str | None = None  # the SOURCE's finality flag where it gives one (e.g. CPI 2012: source_final); else 'retrieved'
+    status: str | None = (
+        None  # the SOURCE's finality flag where it gives one (e.g. CPI 2012: source_final); else 'retrieved'
+    )
 
 
 class Source(BaseModel):
@@ -133,7 +138,9 @@ def _number(value: Decimal) -> float:
     return float(value)
 
 
-def _prov(key: str, retrieved_at: datetime, published_at: datetime | None, status: str | None = None) -> Provenance:
+def _prov(
+    key: str, retrieved_at: datetime, published_at: datetime | None, status: str | None = None
+) -> Provenance:
     return Provenance(release_key=key, retrieved_at=retrieved_at, published_at=published_at, status=status)
 
 
@@ -168,7 +175,10 @@ def _fetch(
 def _by_period(rows: list[Row]) -> dict[date, dict[str, tuple[float, Provenance]]]:
     out: dict[date, dict[str, tuple[float, Provenance]]] = {}
     for code, period, value, key, retrieved_at, published_at, *rest in rows:
-        out.setdefault(period, {})[code] = (_number(value), _prov(key, retrieved_at, published_at, rest[0] if rest else None))
+        out.setdefault(period, {})[code] = (
+            _number(value),
+            _prov(key, retrieved_at, published_at, rest[0] if rest else None),
+        )
     return out
 
 
@@ -247,7 +257,9 @@ def get_cpi(
     limit: LimitParam = 120,
     series: Annotated[
         Literal["current", "back", "legacy2012"],
-        Query(description="'back' = MoSPI's official back series on the 2024 base; 'legacy2012' = the separate 2012-base series"),
+        Query(
+            description="'back' = MoSPI's official back series on the 2024 base; 'legacy2012' = the separate 2012-base series"
+        ),
     ] = "current",
 ) -> CpiResponse:
     """All India / Combined / CPI (General). Base 2024 (current, back) or the separate 2012 base. `inflation` is null where MoSPI gave none."""

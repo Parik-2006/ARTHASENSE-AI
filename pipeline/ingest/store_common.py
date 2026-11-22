@@ -74,7 +74,11 @@ class ConflictingObservation(RuntimeError):
 
 
 def _upsert_observation(
-    conn: psycopg.Connection, series_id: int, rel_id: int, period: date, value: Decimal,
+    conn: psycopg.Connection,
+    series_id: int,
+    rel_id: int,
+    period: date,
+    value: Decimal,
     status: str = OBSERVATION_STATUS,
 ) -> str:
     """Insert one observation. An existing identical value is 'unchanged'; a different value for the

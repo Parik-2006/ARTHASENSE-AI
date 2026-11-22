@@ -51,6 +51,12 @@ export function IndicatorWorkspace({ config, bundles }: { config: IndicatorConfi
         ))}
       </ul>
 
+      {missingWanted && (
+        <p role="status" className="rounded border border-warn px-3 py-2 text-xs text-warn">
+          The series &quot;{wanted}&quot; is not stored for {config.shortName}, so the primary series is shown.
+        </p>
+      )}
+
       {multiple && (
         <section aria-label="Choose the official series" data-tour="series-switch" className="rounded-md border border-rule bg-surface p-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -71,11 +77,6 @@ export function IndicatorWorkspace({ config, bundles }: { config: IndicatorConfi
               ))}
             </div>
           </div>
-          {missingWanted && (
-            <p role="status" className="mt-2 text-xs text-warn">
-              The series &quot;{wanted}&quot; is not stored for {config.shortName}, so the primary series is shown.
-            </p>
-          )}
           <p className="mt-3 text-sm">
             <span className="mr-2 rounded border border-rule px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-ink-muted">{ROLE_LABEL[o.role]}</span>
             {o.note}

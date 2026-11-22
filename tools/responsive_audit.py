@@ -96,7 +96,9 @@ async def main(base: str, out: Path) -> None:
             for d in ("Page", "Runtime", "Log"):
                 await c.call(f"{d}.enable")
             for scheme in ("light", "dark"):
-                await c.call("Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": scheme}])
+                await c.call(
+                    "Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": scheme}]
+                )
                 for w in WIDTHS:
                     if scheme == "dark" and w not in (390, 1440):
                         continue
@@ -110,8 +112,16 @@ async def main(base: str, out: Path) -> None:
                         results["overflow"].append(
                             {"page": p, "width": w, "scheme": scheme, **m, "console_errors": list(c.logs)[:3]}
                         )
-            await c.call("Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": "light"}])
-            await c.call("Emulation.setDeviceMetricsOverride", width=1440, height=900, deviceScaleFactor=1, mobile=False)
+            await c.call(
+                "Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": "light"}]
+            )
+            await c.call(
+                "Emulation.setDeviceMetricsOverride",
+                width=1440,
+                height=900,
+                deviceScaleFactor=1,
+                mobile=False,
+            )
 
             async def step(name, page, expr):
                 await c.call("Page.navigate", url=base + page)
@@ -121,17 +131,43 @@ async def main(base: str, out: Path) -> None:
             def click_then(label, tail):
                 return f"(async () => {{ const r = ({CLICK})('{label}'); await new Promise(s => setTimeout(s, 1200)); return r + ' ' + {tail}; }})()"
 
-            await step("range 3M click persists to URL", "/indicators/wpi", click_then("3M", "location.search"))
+            await step(
+                "range 3M click persists to URL", "/indicators/wpi", click_then("3M", "location.search")
+            )
             await step("Custom range shows month inputs", "/indicators/wpi",
                        click_then("Custom", "'month inputs=' + document.querySelectorAll('input[type=month]').length + ' url=' + location.search"))  # fmt: skip
-            await step("legacy panel present on WPI", "/indicators/wpi", "document.body.innerText.includes('Previous base year (separate segment)')")
-            await step("legacy panel present on IIP", "/indicators/iip", "document.body.innerText.includes('Previous base year (separate segment)')")
-            await step("CSV controls on Overview", "/", "[...document.querySelectorAll('button,a')].filter(x => /csv/i.test(x.textContent)).length")
-            await step("deep link ?range=1Y on WPI", "/indicators/wpi?range=1Y", "[...document.querySelectorAll('button')].find(x => x.textContent.trim() === '1Y')?.getAttribute('aria-pressed')")
-            await step("deep link ?range=2Y on Overview", "/?range=2Y", "[...document.querySelectorAll('button')].find(x => x.textContent.trim() === '2Y')?.getAttribute('aria-pressed')")
+            await step(
+                "legacy panel present on WPI",
+                "/indicators/wpi",
+                "document.body.innerText.includes('Previous base year (separate segment)')",
+            )
+            await step(
+                "legacy panel present on IIP",
+                "/indicators/iip",
+                "document.body.innerText.includes('Previous base year (separate segment)')",
+            )
+            await step(
+                "CSV controls on Overview",
+                "/",
+                "[...document.querySelectorAll('button,a')].filter(x => /csv/i.test(x.textContent)).length",
+            )
+            await step(
+                "deep link ?range=1Y on WPI",
+                "/indicators/wpi?range=1Y",
+                "[...document.querySelectorAll('button')].find(x => x.textContent.trim() === '1Y')?.getAttribute('aria-pressed')",
+            )
+            await step(
+                "deep link ?range=2Y on Overview",
+                "/?range=2Y",
+                "[...document.querySelectorAll('button')].find(x => x.textContent.trim() === '2Y')?.getAttribute('aria-pressed')",
+            )
             await step("tour opens as non-modal card", "/",
                        "(async () => { const b = [...document.querySelectorAll('button')].find(x => /tour/i.test(x.textContent)); if (!b) return 'NO BUTTON'; b.click(); await new Promise(s => setTimeout(s, 800)); return 'aria-modal=' + document.querySelectorAll('[aria-modal=true]').length + ' ' + (document.body.innerText.match(/step \\d+ of \\d+/i) || ['no step text'])[0]; })()")  # fmt: skip
-            await step("forecast experiments controls", "/forecasting/experiments", "[...document.querySelectorAll('select,input,button')].length")
+            await step(
+                "forecast experiments controls",
+                "/forecasting/experiments",
+                "[...document.querySelectorAll('select,input,button')].length",
+            )
         out.write_text(json.dumps(results, indent=1), encoding="utf-8")
     finally:
         proc.terminate()

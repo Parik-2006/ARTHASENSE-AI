@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """WPI-like regression: a long flat history followed by a sudden level shift.
 
 Synthetic data (clearly NOT stored data) shaped like the situation found in the real WPI series, where
@@ -33,7 +34,9 @@ def test_alignment_and_no_leakage_under_a_level_shift():
     ev = evaluate_horizon(res, y, p, 6)
     for r in ev.rows:
         # the target is exactly 6 months after the origin and the actual is the series value at that month
-        assert (r.target_date.year * 12 + r.target_date.month) - (r.origin_date.year * 12 + r.origin_date.month) == 6
+        assert (r.target_date.year * 12 + r.target_date.month) - (
+            r.origin_date.year * 12 + r.origin_date.month
+        ) == 6
         assert r.actual == y[p.index(r.target_date)]
         # naive = last value visible at the origin: nothing after the origin may be used
         assert r.point == y[p.index(r.origin_date)]

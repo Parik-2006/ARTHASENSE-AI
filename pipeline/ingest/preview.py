@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Read-only import preview: what WOULD change if fetched official data were stored.
 
     python -m pipeline.ingest.preview wpi --start-year 2023 --end-year 2026
@@ -36,7 +37,12 @@ from pipeline.ingest.runner import fetch_range, make_client
 from pipeline.ingest.store_common import IngestStats
 from pipeline.sources.mospi import MospiClient
 
-_STORE_MODULES = ("pipeline.ingest.wpi", "pipeline.ingest.iip", "pipeline.ingest.cpi_store", "pipeline.ingest.cpi_legacy")
+_STORE_MODULES = (
+    "pipeline.ingest.wpi",
+    "pipeline.ingest.iip",
+    "pipeline.ingest.cpi_store",
+    "pipeline.ingest.cpi_legacy",
+)
 
 LATEST_SQL = """
 SELECT DISTINCT ON (o.period_date) o.period_date, o.value
@@ -200,17 +206,25 @@ def run(argv: list[str] | None = None, client: MospiClient | None = None) -> int
     last = datetime.now(UTC).year
     lo = ing.first_year(a)
     if not (lo <= a.start_year <= a.end_year <= last) or a.end_year - a.start_year + 1 > MAX_HISTORY_YEARS:
-        print(f"Error: need {lo} <= start <= end <= {last}, at most {MAX_HISTORY_YEARS} years", file=sys.stderr)
+        print(
+            f"Error: need {lo} <= start <= end <= {last}, at most {MAX_HISTORY_YEARS} years", file=sys.stderr
+        )
         return 2
     url = database_url()
     if not url:
-        print("Error: ARTHASENSE_DATABASE_URL is not set; a preview needs a database to compare with", file=sys.stderr)
+        print(
+            "Error: ARTHASENSE_DATABASE_URL is not set; a preview needs a database to compare with",
+            file=sys.stderr,
+        )
         return 2
     host = host_of(url)
     print(f"ArthaSense AI - {ing.name} import preview {a.start_year}-{a.end_year}")
     print(f"Comparing against database host: {host}")
     if host not in {h.strip() for h in a.allow_host.split(",")}:
-        print(f"Refusing: host {host!r} is not in --allow-host. Previews default to local databases only.", file=sys.stderr)
+        print(
+            f"Refusing: host {host!r} is not in --allow-host. Previews default to local databases only.",
+            file=sys.stderr,
+        )
         return 2
 
     own = client is None

@@ -1,10 +1,11 @@
+# ruff: noqa: E501  (registry text and long literals are kept on readable lines)
 """CPI 2012 legacy adapter: validation, status flags, no splicing with the 2024-base series. Offline."""
 
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import pytest
-from mospi_mock import MONTHS, client, no_sleep, paged
+from mospi_mock import MONTHS, client, paged
 
 from pipeline.ingest import cpi_legacy as L
 from pipeline.ingest.common import ValidationError
@@ -19,7 +20,9 @@ def row(year, m, index="100.0", inflation="3.0", status="F", **over):
 
 
 def test_valid_records_keep_gaps_as_none_and_status_flag():
-    recs = L.validate_records([row(2013, 2, "101.5", None), row(2013, 1, "100.0", None, status="P")], 2013, 2013)
+    recs = L.validate_records(
+        [row(2013, 2, "101.5", None), row(2013, 1, "100.0", None, status="P")], 2013, 2013
+    )
     assert [r.period for r in recs] == [date(2013, 1, 1), date(2013, 2, 1)]
     assert recs[0].inflation is None and recs[0].status == "P"  # missing stays None, never 0
     assert recs[1].index == Decimal("101.5")
@@ -66,7 +69,9 @@ class Args:
 
 
 def test_store_would_write_both_series_with_source_status():
-    recs = L.validate_records([row(2021, 1, "165.0", "5.0", "F"), row(2021, 2, "166.0", None, "P")], 2021, 2021)
+    recs = L.validate_records(
+        [row(2021, 1, "165.0", "5.0", "F"), row(2021, 2, "166.0", None, "P")], 2021, 2021
+    )
     cap = capture_store(INGESTERS["cpi2012"], recs, 2021, datetime(2026, 1, 1, tzinfo=UTC), Args())
     got = {(c, p.month): (v, s) for c, p, v, s in cap.observations}
     assert got[(L.INDEX_CODE, 1)] == (Decimal("165.0"), "source_final")

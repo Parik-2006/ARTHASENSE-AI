@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (registry text and long literals are kept on readable lines)
 """CPI base 2012 (legacy) ingestion: All India / Combined / General index and official YoY inflation.
 
     python -m pipeline.ingest.history cpi2012 --start-year 2013 --end-year 2025 --resume
@@ -24,7 +25,14 @@ from typing import Any
 
 import psycopg
 
-from pipeline.ingest.common import PagedResult, ValidationError, fetch_paginated, parse_decimal, parse_month, parse_year
+from pipeline.ingest.common import (
+    PagedResult,
+    ValidationError,
+    fetch_paginated,
+    parse_decimal,
+    parse_month,
+    parse_year,
+)
 from pipeline.ingest.runner import Ingester
 from pipeline.ingest.store_common import IngestStats, SeriesSpec, canonical_sha256, dec_str, store_snapshot
 from pipeline.sources.mospi import BASE_URL, ENDPOINTS, MospiClient
@@ -38,7 +46,13 @@ PAGE_SIZE = 100  # the API's documented cap for this endpoint family
 INDEX_CODE = "mospi.cpi.2012.current.all_india.combined.general.index"
 INFLATION_CODE = "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy"
 
-FILTERS: dict[str, str | int] = {"base_year": BASE_YEAR, "series": "Current", "state_code": 99, "sector_code": 3, "group_code": 0}
+FILTERS: dict[str, str | int] = {
+    "base_year": BASE_YEAR,
+    "series": "Current",
+    "state_code": 99,
+    "sector_code": 3,
+    "group_code": 0,
+}
 
 STATUS_LABEL = {"F": "source_final", "P": "source_provisional"}
 
@@ -87,7 +101,9 @@ def validate_records(raws: list[dict[str, Any]], start_year: int, end_year: int)
     return sorted(out, key=lambda r: r.period)
 
 
-def fetch_year(client: MospiClient, year: int, delay_s: float, args: argparse.Namespace | None = None) -> PagedResult:
+def fetch_year(
+    client: MospiClient, year: int, delay_s: float, args: argparse.Namespace | None = None
+) -> PagedResult:
     return fetch_paginated(
         client, "cpi_group_legacy", {**FILTERS, "year": year},
         key_fn=lambda r: (r.get("year"), r.get("month")), page_size=PAGE_SIZE, delay_s=delay_s,
@@ -98,7 +114,9 @@ def specs() -> dict[str, SeriesSpec]:
     label = f"CPI (2012 base, legacy), {STATE} / {SECTOR} / {GROUP}"
     return {
         INDEX_CODE: SeriesSpec(INDEX_CODE, f"{label}: index", "CPI", "index (2012=100)", BASE_YEAR, STATE),
-        INFLATION_CODE: SeriesSpec(INFLATION_CODE, f"{label}: year-on-year inflation", "CPI", "percent", BASE_YEAR, STATE),
+        INFLATION_CODE: SeriesSpec(
+            INFLATION_CODE, f"{label}: year-on-year inflation", "CPI", "percent", BASE_YEAR, STATE
+        ),
     }
 
 
@@ -116,14 +134,28 @@ def snapshot_sha256(records: list[LegacyCpiRecord], start_year: int, end_year: i
     body = {
         "filters": {k: str(v) for k, v in sorted(FILTERS.items())},
         "years": [start_year, end_year],
-        "records": [[r.period.isoformat(), dec_str(r.index), dec_str(r.inflation), r.status] for r in sorted(records, key=lambda r: r.period)],
+        "records": [
+            [r.period.isoformat(), dec_str(r.index), dec_str(r.inflation), r.status]
+            for r in sorted(records, key=lambda r: r.period)
+        ],
     }
     return canonical_sha256(body)
 
 
-def store_cpi_legacy(conn: psycopg.Connection, records: list[LegacyCpiRecord], *, start_year: int, end_year: int, retrieved_at: datetime) -> IngestStats:
+def store_cpi_legacy(
+    conn: psycopg.Connection,
+    records: list[LegacyCpiRecord],
+    *,
+    start_year: int,
+    end_year: int,
+    retrieved_at: datetime,
+) -> IngestStats:
     sha = snapshot_sha256(records, start_year, end_year)
-    obs = [(code, r.period, v, status_of(r.status)) for r in records for code, v in ((INDEX_CODE, r.index), (INFLATION_CODE, r.inflation))]
+    obs = [
+        (code, r.period, v, status_of(r.status))
+        for r in records
+        for code, v in ((INDEX_CODE, r.index), (INFLATION_CODE, r.inflation))
+    ]
     return store_snapshot(
         conn, source_code=SOURCE_CODE, source_name=SOURCE_NAME, base_url=BASE_URL,
         release_key=key_prefix(start_year, end_year) + sha[:16], sha256=sha, retrieved_at=retrieved_at,
@@ -137,7 +169,11 @@ INGESTER = Ingester(
     doc=__doc__ or "",
     add_args=lambda p: None,
     first_year=lambda a: FIRST_YEAR,
-    header=lambda a: [f"CPI series: Current (legacy)", f"Base year: {BASE_YEAR}", f"Coverage: {STATE} / {SECTOR} / {GROUP}"],
+    header=lambda a: [
+        "CPI series: Current (legacy)",
+        f"Base year: {BASE_YEAR}",
+        f"Coverage: {STATE} / {SECTOR} / {GROUP}",
+    ],
     fetch_year=lambda client, year, delay, a: fetch_year(client, year, delay, a),
     validate=lambda raws, s, e, a: validate_records(raws, s, e),
     summary=lambda recs, a: [
@@ -146,7 +182,9 @@ INGESTER = Ingester(
         f"Missing inflation values: {sum(r.inflation is None for r in recs)}",
         f"Source status flags: {sorted({r.status for r in recs})}",
     ],
-    store=lambda conn, recs, s, e, at, a: store_cpi_legacy(conn, recs, start_year=s, end_year=e, retrieved_at=at),
+    store=lambda conn, recs, s, e, at, a: store_cpi_legacy(
+        conn, recs, start_year=s, end_year=e, retrieved_at=at
+    ),
     key_prefix=lambda s, e, a: key_prefix(s, e),
 )
 

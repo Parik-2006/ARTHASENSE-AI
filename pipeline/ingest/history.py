@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Bounded, resumable multi-year ingestion for CPI, WPI and IIP.
 
     python -m pipeline.ingest.history wpi --start-year 2023 --end-year 2026 --dry-run
@@ -28,7 +29,12 @@ from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 from pipeline.ingest.store_common import release_exists
 from pipeline.sources.mospi import MospiClient
 
-INGESTERS: dict[str, Ingester] = {"cpi": cpi.INGESTER, "cpi2012": cpi_legacy.INGESTER, "wpi": wpi.INGESTER, "iip": iip.INGESTER}
+INGESTERS: dict[str, Ingester] = {
+    "cpi": cpi.INGESTER,
+    "cpi2012": cpi_legacy.INGESTER,
+    "wpi": wpi.INGESTER,
+    "iip": iip.INGESTER,
+}
 MAX_HISTORY_YEARS = 20
 
 

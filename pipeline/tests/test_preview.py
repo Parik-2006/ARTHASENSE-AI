@@ -1,7 +1,6 @@
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
-import pytest
 from mospi_mock import wpi_row
 
 from pipeline.ingest import preview, wpi
@@ -46,7 +45,9 @@ def test_capture_never_touches_a_connection_and_returns_what_would_be_written():
 
 
 def test_preview_refuses_non_local_database_hosts(monkeypatch, capsys):
-    monkeypatch.setattr(preview, "database_url", lambda: "postgresql://u:secret@db.example.supabase.co:5432/postgres")
+    monkeypatch.setattr(
+        preview, "database_url", lambda: "postgresql://u:secret@db.example.supabase.co:5432/postgres"
+    )
     code = preview.run(["wpi", "--start-year", "2025", "--end-year", "2025"])
     out = capsys.readouterr()
     assert code == 2

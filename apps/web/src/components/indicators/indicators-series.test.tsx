@@ -103,6 +103,12 @@ describe("IndicatorWorkspace", () => {
     render(<IndicatorWorkspace config={WPI_CONFIG} bundles={wpiBundles()} />);
     expect(screen.getByRole("status")).toBeTruthy();
   });
+  it("a link to a base that is not stored says so even when only one series exists", () => {
+    search = "base=2012";
+    render(<IndicatorWorkspace config={CPI_CONFIG} bundles={[bundle("cpi", 0, fixPayload("cpi", "2024"))]} />);
+    expect(screen.getByRole("status").textContent).toMatch(/not stored for CPI/);
+    expect(screen.queryByRole("group", { name: "Series (base year)" })).toBeNull();
+  });
   it("no switcher when only one series is stored", () => {
     render(<IndicatorWorkspace config={WPI_CONFIG} bundles={[wpiBundles()[0]]} />);
     expect(screen.queryByRole("group", { name: "Series (base year)" })).toBeNull();

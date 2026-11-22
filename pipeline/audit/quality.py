@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (registry text and long literals are kept on readable lines)
 """Data-quality and calculation-correctness audit of the stored official series (read-only).
 
     python -m pipeline.audit            -> reports/data-quality-<date>.json and docs/DATA-QUALITY.md
@@ -67,7 +68,9 @@ def compare_yoy(index: dict[Month, float], official: dict[Month, float], toleran
     both = sorted(m for m in calc if m in official)
     diffs = [abs(calc[m] - official[m]) for m in both]
     over = [(m, round(calc[m], 3), official[m]) for m in both if abs(calc[m] - official[m]) > tolerance]
-    return YoYComparison(len(both), max(diffs) if diffs else None, statistics.fmean(diffs) if diffs else None, over, tolerance)
+    return YoYComparison(
+        len(both), max(diffs) if diffs else None, statistics.fmean(diffs) if diffs else None, over, tolerance
+    )
 
 
 @dataclass
@@ -81,7 +84,9 @@ class OverlapStats:
     constant_factor_like: bool
 
 
-def overlap_ratio(a: dict[Month, float], b: dict[Month, float], constant_tolerance_pct: float = 1.0) -> OverlapStats:
+def overlap_ratio(
+    a: dict[Month, float], b: dict[Month, float], constant_tolerance_pct: float = 1.0
+) -> OverlapStats:
     """Ratio a/b over months present in both. REPORT ONLY: never used to convert or link series."""
     both = sorted(m for m in a if m in b and b[m] != 0)
     if not both:
@@ -89,7 +94,9 @@ def overlap_ratio(a: dict[Month, float], b: dict[Month, float], constant_toleran
     r = [a[m] / b[m] for m in both]
     mean = statistics.fmean(r)
     spread = (max(r) - min(r)) / mean * 100
-    return OverlapStats(len(both), both[0], both[-1], min(r), max(r), spread, spread <= constant_tolerance_pct)
+    return OverlapStats(
+        len(both), both[0], both[-1], min(r), max(r), spread, spread <= constant_tolerance_pct
+    )
 
 
 def large_moves(index: dict[Month, float], threshold_pct: float) -> list[tuple[Month, float]]:
@@ -131,12 +138,27 @@ RATE_TOLERANCE = {"cpi": 0.15, "iip": 0.15}
 def load(conn) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     for code, ind, base, periods, values, retrieved in conn.execute(SERIES_SQL).fetchall():
-        out[code] = {"indicator": ind, "base_year": base, "values": {mkey(p): float(v) for p, v in zip(periods, values, strict=True)}, "retrieved": retrieved}
+        out[code] = {
+            "indicator": ind,
+            "base_year": base,
+            "values": {mkey(p): float(v) for p, v in zip(periods, values, strict=True)},
+            "retrieved": retrieved,
+        }
     return out
 
 
-def build_report(series: dict[str, dict[str, Any]], revisions: dict[str, int], statuses: list[tuple[str, str, int]], today: date) -> dict[str, Any]:
-    rep: dict[str, Any] = {"generated_at": datetime.now(UTC).isoformat(timespec="seconds"), "series": [], "base_transitions": [], "calculation_checks": []}
+def build_report(
+    series: dict[str, dict[str, Any]],
+    revisions: dict[str, int],
+    statuses: list[tuple[str, str, int]],
+    today: date,
+) -> dict[str, Any]:
+    rep: dict[str, Any] = {
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "series": [],
+        "base_transitions": [],
+        "calculation_checks": [],
+    }
     today_n = today.year * 12 + today.month - 1
     for code, s in series.items():
         v = s["values"]
@@ -151,7 +173,10 @@ def build_report(series: dict[str, dict[str, Any]], revisions: dict[str, int], s
         if is_index:
             entry["non_positive_values"] = sum(1 for x in v.values() if x <= 0)
             thr = 5.0 if s["indicator"] != "IIP" else 15.0
-            entry["large_moves"] = {"threshold_pct": thr, "months": [[fmt(m), mv] for m, mv in large_moves(v, thr)]}
+            entry["large_moves"] = {
+                "threshold_pct": thr,
+                "months": [[fmt(m), mv] for m, mv in large_moves(v, thr)],
+            }
         rep["series"].append(entry)
     rep["source_flags"] = [{"code": c, "status": st, "months": n} for c, st, n in statuses]
 
@@ -159,7 +184,7 @@ def build_report(series: dict[str, dict[str, Any]], revisions: dict[str, int], s
     idx = {c: s for c, s in series.items() if c.endswith(".index")}
     codes = sorted(idx)
     for i, a in enumerate(codes):
-        for b in codes[i + 1:]:
+        for b in codes[i + 1 :]:
             if idx[a]["indicator"] != idx[b]["indicator"]:
                 continue
             if a.split(".")[-2] != b.split(".")[-2] and idx[a]["indicator"] == "IIP":
@@ -194,27 +219,74 @@ def build_report(series: dict[str, dict[str, Any]], revisions: dict[str, int], s
 
 
 def render_markdown(rep: dict[str, Any]) -> str:
-    L = ["# Data-quality and calculation audit", "", f"Generated {rep['generated_at']} from the local database (read-only). Every number below is computed from stored official observations; nothing is edited or filled.", ""]
-    L += ["## 1. Completeness, freshness and revisions (per series)", "", "| Series | Base | First | Last | Months | Missing months | Latest is N months old | Revised months |", "|---|---|---|---|---:|---|---:|---:|"]
+    L = [
+        "# Data-quality and calculation audit",
+        "",
+        f"Generated {rep['generated_at']} from the local database (read-only). Every number below is computed from stored official observations; nothing is edited or filled.",
+        "",
+    ]
+    L += [
+        "## 1. Completeness, freshness and revisions (per series)",
+        "",
+        "| Series | Base | First | Last | Months | Missing months | Latest is N months old | Revised months |",
+        "|---|---|---|---|---:|---|---:|---:|",
+    ]
     for s in rep["series"]:
         miss = ", ".join(s["missing_months"]) or "none"
-        L.append(f"| `{s['code']}` | {s['base_year']} | {s['first']} | {s['last']} | {s['months']} | {miss} | {s['age_months_of_latest']} | {s['revised_months']} |")
-    L += ["", "Age is the distance between the newest stored month and the current month. It is not a staleness claim: no publication schedule is known to the API.", ""]
-    L += ["## 2. Calculation correctness: website YoY vs the publisher's official rate", "",
-          "The site calculates YoY as `(index_t / index_t-12 - 1) × 100`. For every series that also has an official rate, the two are compared month by month.", "",
-          "| Index series | Official rate | Months compared | Max abs diff (pp) | Mean abs diff (pp) | Over tolerance |", "|---|---|---:|---:|---:|---:|"]
+        L.append(
+            f"| `{s['code']}` | {s['base_year']} | {s['first']} | {s['last']} | {s['months']} | {miss} | {s['age_months_of_latest']} | {s['revised_months']} |"
+        )
+    L += [
+        "",
+        "Age is the distance between the newest stored month and the current month. It is not a staleness claim: no publication schedule is known to the API.",
+        "",
+    ]
+    L += [
+        "## 2. Calculation correctness: website YoY vs the publisher's official rate",
+        "",
+        "The site calculates YoY as `(index_t / index_t-12 - 1) × 100`. For every series that also has an official rate, the two are compared month by month.",
+        "",
+        "| Index series | Official rate | Months compared | Max abs diff (pp) | Mean abs diff (pp) | Over tolerance |",
+        "|---|---|---:|---:|---:|---:|",
+    ]
     for c in rep["calculation_checks"]:
-        L.append(f"| `{c['index']}` | `{c['official_rate'].split('.')[-1]}` | {c['months_compared']} | {c['max_abs_diff_pp']} | {c['mean_abs_diff_pp']} | {c['months_over_tolerance']} (> {c['tolerance_pp']} pp) |")
-    L += ["", "Small differences are expected because the published index is rounded to one decimal. Larger ones are listed in the JSON report with the months.", ""]
-    L += ["## 3. Base-year transitions (reported, never used)", "", "| Series A | Series B | Overlap | Ratio A/B min | max | Spread % | Constant like a factor? |", "|---|---|---|---:|---:|---:|---|"]
+        L.append(
+            f"| `{c['index']}` | `{c['official_rate'].split('.')[-1]}` | {c['months_compared']} | {c['max_abs_diff_pp']} | {c['mean_abs_diff_pp']} | {c['months_over_tolerance']} (> {c['tolerance_pp']} pp) |"
+        )
+    L += [
+        "",
+        "Small differences are expected because the published index is rounded to one decimal. Larger ones are listed in the JSON report with the months.",
+        "",
+    ]
+    L += [
+        "## 3. Base-year transitions (reported, never used)",
+        "",
+        "| Series A | Series B | Overlap | Ratio A/B min | max | Spread % | Constant like a factor? |",
+        "|---|---|---|---:|---:|---:|---|",
+    ]
     for t in rep["base_transitions"]:
-        L.append(f"| `{t['a']}` | `{t['b']}` | {t['from']} to {t['to']} ({t['overlap_months']} mo) | {t['ratio_min']} | {t['ratio_max']} | {t['ratio_spread_pct']} | {'yes' if t['constant_factor_like'] else 'no'} |")
-    L += ["", "A ratio that drifts between months is not a linking factor. ArthaSense never converts or joins series across base years.", ""]
+        L.append(
+            f"| `{t['a']}` | `{t['b']}` | {t['from']} to {t['to']} ({t['overlap_months']} mo) | {t['ratio_min']} | {t['ratio_max']} | {t['ratio_spread_pct']} | {'yes' if t['constant_factor_like'] else 'no'} |"
+        )
+    L += [
+        "",
+        "A ratio that drifts between months is not a linking factor. ArthaSense never converts or joins series across base years.",
+        "",
+    ]
     L += ["## 4. Source flags stored per observation", ""]
-    L += [f"- `{f['code']}`: `{f['status']}` on {f['months']} month(s)" for f in rep["source_flags"]] or ["- none beyond the default 'retrieved'"]
-    big = [(s["code"], s["large_moves"]["months"]) for s in rep["series"] if s.get("large_moves", {}).get("months")]
+    L += [f"- `{f['code']}`: `{f['status']}` on {f['months']} month(s)" for f in rep["source_flags"]] or [
+        "- none beyond the default 'retrieved'"
+    ]
+    big = [
+        (s["code"], s["large_moves"]["months"])
+        for s in rep["series"]
+        if s.get("large_moves", {}).get("months")
+    ]
     L += ["", "## 5. Large single-month moves (informational; values are shown unchanged)", ""]
-    L += [f"- `{c}`: {', '.join(f'{m} ({mv:+.1f}%)' for m, mv in ms[:8])}{' …' if len(ms) > 8 else ''}" for c, ms in big] or ["- none"]
+    L += [
+        f"- `{c}`: {', '.join(f'{m} ({mv:+.1f}%)' for m, mv in ms[:8])}{' …' if len(ms) > 8 else ''}"
+        for c, ms in big
+    ] or ["- none"]
     return "\n".join(L) + "\n"
 
 
@@ -243,7 +315,9 @@ def main(argv: list[str] | None = None) -> int:
     stamp = datetime.now(UTC).strftime("%Y-%m-%d")
     Path(f"reports/data-quality-{stamp}.json").write_text(json.dumps(rep, indent=1), encoding="utf-8")
     Path("docs/DATA-QUALITY.md").write_text(render_markdown(rep), encoding="utf-8")
-    print(f"series: {len(rep['series'])}; calculation checks: {len(rep['calculation_checks'])}; base transitions: {len(rep['base_transitions'])}")
+    print(
+        f"series: {len(rep['series'])}; calculation checks: {len(rep['calculation_checks'])}; base transitions: {len(rep['base_transitions'])}"
+    )
     return 0
 
 

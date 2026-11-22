@@ -28,12 +28,13 @@ echo "3/4 test restore of the public schema into an isolated PostgreSQL 17 conta
 docker rm -f arthasense-restoretest17 >/dev/null 2>&1 || true
 docker run -d --name arthasense-restoretest17 -e POSTGRES_PASSWORD=restoretest -e POSTGRES_DB=restoretest -v "$OUT_DIR:/backup" postgres:17 >/dev/null
 for i in $(seq 1 30); do docker exec arthasense-restoretest17 pg_isready -U postgres -d restoretest >/dev/null 2>&1 && break; sleep 1; done; sleep 2
-docker exec arthasense-restoretest17 pg_restore --no-owner --no-privileges --schema=public -d restoretest "/backup/$DUMP" || true
+docker exec arthasense-restoretest17 pg_restore -U postgres --no-owner --no-privileges --schema=public -d restoretest "/backup/$DUMP" || true
 
 echo "4/4 fingerprint vs the pre-import production baseline"
 for t in sources series releases observations linking_factors forecast_runs forecasts scores; do
-  docker exec arthasense-restoretest17 psql -U postgres -d restoretest -At -c \
+  # extra_float_digits=0 = Supabase's setting, so float8 renders as in production (5.0375, not 5.037499999999998)
+  docker exec arthasense-restoretest17 psql -U postgres -d restoretest -At -c "set extra_float_digits=0" -c \
     "select '$t', count(*), coalesce(md5(string_agg(row_to_json(t)::text, '|' order by row_to_json(t)::text collate \"C\")), '') from $t t"
-done | tee "$OUT_DIR/$DUMP.restore-check.txt"
+done | grep -v "^SET" | tee "$OUT_DIR/$DUMP.restore-check.txt"
 docker exec arthasense-restoretest17 psql -U postgres -d restoretest -At -c "select string_agg(version, ',' order by version) from schema_migrations" | sed 's/^/migrations: /'
 echo "compare with $REPO/reports/production-baseline-fingerprint.json"

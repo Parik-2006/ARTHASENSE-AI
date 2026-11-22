@@ -2,7 +2,7 @@
 
 Status legend: **DONE-LOCAL** completed locally · **VERIFIED-STAGING** proven on the isolated PostgreSQL 17 replica ·
 **APPROVED** approved by the owner for production · **EXECUTED-PROD** run against production · **VERIFIED-LIVE** checked on the live site.
-As of this report, **nothing has been written to production**, and no backup has been taken yet.
+As of this update (2026-11-22, 22:00 IST), **nothing has been written to production**. The backup is taken and verified.
 
 | Step | Status |
 |---|---|
@@ -13,7 +13,8 @@ As of this report, **nothing has been written to production**, and no backup has
 | Official import (run 1: +3,014; run 2: +0) and 14 integrity checks | VERIFIED-STAGING |
 | Data rollback returns exactly to the baseline fingerprint | VERIFIED-STAGING |
 | API ↔ database 50/50 series; browser 56/56 on the post-import replica | VERIFIED-STAGING |
-| Production backup + test restore | **BLOCKED: connection file `P:\ArthaSense-AI\.prod.env` not present yet** |
+| Production backup + test restore | **DONE (read-only): checksum OK, restore matches the baseline on all 8 tables** |
+| Fresh pre-import read-only audit | DONE: production unchanged (all 8 fingerprints = baseline); staging re-run inserts 0 (no new MoSPI data) |
 | Production migrations + import | NOT APPROVED, NOT EXECUTED |
 | Live API / site with full data and GDP | NOT YET (production still has 415 observations, GDP 404) |
 
@@ -65,7 +66,22 @@ content SHA-256. New series: 38 (CPI back + CPI 2012, WPI 2011-12/2004-05/1993-9
 * **Website on the post-import replica:** `tools/api_db_consistency.py` 50/50 series, 3,429 observations; browser suite
   56/56 (Overview 3 sections, 4 tabs × 2 charts, all filters, year buttons, GDP 1Y = 4 quarters ending 7.8%, 6 viewports).
 
-## 4. Production release plan (awaiting the backup, then approval)
+## 3a. Production backup (2026-11-22 16:24 UTC) — verified
+* Connection: `P:\ArthaSense-AI\.prod.env` (outside the repo, never printed), Supabase **session pooler**
+  `aws-1-ap-northeast-1.pooler.supabase.com:5432`, user `postgres.yqcscbxiprinmejslilt`, SSL, read-only session
+  (`default_transaction_read_only=on`). Identity: PostgreSQL 17.12, migrations 0000–0002 with the repository hashes, counts
+  1 / 12 / 9 / 415 / 176 / 1,195 / 718 = the baseline.
+* Backup: PostgreSQL 17 `pg_dump --format=custom --no-owner --no-privileges` of the whole database →
+  `P:\ArthaSense-AIackupsrthasense-prod-20261122T162405Z.dump` (411,835 bytes), SHA-256 file alongside,
+  `sha256sum -c` **OK**; `pg_restore --list` shows all 9 public tables' data.
+* Test restore: public schema into an isolated PostgreSQL 17 container (`arthasense-restoretest17`). Fingerprints of all 8
+  data tables **equal the production baseline**, migrations 0000–0002 with matching hashes, 0 orphan forecasts/scores
+  (`…dump.restore-check.txt`). Note: fingerprints must be taken with `extra_float_digits=0` (Supabase's setting);
+  under PostgreSQL's default the same doubles render with more digits.
+* Recovery: `pg_restore --clean --if-exists --no-owner --schema=public -d <restored project or new database> <dump>` (data
+  tables), or Supabase dashboard backups/PITR; then point `ARTHASENSE_DATABASE_URL` on Render at it.
+
+## 4. Production release plan (backup verified; awaiting approval)
 1. **Backup** (read-only): `bash tools/prod/backup_and_verify.sh P:/ArthaSense-AI/.prod.env P:/ArthaSense-AI/backups`
    — PostgreSQL 17 `pg_dump` (custom format, whole database) into a folder outside the repo, SHA-256, test restore of the public
    schema into an isolated PostgreSQL 17 container, fingerprints compared with the baseline. Also note Supabase's own daily

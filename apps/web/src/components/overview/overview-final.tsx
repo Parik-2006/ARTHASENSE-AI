@@ -154,8 +154,11 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
 
   // ============================== Section 2: how are things changing ==============================
   function Changes() {
-    const k = (VIEW_KEYS as readonly string[]).includes(params.get("chg") ?? "") ? (params.get("chg") as ViewKey) : "cpi";
-    const pick = (key: ViewKey) => go({ chg: key === "cpi" ? null : key });
+    // Default: the first indicator that actually has a year-on-year figure stored (never open on an empty panel).
+    const hasRate = (x: ViewKey) => (x === "gdp" ? gdpRows.some((r) => r.growthOfficial !== null) : !!byKey(x)?.rows.some((r) => rateOf(byKey(x)!, r) !== null));
+    const def: ViewKey = VIEW_KEYS.find(hasRate) ?? "cpi";
+    const k = (VIEW_KEYS as readonly string[]).includes(params.get("chg") ?? "") ? (params.get("chg") as ViewKey) : def;
+    const pick = (key: ViewKey) => go({ chg: key === def ? null : key });
     return (
       <SectionShell id="changes" tour="changes" title="How are things changing?" help="yoy" intro="Change compared with the same period a year earlier. Choose an indicator and a time range.">
         <div className="rounded-md border border-rule bg-surface p-4">
@@ -237,7 +240,10 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     const available: ViewKey[] = VIEW_KEYS.filter((k) => (k === "gdp" ? gdp.ok : !!byKey(k)?.rows.length));
     const ci = params.get("ci");
     // Default: the monthly indicators (a monthly comparison). GDP can be added; the comparison then becomes quarterly.
-    const picked = ci === null ? available.filter((k) => k !== "gdp") : parseCompareSel(ci, available);
+    // Default: monthly indicators that have at least one year-on-year value (an indicator with too little history
+    // would only add an empty line); fall back to all monthly indicators.
+    const withYoy = available.filter((k) => k !== "gdp" && !!byKey(k)?.rows.some((r) => r.yoyCalc !== null));
+    const picked = ci === null ? (withYoy.length >= 2 ? withYoy : available.filter((k) => k !== "gdp")) : parseCompareSel(ci, available);
     const requested: CmpMode = params.get("cmp") ? parseCmpMode(params.get("cmp")) : "yoy";
     const result = buildComparison({ picked, monthly: prepared.map((p) => ({ key: p.b.key, rows: p.rows })), gdp: gdp.ok ? { rows: gdpRows } : null, sel, mode: requested });
     const quarterly = result.frequency === "quarterly";

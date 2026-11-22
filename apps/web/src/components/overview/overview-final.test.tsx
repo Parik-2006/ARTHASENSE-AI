@@ -132,3 +132,16 @@ describe("Section 3: comparison is by percentage change only", () => {
     expect(box.disabled).toBe(true);
   });
 });
+
+describe("defaults never open on an empty view (production-shaped data)", () => {
+  const short = () => [bundle("cpi", series(2025 * 12, 12, false)), bundle("wpi", series(S, 48, false)), bundle("iip", series(S, 48, true))];
+  it("Section 2 opens on the first indicator with a year-on-year figure (WPI when CPI has 12 months and no rate)", () => {
+    render(<OverviewFinal bundles={short()} gdp={none} />);
+    expect(screen.getByTestId("change-panel").textContent).toMatch(/WPI: wholesale inflation/);
+  });
+  it("the comparison leaves out an indicator without any year-on-year value", () => {
+    render(<OverviewFinal bundles={short()} gdp={none} />);
+    const boxes = within(document.getElementById("compare")!).getAllByRole("checkbox") as HTMLInputElement[];
+    expect(boxes.map((b) => b.checked)).toEqual([false, true, true, false]);
+  });
+});

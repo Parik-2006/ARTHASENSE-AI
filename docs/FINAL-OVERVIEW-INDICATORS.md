@@ -66,9 +66,11 @@ Each view also has the definition sentence from the brief, base-year selector (`
 ## 5. Tests
 
 * Python: **345 passed** (isolated test DB `arthasense_test_final`), incl. 18 NAS adapter tests and 8 GDP API tests. `ruff check` and `ruff format --check` clean.
-* Frontend: **318 passed** (18 files) incl. 25 range/explanation tests, 21 detail-view tests and 14 Overview tests. ESLint and `tsc` clean. `next build` succeeds.
+* Frontend: **320 passed** (18 files) incl. 25 range/explanation tests, 21 detail-view tests and 16 Overview tests. ESLint and `tsc` clean. `next build` succeeds.
 * Browser (production build, Chrome, `reports/final-e2e-*.json`): full local dataset + GDP **50/50**; production-shaped old schema **32/32**; backend down **20/20**; new frontend against the live production API (read-only) **32/32**.
-* Screenshots: `reports/final-ui/overview-1440.png`, `overview-390.png`, `indicators-{cpi,wpi,iip,gdp}-1440.png`.
+* Screenshots, local dataset incl. GDP: `reports/final-ui/overview-{1440,390}.png`, `indicators-{cpi,wpi,iip,gdp}-1440.png`.
+  Production-shaped (new frontend on the live production API): `reports/final-ui/production-shaped-overview-{1440,390}.png`, `production-shaped-indicators-*-1440.png`.
+* Defaults never open on an empty view: Section 2 starts on the first indicator with a stored year-on-year figure (WPI on production, where CPI has 12 months and no rate), and the default comparison leaves out an indicator without any year-on-year value.
 
 ## 6. Limitations
 

@@ -45,10 +45,10 @@ export const HELP: Record<string, HelpEntry> = {
     mistake: "Do not read a quarterly point as a monthly value, and do not compare raw index levels with GDP levels.",
   },
   "expand-graph": {
-    title: "Opening a full chart",
-    what: "Select a card to open its full historical chart below the cards. Select it again, or Close, to hide it.",
+    title: "Opening an indicator",
+    what: "Select a card to open that indicator's page with its two charts, filters and data.",
     why: "Each indicator has its own scale and base year, so each gets its own chart.",
-    how: "Use 3M to All, or Custom months, to change the window. The browser Back button closes the chart.",
+    how: "On the indicator page, use 2M to All, or Custom months, to change the window. The browser Back button returns here.",
     mistake: "A range longer than the stored history is not widened or filled in. The note under the chart says how many months exist.",
   },
   "history-gaps": {
@@ -290,14 +290,14 @@ export const OVERVIEW_TOUR: TourStep[] = [
 
 /** Indicators page tour. Targets are `data-tour` attributes on the Indicators hub. */
 export const INDICATORS_TOUR: TourStep[] = [
-  { target: "ind-intro", title: "What are economic indicators?", body: "Indicators are official statistics that track the economy over time. Here you can explore CPI, WPI and IIP." },
+  { target: "ind-intro", title: "What are economic indicators?", body: "Indicators are official statistics that track the economy over time. Here you can explore CPI, WPI, IIP and GDP." },
   { target: "ind-cards", title: "CPI, WPI and IIP", body: "CPI measures consumer prices, WPI wholesale prices of goods, and IIP industrial output. They are different measures with different base years." },
   { target: "ind-cards", title: "The latest-value cards", body: "Each card shows the newest stored index, its month and base year, the monthly change ArthaSense calculates, and the official annual rate when the source provides one." },
-  { target: "ind-range", title: "Choosing a date range", body: "Pick 3M to 5Y or All. Ranges end at each series' latest stored month. Custom months and metrics are on each indicator page, and your choice is kept in the page link." },
+  { target: "ind-range", title: "Choosing a date range", body: "Pick 3M to 5Y or All. Ranges end at each series' latest stored month. Each indicator page adds 2M and Custom months, and your choice is kept in the page link." },
   { target: "ind-trends", title: "Reading historical trends", body: "Hover or use the arrow keys on a chart to read each month. Breaks in a line are months with no stored data." },
   { target: "ind-compare", title: "Comparing indicators", body: "Percentage changes can sit side by side; index levels cannot. Similar movement does not show that one causes the other." },
   { target: "ind-coverage", title: "Checking coverage and sources", body: "This table shows what is stored. Every chart also has a source line and a 'Source details' panel with the series identifier and formula." },
-  { target: "ind-explore", title: "Going deeper", body: "Open an indicator page for the metric selector, heatmap, moving average, sector explorer, searchable table and CSV download of the months you selected." },
+  { target: "ind-explore", title: "Going deeper", body: "Open an indicator page for two charts, a time-range filter, a plain-English summary of the selected period, the data table and a CSV download of exactly the months shown." },
 ];
 
 export const FORECAST_OVERVIEW_TOUR: TourStep[] = [

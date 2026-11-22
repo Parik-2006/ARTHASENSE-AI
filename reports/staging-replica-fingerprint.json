@@ -1,0 +1,34 @@
+{
+ "sources": [
+  1,
+  "1216918ea183eb3a5057c3443e3c58db"
+ ],
+ "series": [
+  12,
+  "6d26be7cce59fd5c676ac30070bdf1e3"
+ ],
+ "releases": [
+  9,
+  "e19c95698b7659e0cbe01b5ef1fb4b00"
+ ],
+ "observations": [
+  415,
+  "4353fe4f07f5be74b6f639a369ad14c5"
+ ],
+ "linking_factors": [
+  0,
+  ""
+ ],
+ "forecast_runs": [
+  176,
+  "4c9073c30dc67e4e978dd68b5b8a0a53"
+ ],
+ "forecasts": [
+  1195,
+  "80e97deab14d0b78cf04a3cc1229c7c2"
+ ],
+ "scores": [
+  718,
+  "aa01da2744e3ee2070361ab5e541f758"
+ ]
+}

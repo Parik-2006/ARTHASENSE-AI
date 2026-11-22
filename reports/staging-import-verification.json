@@ -1,0 +1,54 @@
+{
+ "checks": {
+  "forecast_runs unchanged": true,
+  "forecasts unchanged": true,
+  "scores unchanged": true,
+  "linking_factors unchanged": true,
+  "pre-existing sources rows unchanged": true,
+  "pre-existing series rows unchanged": true,
+  "pre-existing releases rows unchanged": true,
+  "pre-existing observations rows unchanged": true,
+  "no duplicate (series, release, period)": true,
+  "no orphan observations": true,
+  "GDP/GVA quarterly only": true,
+  "no zero written for a missing value (only the 4 published 0.0 IIP growth figures)": true,
+  "every local series/period present with the same value": true,
+  "no rows beyond the verified local dataset": true
+ },
+ "migrations": [
+  "0000_bootstrap",
+  "0001_core_schema",
+  "0002_forecasting",
+  "0003_data_foundation",
+  "0004_source_artifacts"
+ ],
+ "differences": [],
+ "extra_rows": [],
+ "counts": {
+  "CPI": {
+   "series": 6,
+   "observations": 606
+  },
+  "GDP": {
+   "series": 20,
+   "observations": 300
+  },
+  "IIP": {
+   "series": 20,
+   "observations": 1967
+  },
+  "WPI": {
+   "series": 4,
+   "observations": 556
+  }
+ },
+ "totals": {
+  "series": 50,
+  "releases": 126,
+  "observations": 3429,
+  "forecast_runs": 176,
+  "forecasts": 1195,
+  "scores": 718
+ },
+ "all_passed": true
+}

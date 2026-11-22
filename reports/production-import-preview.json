@@ -1,268 +1,134 @@
 {
- "generated_at": "2026-11-22T05:02:48+00:00",
- "status": "blocked_no_production_access",
- "simulated_baseline": "SIMULATED production profile (local database built from migrations 0000-0002 and the primary series, matching what the public API shows). It is NOT a restored production snapshot: no production database connection or snapshot was available.",
- "delta_classification_against_simulated_baseline": {
-  "already_present_identical": 415,
-  "new_verified": 2714,
-  "conflicting": 0,
-  "unverified_excluded": 0,
-  "missing_dependencies": 0,
-  "revisions_requiring_review": 0,
-  "baseline_rows_missing_after_import": 0
+ "generated_at": "2026-11-22T15:20:51+00:00",
+ "status": "verified_against_production_read_only_export",
+ "production": {
+  "series": 12,
+  "releases": 9,
+  "observations": 415,
+  "source_codes": [
+   "mospi"
+  ]
  },
- "total_rows_after": 3129,
- "manifest_total_rows": 3129,
- "per_series": [
-  {
-   "code": "mospi.cpi.2012.current.all_india.combined.general.index",
-   "manifest_rows": 156,
-   "already_present_identical": 0,
-   "new_rows": 156,
-   "verification": "verified_live_full",
-   "sha256": "842b099fc242f0f9"
+ "comparison": {
+  "CPI": {
+   "local_rows": 606,
+   "production_rows": 12,
+   "identical": 12,
+   "new": 594,
+   "conflicts": 0
   },
-  {
-   "code": "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
-   "manifest_rows": 142,
-   "already_present_identical": 0,
-   "new_rows": 142,
-   "verification": "verified_live_full",
-   "sha256": "027fdae3f70f6c73"
+  "WPI": {
+   "local_rows": 556,
+   "production_rows": 43,
+   "identical": 43,
+   "new": 513,
+   "conflicts": 0
   },
-  {
-   "code": "mospi.cpi.2024.back.all_india.combined.general.index",
-   "manifest_rows": 144,
-   "already_present_identical": 0,
-   "new_rows": 144,
-   "verification": "verified_audit_monitor",
-   "sha256": "ebf6561946910ed6"
+  "IIP": {
+   "local_rows": 1967,
+   "production_rows": 360,
+   "identical": 360,
+   "new": 1607,
+   "conflicts": 0
   },
-  {
-   "code": "mospi.cpi.2024.back.all_india.combined.general.inflation_yoy",
-   "manifest_rows": 132,
-   "already_present_identical": 0,
-   "new_rows": 132,
-   "verification": "verified_audit_monitor",
-   "sha256": "4bb64529abe30843"
+  "GDP/GVA": {
+   "local_rows": 300,
+   "production_rows": 0,
+   "identical": 0,
+   "new": 300,
+   "conflicts": 0
   },
-  {
-   "code": "mospi.cpi.2024.current.all_india.combined.general.index",
-   "manifest_rows": 22,
-   "already_present_identical": 12,
-   "new_rows": 10,
-   "verification": "verified_audit_monitor",
-   "sha256": "4929aa42a9352f45"
-  },
-  {
-   "code": "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy",
-   "manifest_rows": 10,
-   "already_present_identical": 0,
-   "new_rows": 10,
-   "verification": "verified_audit_monitor",
-   "sha256": "9794f3cf4f8ba7b5"
-  },
-  {
-   "code": "mospi.iip.1993-94.india.general.index",
-   "manifest_rows": 207,
-   "already_present_identical": 0,
-   "new_rows": 207,
-   "verification": "verified_live_full",
-   "sha256": "8582d214d019f90d"
-  },
-  {
-   "code": "mospi.iip.2004-05.india.general.index",
-   "manifest_rows": 144,
-   "already_present_identical": 0,
-   "new_rows": 144,
-   "verification": "verified_live_full",
-   "sha256": "846116de53e56ed5"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.electricity.growth_yoy",
-   "manifest_rows": 155,
-   "already_present_identical": 0,
-   "new_rows": 155,
-   "verification": "verified_audit_monitor",
-   "sha256": "e44ed8c4dc96b8e1"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.electricity.index",
-   "manifest_rows": 159,
-   "already_present_identical": 0,
-   "new_rows": 159,
-   "verification": "verified_audit_monitor",
-   "sha256": "b26ddebb65159879"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.general.growth_yoy",
-   "manifest_rows": 155,
-   "already_present_identical": 0,
-   "new_rows": 155,
-   "verification": "verified_audit_monitor",
-   "sha256": "e8d10373e79a3347"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.general.index",
-   "manifest_rows": 159,
-   "already_present_identical": 0,
-   "new_rows": 159,
-   "verification": "verified_audit_monitor",
-   "sha256": "1fa7adc840c00743"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.manufacturing.growth_yoy",
-   "manifest_rows": 155,
-   "already_present_identical": 0,
-   "new_rows": 155,
-   "verification": "verified_audit_monitor",
-   "sha256": "040fafbd10146b2b"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.manufacturing.index",
-   "manifest_rows": 159,
-   "already_present_identical": 0,
-   "new_rows": 159,
-   "verification": "verified_audit_monitor",
-   "sha256": "f10c3b00555f9226"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.mining.growth_yoy",
-   "manifest_rows": 155,
-   "already_present_identical": 0,
-   "new_rows": 155,
-   "verification": "verified_audit_monitor",
-   "sha256": "1ad822ea4ac4ed74"
-  },
-  {
-   "code": "mospi.iip.2011-12.india.mining.index",
-   "manifest_rows": 159,
-   "already_present_identical": 0,
-   "new_rows": 159,
-   "verification": "verified_audit_monitor",
-   "sha256": "c4a189a6ad76296b"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.electricity.growth_yoy",
-   "manifest_rows": 30,
-   "already_present_identical": 30,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "763033e5b98d418a"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.electricity.index",
-   "manifest_rows": 42,
-   "already_present_identical": 42,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "ac64f2ace4864b23"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.general.growth_yoy",
-   "manifest_rows": 30,
-   "already_present_identical": 30,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "5761678ec2665bdc"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.general.index",
-   "manifest_rows": 42,
-   "already_present_identical": 42,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "31acf49b60ca94b5"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.manufacturing.growth_yoy",
-   "manifest_rows": 30,
-   "already_present_identical": 30,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "34420e46048be4aa"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.manufacturing.index",
-   "manifest_rows": 42,
-   "already_present_identical": 42,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "fb24415c9b458abf"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.mining.growth_yoy",
-   "manifest_rows": 30,
-   "already_present_identical": 30,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "654e9c52f53921af"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.mining.index",
-   "manifest_rows": 42,
-   "already_present_identical": 42,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "5ccfb37f7a010544"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.water.growth_yoy",
-   "manifest_rows": 30,
-   "already_present_identical": 30,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "84201e0a63adc204"
-  },
-  {
-   "code": "mospi.iip.2022-23.india.water.index",
-   "manifest_rows": 42,
-   "already_present_identical": 42,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "b8052aeccd85b11c"
-  },
-  {
-   "code": "mospi.wpi.1993-94.india.all_commodities.index",
-   "manifest_rows": 197,
-   "already_present_identical": 0,
-   "new_rows": 197,
-   "verification": "verified_live_full",
-   "sha256": "31d29cec3afbe64e"
-  },
-  {
-   "code": "mospi.wpi.2004-05.india.all_commodities.index",
-   "manifest_rows": 147,
-   "already_present_identical": 0,
-   "new_rows": 147,
-   "verification": "verified_live_full",
-   "sha256": "2fce34f8dbfe1242"
-  },
-  {
-   "code": "mospi.wpi.2011-12.india.all_commodities.index",
-   "manifest_rows": 169,
-   "already_present_identical": 0,
-   "new_rows": 169,
-   "verification": "verified_audit_monitor",
-   "sha256": "4db711fbd13b906f"
-  },
-  {
-   "code": "mospi.wpi.2022-23.india.all_commodities.index",
-   "manifest_rows": 43,
-   "already_present_identical": 43,
-   "new_rows": 0,
-   "verification": "verified_audit_monitor",
-   "sha256": "5423ae5de35357f8"
+  "Total": {
+   "local_rows": 3429,
+   "production_rows": 415,
+   "identical": 415,
+   "new": 3014,
+   "conflicts": 0
   }
- ],
- "F_star_preserved": {
-  "series": "mospi.cpi.2012.current.all_india.combined.general.index",
-  "months": [
-   "2020-04",
-   "2020-05"
-  ],
-  "stored_as": "source_status_F*"
  },
- "linking_factors_applied": 0,
- "caution": "The exact production delta can only be computed against a real production snapshot. If production differs from the simulated baseline in any shared month, that month is a conflict and must be reviewed, never overwritten."
+ "conflicts": [],
+ "production_only_rows": [],
+ "series_metadata_mismatches": [],
+ "release_key_sha_mismatches": [],
+ "new_series_codes": [
+  "mospi.cpi.2012.current.all_india.combined.general.index",
+  "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+  "mospi.cpi.2024.back.all_india.combined.general.index",
+  "mospi.cpi.2024.back.all_india.combined.general.inflation_yoy",
+  "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy",
+  "mospi.iip.1993-94.india.general.index",
+  "mospi.iip.2004-05.india.general.index",
+  "mospi.iip.2011-12.india.electricity.growth_yoy",
+  "mospi.iip.2011-12.india.electricity.index",
+  "mospi.iip.2011-12.india.general.growth_yoy",
+  "mospi.iip.2011-12.india.general.index",
+  "mospi.iip.2011-12.india.manufacturing.growth_yoy",
+  "mospi.iip.2011-12.india.manufacturing.index",
+  "mospi.iip.2011-12.india.mining.growth_yoy",
+  "mospi.iip.2011-12.india.mining.index",
+  "mospi.nas.2022-23.india.gdp.real.growth_yoy",
+  "mospi.nas.2022-23.india.gdp.real.level",
+  "mospi.nas.2022-23.india.gva.agriculture.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.agriculture.real.level",
+  "mospi.nas.2022-23.india.gva.construction.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.construction.real.level",
+  "mospi.nas.2022-23.india.gva.electricity.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.electricity.real.level",
+  "mospi.nas.2022-23.india.gva.financial.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.financial.real.level",
+  "mospi.nas.2022-23.india.gva.manufacturing.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.manufacturing.real.level",
+  "mospi.nas.2022-23.india.gva.mining.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.mining.real.level",
+  "mospi.nas.2022-23.india.gva.public.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.public.real.level",
+  "mospi.nas.2022-23.india.gva.total.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.total.real.level",
+  "mospi.nas.2022-23.india.gva.trade.real.growth_yoy",
+  "mospi.nas.2022-23.india.gva.trade.real.level",
+  "mospi.wpi.1993-94.india.all_commodities.index",
+  "mospi.wpi.2004-05.india.all_commodities.index",
+  "mospi.wpi.2011-12.india.all_commodities.index"
+ ],
+ "new_rows_by_series": {
+  "mospi.cpi.2012.current.all_india.combined.general.index": 156,
+  "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy": 142,
+  "mospi.cpi.2024.back.all_india.combined.general.index": 144,
+  "mospi.cpi.2024.back.all_india.combined.general.inflation_yoy": 132,
+  "mospi.cpi.2024.current.all_india.combined.general.index": 10,
+  "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy": 10,
+  "mospi.iip.1993-94.india.general.index": 207,
+  "mospi.iip.2004-05.india.general.index": 144,
+  "mospi.iip.2011-12.india.electricity.growth_yoy": 155,
+  "mospi.iip.2011-12.india.electricity.index": 159,
+  "mospi.iip.2011-12.india.general.growth_yoy": 155,
+  "mospi.iip.2011-12.india.general.index": 159,
+  "mospi.iip.2011-12.india.manufacturing.growth_yoy": 155,
+  "mospi.iip.2011-12.india.manufacturing.index": 159,
+  "mospi.iip.2011-12.india.mining.growth_yoy": 155,
+  "mospi.iip.2011-12.india.mining.index": 159,
+  "mospi.nas.2022-23.india.gdp.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gdp.real.level": 17,
+  "mospi.nas.2022-23.india.gva.agriculture.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.agriculture.real.level": 17,
+  "mospi.nas.2022-23.india.gva.construction.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.construction.real.level": 17,
+  "mospi.nas.2022-23.india.gva.electricity.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.electricity.real.level": 17,
+  "mospi.nas.2022-23.india.gva.financial.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.financial.real.level": 17,
+  "mospi.nas.2022-23.india.gva.manufacturing.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.manufacturing.real.level": 17,
+  "mospi.nas.2022-23.india.gva.mining.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.mining.real.level": 17,
+  "mospi.nas.2022-23.india.gva.public.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.public.real.level": 17,
+  "mospi.nas.2022-23.india.gva.total.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.total.real.level": 17,
+  "mospi.nas.2022-23.india.gva.trade.real.growth_yoy": 13,
+  "mospi.nas.2022-23.india.gva.trade.real.level": 17,
+  "mospi.wpi.1993-94.india.all_commodities.index": 197,
+  "mospi.wpi.2004-05.india.all_commodities.index": 147,
+  "mospi.wpi.2011-12.india.all_commodities.index": 169
+ }
 }

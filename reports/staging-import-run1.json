@@ -1,0 +1,261 @@
+{
+ "started_at": "2026-11-22T15:26:12+00:00",
+ "host": "127.0.0.1",
+ "steps": [
+  {
+   "step": "migrate",
+   "command": "db.migrate",
+   "exit": 0,
+   "seconds": 2.1,
+   "summary": [
+    "Applied: 0003_data_foundation, 0004_source_artifacts"
+   ]
+  },
+  {
+   "step": "cpi_current",
+   "command": "pipeline.ingest.history cpi --start-year 2025 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 4.8,
+   "summary": [
+    "2025: skipped (already stored)",
+    "2026: fetched 10, validated 10, inserted 20, unchanged 0, skipped missing 0",
+    "Years processed: 1, skipped: 1",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "cpi_back",
+   "command": "pipeline.ingest.history cpi --series Back --start-year 2013 --end-year 2024 --resume",
+   "exit": 0,
+   "seconds": 21.8,
+   "summary": [
+    "2013: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2014: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2015: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2016: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2017: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2018: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2019: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2020: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2021: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2022: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2023: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2024: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "Years processed: 12, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "cpi2012",
+   "command": "pipeline.ingest.history cpi2012 --start-year 2013 --end-year 2025 --resume",
+   "exit": 0,
+   "seconds": 15.6,
+   "summary": [
+    "2013: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2014: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2015: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2016: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2017: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2018: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2019: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2020: fetched 12, validated 12, inserted 22, unchanged 0, skipped missing 2",
+    "2021: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2022: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2023: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2024: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "2025: fetched 12, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "Years processed: 13, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_2022_23",
+   "command": "pipeline.ingest.history wpi --start-year 2023 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 4.0,
+   "summary": [
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 4",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_2011_12",
+   "command": "pipeline.ingest.history wpi --base-year 2011-12 --start-year 2012 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 15.1,
+   "summary": [
+    "2012: fetched 9, validated 9, inserted 9, unchanged 0, skipped missing 0",
+    "2013: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2014: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2015: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2016: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2017: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2018: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2019: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2020: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2021: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2022: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2023: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2024: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2025: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2026: fetched 4, validated 4, inserted 4, unchanged 0, skipped missing 0",
+    "Years processed: 15, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_2004_05",
+   "command": "pipeline.ingest.history wpi --base-year 2004-05 --start-year 2005 --end-year 2017 --resume",
+   "exit": 0,
+   "seconds": 13.7,
+   "summary": [
+    "2005: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2006: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2007: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2008: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2009: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2010: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2011: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2012: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2013: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2014: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2015: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2016: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2017: fetched 3, validated 3, inserted 3, unchanged 0, skipped missing 0",
+    "Years processed: 13, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_1993_94",
+   "command": "pipeline.ingest.history wpi --base-year 1993-94 --start-year 1994 --end-year 2010 --resume",
+   "exit": 0,
+   "seconds": 17.6,
+   "summary": [
+    "1994: fetched 9, validated 9, inserted 9, unchanged 0, skipped missing 0",
+    "1995: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "1996: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "1997: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "1998: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "1999: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2000: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2001: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2002: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2003: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2004: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2005: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2006: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2007: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2008: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2009: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 0",
+    "2010: fetched 8, validated 8, inserted 8, unchanged 0, skipped missing 0",
+    "Years processed: 17, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_2022_23",
+   "command": "pipeline.ingest.history iip --start-year 2023 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 3.6,
+   "summary": [
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 4",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_2011_12",
+   "command": "pipeline.ingest.history iip --base-year 2011-12 --start-year 2013 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 37.4,
+   "summary": [
+    "2013: fetched 324, validated 48, inserted 84, unchanged 0, skipped missing 12",
+    "2014: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2015: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2016: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2017: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2018: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2019: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2020: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2021: fetched 324, validated 48, inserted 92, unchanged 0, skipped missing 4",
+    "2022: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2023: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2024: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2025: fetched 324, validated 48, inserted 96, unchanged 0, skipped missing 0",
+    "2026: fetched 81, validated 12, inserted 24, unchanged 0, skipped missing 0",
+    "Years processed: 14, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_2004_05",
+   "command": "pipeline.ingest.history iip --base-year 2004-05 --start-year 2005 --end-year 2017 --resume",
+   "exit": 0,
+   "seconds": 14.3,
+   "summary": [
+    "2005: fetched 9, validated 9, inserted 9, unchanged 0, skipped missing 9",
+    "2006: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2007: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2008: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2009: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2010: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2011: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2012: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2013: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2014: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2015: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2016: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2017: fetched 3, validated 3, inserted 3, unchanged 0, skipped missing 3",
+    "Years processed: 13, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_1993_94",
+   "command": "pipeline.ingest.history iip --base-year 1993-94 --start-year 1994 --end-year 2011 --resume",
+   "exit": 0,
+   "seconds": 17.8,
+   "summary": [
+    "1994: fetched 9, validated 9, inserted 9, unchanged 0, skipped missing 9",
+    "1995: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "1996: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "1997: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "1998: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "1999: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2000: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2001: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2002: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2003: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2004: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2005: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2006: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2007: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2008: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2009: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2010: fetched 12, validated 12, inserted 12, unchanged 0, skipped missing 12",
+    "2011: fetched 6, validated 6, inserted 6, unchanged 0, skipped missing 6",
+    "Years processed: 18, skipped: 0",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "nas_gdp_gva",
+   "command": "pipeline.ingest.nas",
+   "exit": 0,
+   "seconds": 6.8,
+   "summary": [
+    "Release mospi-nas-2022-23-quarterly-1e90c354a9f2d720: inserted 300, unchanged 0, skipped missing 0",
+    "Status: SUCCESS"
+   ]
+  }
+ ],
+ "finished_at": "2026-11-22T15:29:06+00:00"
+}

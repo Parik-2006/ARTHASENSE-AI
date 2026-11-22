@@ -1,0 +1,261 @@
+{
+ "started_at": "2026-11-22T15:29:18+00:00",
+ "host": "127.0.0.1",
+ "steps": [
+  {
+   "step": "migrate",
+   "command": "db.migrate",
+   "exit": 0,
+   "seconds": 1.7,
+   "summary": [
+    "Applied: nothing (up to date)"
+   ]
+  },
+  {
+   "step": "cpi_current",
+   "command": "pipeline.ingest.history cpi --start-year 2025 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 3.3,
+   "summary": [
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 2",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "cpi_back",
+   "command": "pipeline.ingest.history cpi --series Back --start-year 2013 --end-year 2024 --resume",
+   "exit": 0,
+   "seconds": 3.8,
+   "summary": [
+    "2013: skipped (already stored)",
+    "2014: skipped (already stored)",
+    "2015: skipped (already stored)",
+    "2016: skipped (already stored)",
+    "2017: skipped (already stored)",
+    "2018: skipped (already stored)",
+    "2019: skipped (already stored)",
+    "2020: skipped (already stored)",
+    "2021: skipped (already stored)",
+    "2022: skipped (already stored)",
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "Years processed: 0, skipped: 12",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "cpi2012",
+   "command": "pipeline.ingest.history cpi2012 --start-year 2013 --end-year 2025 --resume",
+   "exit": 0,
+   "seconds": 3.8,
+   "summary": [
+    "2013: skipped (already stored)",
+    "2014: skipped (already stored)",
+    "2015: skipped (already stored)",
+    "2016: skipped (already stored)",
+    "2017: skipped (already stored)",
+    "2018: skipped (already stored)",
+    "2019: skipped (already stored)",
+    "2020: skipped (already stored)",
+    "2021: skipped (already stored)",
+    "2022: skipped (already stored)",
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "Years processed: 0, skipped: 13",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_2022_23",
+   "command": "pipeline.ingest.history wpi --start-year 2023 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 3.3,
+   "summary": [
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 4",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_2011_12",
+   "command": "pipeline.ingest.history wpi --base-year 2011-12 --start-year 2012 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 4.7,
+   "summary": [
+    "2012: skipped (already stored)",
+    "2013: skipped (already stored)",
+    "2014: skipped (already stored)",
+    "2015: skipped (already stored)",
+    "2016: skipped (already stored)",
+    "2017: skipped (already stored)",
+    "2018: skipped (already stored)",
+    "2019: skipped (already stored)",
+    "2020: skipped (already stored)",
+    "2021: skipped (already stored)",
+    "2022: skipped (already stored)",
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 15",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_2004_05",
+   "command": "pipeline.ingest.history wpi --base-year 2004-05 --start-year 2005 --end-year 2017 --resume",
+   "exit": 0,
+   "seconds": 4.7,
+   "summary": [
+    "2005: skipped (already stored)",
+    "2006: skipped (already stored)",
+    "2007: skipped (already stored)",
+    "2008: skipped (already stored)",
+    "2009: skipped (already stored)",
+    "2010: skipped (already stored)",
+    "2011: skipped (already stored)",
+    "2012: skipped (already stored)",
+    "2013: skipped (already stored)",
+    "2014: skipped (already stored)",
+    "2015: skipped (already stored)",
+    "2016: skipped (already stored)",
+    "2017: skipped (already stored)",
+    "Years processed: 0, skipped: 13",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "wpi_1993_94",
+   "command": "pipeline.ingest.history wpi --base-year 1993-94 --start-year 1994 --end-year 2010 --resume",
+   "exit": 0,
+   "seconds": 4.0,
+   "summary": [
+    "1994: skipped (already stored)",
+    "1995: skipped (already stored)",
+    "1996: skipped (already stored)",
+    "1997: skipped (already stored)",
+    "1998: skipped (already stored)",
+    "1999: skipped (already stored)",
+    "2000: skipped (already stored)",
+    "2001: skipped (already stored)",
+    "2002: skipped (already stored)",
+    "2003: skipped (already stored)",
+    "2004: skipped (already stored)",
+    "2005: skipped (already stored)",
+    "2006: skipped (already stored)",
+    "2007: skipped (already stored)",
+    "2008: skipped (already stored)",
+    "2009: skipped (already stored)",
+    "2010: skipped (already stored)",
+    "Years processed: 0, skipped: 17",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_2022_23",
+   "command": "pipeline.ingest.history iip --start-year 2023 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 3.6,
+   "summary": [
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 4",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_2011_12",
+   "command": "pipeline.ingest.history iip --base-year 2011-12 --start-year 2013 --end-year 2026 --resume",
+   "exit": 0,
+   "seconds": 4.5,
+   "summary": [
+    "2013: skipped (already stored)",
+    "2014: skipped (already stored)",
+    "2015: skipped (already stored)",
+    "2016: skipped (already stored)",
+    "2017: skipped (already stored)",
+    "2018: skipped (already stored)",
+    "2019: skipped (already stored)",
+    "2020: skipped (already stored)",
+    "2021: skipped (already stored)",
+    "2022: skipped (already stored)",
+    "2023: skipped (already stored)",
+    "2024: skipped (already stored)",
+    "2025: skipped (already stored)",
+    "2026: skipped (already stored)",
+    "Years processed: 0, skipped: 14",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_2004_05",
+   "command": "pipeline.ingest.history iip --base-year 2004-05 --start-year 2005 --end-year 2017 --resume",
+   "exit": 0,
+   "seconds": 3.6,
+   "summary": [
+    "2005: skipped (already stored)",
+    "2006: skipped (already stored)",
+    "2007: skipped (already stored)",
+    "2008: skipped (already stored)",
+    "2009: skipped (already stored)",
+    "2010: skipped (already stored)",
+    "2011: skipped (already stored)",
+    "2012: skipped (already stored)",
+    "2013: skipped (already stored)",
+    "2014: skipped (already stored)",
+    "2015: skipped (already stored)",
+    "2016: skipped (already stored)",
+    "2017: skipped (already stored)",
+    "Years processed: 0, skipped: 13",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "iip_1993_94",
+   "command": "pipeline.ingest.history iip --base-year 1993-94 --start-year 1994 --end-year 2011 --resume",
+   "exit": 0,
+   "seconds": 4.0,
+   "summary": [
+    "1994: skipped (already stored)",
+    "1995: skipped (already stored)",
+    "1996: skipped (already stored)",
+    "1997: skipped (already stored)",
+    "1998: skipped (already stored)",
+    "1999: skipped (already stored)",
+    "2000: skipped (already stored)",
+    "2001: skipped (already stored)",
+    "2002: skipped (already stored)",
+    "2003: skipped (already stored)",
+    "2004: skipped (already stored)",
+    "2005: skipped (already stored)",
+    "2006: skipped (already stored)",
+    "2007: skipped (already stored)",
+    "2008: skipped (already stored)",
+    "2009: skipped (already stored)",
+    "2010: skipped (already stored)",
+    "2011: skipped (already stored)",
+    "Years processed: 0, skipped: 18",
+    "Status: SUCCESS"
+   ]
+  },
+  {
+   "step": "nas_gdp_gva",
+   "command": "pipeline.ingest.nas",
+   "exit": 0,
+   "seconds": 7.2,
+   "summary": [
+    "Release mospi-nas-2022-23-quarterly-1e90c354a9f2d720: inserted 0, unchanged 300, skipped missing 0",
+    "Status: SUCCESS"
+   ]
+  }
+ ],
+ "finished_at": "2026-11-22T15:30:11+00:00"
+}

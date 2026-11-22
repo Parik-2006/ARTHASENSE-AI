@@ -1,8 +1,16 @@
-# GDP for Overview V3: data status and required ingestion work
+# GDP: data status and ingestion
 
-**Status: GDP is NOT complete.** The Overview has the GDP card, expanded chart, change panel and comparison logic, all driven by a
-strict data contract. No GDP is stored in any database, no backend endpoint exists, and the page shows an honest
-"not available yet" state. No GDP figure, URL or date has been hardcoded or estimated.
+**Status (2026-11-22): ingestion implemented and verified locally; NOT loaded into production.**
+`pipeline/ingest/nas.py` loads quarterly real GDP (level + official YoY growth) and real GVA for MoSPI's nine industries
+(level + official YoY growth), base 2022-23, from `api.mospi.gov.in/api/nas/getNASData` (indicator codes 5, 22, 1, 21; the
+`constant_price` field). The API serves it at `GET /api/v1/indicators/gdp` and `/gdp/gva` (404 when not stored). It was run
+twice into the isolated local database `arthasense_gdp` (300 observations, second run 0 inserted). Production has no GDP until
+the database release is approved (`docs/PRODUCTION-DATABASE-RELEASE-PLAN.md`), so the live site shows "not available yet".
+Details and audit: `docs/FINAL-OVERVIEW-INDICATORS.md`. The open questions below were settled as follows: the level code is
+5 (₹ crore, constant prices); growth is code 22 (%), official; the series is treated as not seasonally adjusted (no QoQ);
+the API gives no publication date. Coverage: levels 17 quarters, official growth 13 quarters (no 2022-23 back series yet).
+
+## Earlier notes (kept for the record)
 
 ## What is verified (from the government-source audit, 2026-11-21)
 - MoSPI's eSankhyiki API serves National Accounts (NAS): `GET https://api.mospi.gov.in/api/nas/getNASData` with required

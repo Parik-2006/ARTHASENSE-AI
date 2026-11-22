@@ -33,6 +33,7 @@ class SeriesSpec:
     unit: str
     base_year: str
     geography: str
+    frequency: str = "monthly"  # 'monthly' | 'quarterly' | 'annual' (CHECK in 0001)
 
 
 @dataclass
@@ -63,9 +64,18 @@ def _upsert_series(conn: psycopg.Connection, source_id: int, spec: SeriesSpec) -
     return _id(
         conn,
         """INSERT INTO series (source_id, code, name, indicator, frequency, unit, base_year, geography)
-           VALUES (%s, %s, %s, %s, 'monthly', %s, %s, %s)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
            ON CONFLICT (code) DO UPDATE SET code = EXCLUDED.code RETURNING id""",
-        (source_id, spec.code, spec.name, spec.indicator, spec.unit, spec.base_year, spec.geography),
+        (
+            source_id,
+            spec.code,
+            spec.name,
+            spec.indicator,
+            spec.frequency,
+            spec.unit,
+            spec.base_year,
+            spec.geography,
+        ),
     )
 
 

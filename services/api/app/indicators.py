@@ -477,3 +477,159 @@ def get_iip_sectors(
         else "No IIP sector observations stored yet. Run: python -m pipeline.ingest.iip --year 2025"
     )
     return IipSectorsResponse(base_year=base_year, sectors=sectors, note=note)
+
+
+# ---- GDP and GVA (quarterly National Accounts, base 2022-23) -------------------------------------
+# Must match pipeline/ingest/nas.py. Quarters are fiscal (Q1 = Apr-Jun), stored on their first month.
+GDP_BASE = "2022-23"
+_NAS = f"mospi.nas.{GDP_BASE}.india"
+GDP_LEVEL_SERIES = f"{_NAS}.gdp.real.level"
+GDP_GROWTH_SERIES = f"{_NAS}.gdp.real.growth_yoy"
+GVA_INDUSTRIES: dict[str, str] = {  # official MoSPI industry labels, verbatim
+    "total": "Total Gross Value Added",
+    "agriculture": "Agriculture, Livestock, Forestry and Fishing",
+    "mining": "Mining and Quarrying",
+    "manufacturing": "Manufacturing",
+    "electricity": "Electricity, Gas, Water Supply & Other Utility Services",
+    "construction": "Construction",
+    "trade": "Trade, Hotels, Transport, Communication & Services Related to Broadcasting",
+    "financial": "Financial, Real Estate & Professional Services",
+    "public": "Public Administration, Defence & Other Services",
+}
+NAS_SOURCE_URL = (
+    "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly"
+)
+NAS_LIMITATIONS = [
+    "Quarterly estimates at constant 2022-23 prices (real). There is no monthly GDP; none is estimated here.",
+    "Growth is the official year-on-year rate: each quarter against the same quarter a year earlier.",
+    "The new 2022-23 series starts in FY2022-23, so official growth begins in Q1 FY2023-24. The back series on this base is not yet published, and the older 2011-12 series is not joined to it.",
+    "The source API gives no publication date and no provisional/revised flag; recent quarters are usually revised in later releases.",
+    "Not seasonally adjusted: no quarter-on-quarter change is calculated.",
+]
+MAX_QUARTERS = 80
+
+
+def fiscal_quarter(period: date) -> tuple[str, int]:
+    """2025-04-01 -> ("2025-26", 1); 2026-01-01 -> ("2025-26", 4)."""
+    if period.day != 1 or period.month not in (1, 4, 7, 10):
+        raise ValueError(f"not a fiscal-quarter start: {period}")
+    fy = period.year if period.month >= 4 else period.year - 1
+    q = {4: 1, 7: 2, 10: 3, 1: 4}[period.month]
+    return f"{fy}-{(fy + 1) % 100:02d}", q
+
+
+class GdpObservation(BaseModel):
+    period: date  # first month of the fiscal quarter
+    fiscal_year: str
+    quarter: int
+    level: float | None = None
+    growth_yoy: float | None = None
+    level_source: Provenance | None = None
+    growth_source: Provenance | None = None
+
+
+class GdpResponse(BaseModel):
+    indicator: str = "GDP"
+    base_year: str = GDP_BASE
+    frequency: str = "quarterly"
+    measure: str = "GDP at constant 2022-23 prices (real)"
+    unit: str = "₹ crore"
+    geography: str = "India"
+    seasonally_adjusted: bool = False
+    source: Source = Source()
+    source_url: str = NAS_SOURCE_URL
+    publisher_note: str = "National Accounts Division, National Statistics Office (NSO), MoSPI"
+    count: int
+    observations: list[GdpObservation]
+    limitations: list[str] = NAS_LIMITATIONS
+
+
+class GvaObservation(BaseModel):
+    period: date
+    fiscal_year: str
+    quarter: int
+    growth_yoy: float | None = None
+    level: float | None = None
+    growth_source: Provenance | None = None
+
+
+class GvaIndustry(BaseModel):
+    key: str
+    label: str
+    observations: list[GvaObservation]
+
+
+class GvaResponse(BaseModel):
+    indicator: str = "GVA"
+    base_year: str = GDP_BASE
+    frequency: str = "quarterly"
+    measure: str = "Gross value added by industry, constant 2022-23 prices (real)"
+    unit: str = "percent, year-on-year (official)"
+    source: Source = Source()
+    source_url: str = NAS_SOURCE_URL
+    industries: list[GvaIndustry]
+    limitations: list[str] = [
+        *NAS_LIMITATIONS[:4],
+        "MoSPI publishes nine industries; it does not publish an agriculture / industry / services split in this API, so none is calculated here.",
+    ]
+
+
+QuarterLimit = Annotated[int, Query(ge=1, le=MAX_QUARTERS, description="newest N quarters")]
+
+
+def _quarters(periods: dict[date, Any], limit: int) -> list[date]:
+    return [p for p in sorted(periods) if p.month in (1, 4, 7, 10) and p.day == 1][-limit:]
+
+
+@router.get("/gdp", response_model=GdpResponse)
+def get_gdp(
+    start: StartParam = None,
+    end: EndParam = None,
+    release_key: ReleaseParam = None,
+    limit: QuarterLimit = 40,
+) -> GdpResponse:
+    """Quarterly real GDP (level and official YoY growth). 404 when nothing is stored: nothing is estimated."""
+    _check_dates(start, end)
+    codes = [GDP_LEVEL_SERIES, GDP_GROWTH_SERIES]
+    periods = _by_period(_fetch(query_series_rows, codes, start, end, release_key, limit * 2))
+    obs = []
+    for p in _quarters(periods, limit):
+        lvl, gr = periods[p].get(GDP_LEVEL_SERIES), periods[p].get(GDP_GROWTH_SERIES)
+        fy, q = fiscal_quarter(p)
+        obs.append(GdpObservation(
+            period=p, fiscal_year=fy, quarter=q,
+            level=lvl[0] if lvl else None, level_source=lvl[1] if lvl else None,
+            growth_yoy=gr[0] if gr else None, growth_source=gr[1] if gr else None,
+        ))  # fmt: skip
+    if not obs:
+        raise HTTPException(status_code=404, detail="GDP is not stored in this database")
+    return GdpResponse(count=len(obs), observations=obs)
+
+
+@router.get("/gdp/gva", response_model=GvaResponse)
+def get_gva(
+    start: StartParam = None,
+    end: EndParam = None,
+    release_key: ReleaseParam = None,
+    limit: QuarterLimit = 40,
+) -> GvaResponse:
+    """Official real GVA growth for each of MoSPI's nine industries (plus total). 404 when nothing is stored."""
+    _check_dates(start, end)
+    growth = {k: f"{_NAS}.gva.{k}.real.growth_yoy" for k in GVA_INDUSTRIES}
+    level = {k: f"{_NAS}.gva.{k}.real.level" for k in GVA_INDUSTRIES}
+    codes = [*growth.values(), *level.values()]
+    periods = _by_period(_fetch(query_series_rows, codes, start, end, release_key, limit * len(codes)))
+    industries = []
+    for k, label in GVA_INDUSTRIES.items():
+        rows = []
+        for p in _quarters(periods, limit):
+            g, lv = periods[p].get(growth[k]), periods[p].get(level[k])
+            if g is None and lv is None:
+                continue
+            fy, q = fiscal_quarter(p)
+            rows.append(GvaObservation(period=p, fiscal_year=fy, quarter=q, growth_yoy=g[0] if g else None,
+                                       level=lv[0] if lv else None, growth_source=g[1] if g else None))  # fmt: skip
+        industries.append(GvaIndustry(key=k, label=label, observations=rows))
+    if not any(i.observations for i in industries):
+        raise HTTPException(status_code=404, detail="GVA is not stored in this database")
+    return GvaResponse(industries=industries)

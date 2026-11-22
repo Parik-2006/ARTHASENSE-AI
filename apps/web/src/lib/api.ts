@@ -1,4 +1,4 @@
-import { type GdpResult, parseGdpResponse } from "@/lib/gdp";
+import { type GdpResult, type GvaResult, parseGdpResponse, parseGvaResponse } from "@/lib/gdp";
 import {
   type Comparison,
   type ForecastRow,
@@ -116,8 +116,8 @@ export async function getIndicator(
   }
 }
 
-/** GDP (quarterly, constant prices). The backend endpoint does not exist until GDP is ingested (docs/GDP-INGESTION.md):
- *  a 404 is reported as "not stored", which the UI shows honestly. Nothing here ever supplies a value of its own. */
+/** GDP (quarterly, constant prices). The API answers 404 while GDP is not stored in its database (for example an
+ *  older backend or a database without the NAS import): that is reported as "not stored" and shown honestly. Nothing here ever supplies a value of its own. */
 export async function getGdp(): Promise<GdpResult> {
   try {
     const res = await apiGet("/api/v1/indicators/gdp?limit=80");
@@ -130,6 +130,20 @@ export async function getGdp(): Promise<GdpResult> {
     if (!data.observations.some((o) => o.level !== null || o.growthYoy !== null)) {
       return { ok: false, state: "not_stored", reason: "The GDP endpoint answered but holds no observations." };
     }
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, state: "error", reason: errText(err) };
+  }
+}
+
+/** Official real GVA growth by MoSPI industry (quarterly). 404 = not stored; nothing is estimated. */
+export async function getGva(): Promise<GvaResult> {
+  try {
+    const res = await apiGet("/api/v1/indicators/gdp/gva?limit=80");
+    if (res.status === 404) return { ok: false, state: "not_stored", reason: "Sector-wise GVA is not stored in the ArthaSense database yet." };
+    if (res.status < 200 || res.status >= 300) return { ok: false, state: "error", reason: httpError(res) };
+    const data = parseGvaResponse(res.body);
+    if (!data) return { ok: false, state: "error", reason: "Unexpected response shape from the API" };
     return { ok: true, data };
   } catch (err) {
     return { ok: false, state: "error", reason: errText(err) };

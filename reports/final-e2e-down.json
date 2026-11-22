@@ -1,0 +1,108 @@
+{
+ "web": "http://localhost",
+ "profile": "down",
+ "passed": 20,
+ "total": 20,
+ "results": [
+  {
+   "n": "Overview: exactly three top-level sections",
+   "p": true,
+   "d": "indicators,changes,compare"
+  },
+  {
+   "n": "Overview: four cards link to /indicators/<key>",
+   "p": true,
+   "d": "/indicators/cpi,/indicators/wpi,/indicators/iip,/indicators/gdp"
+  },
+  {
+   "n": "Overview: no expanded chart panel",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Backend down: Overview cards say data could not be loaded",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Old ?open= link opens the Indicators view (base kept)",
+   "p": true,
+   "d": "http://127.0.0.1:3132/indicators/iip?base=2011-12"
+  },
+  {
+   "n": "/indicators/cpi: backend down renders no chart (an alert instead)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/cpi: backend down shows a clear message, no drawn charts",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/wpi: backend down renders no chart (an alert instead)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/wpi: backend down shows a clear message, no drawn charts",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/iip: backend down renders no chart (an alert instead)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/iip: backend down shows a clear message, no drawn charts",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/gdp: exactly two charts",
+   "p": true,
+   "d": "Real GDP growth (%) by fiscal quarter | Sectoral GVA growth (%)"
+  },
+  {
+   "n": "/indicators/gdp: backend down shows a clear message, no drawn charts",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "@360px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@390px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@768px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1024px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1440px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1920px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "No console errors or page errors",
+   "p": true,
+   "d": ""
+  }
+ ]
+}

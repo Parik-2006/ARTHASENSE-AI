@@ -5,9 +5,10 @@ import { formatPeriod, monthNumber, type Observation } from "@/lib/indicator";
 
 // ---------- ranges ----------
 
-export type RangeKey = "3M" | "6M" | "1Y" | "2Y" | "3Y" | "5Y" | "All" | "Custom";
+export type RangeKey = "2M" | "3M" | "6M" | "1Y" | "2Y" | "3Y" | "5Y" | "All" | "Custom";
 
 export const OV_RANGES: { key: RangeKey; label: string; months: number | null }[] = [
+  { key: "2M", label: "2M", months: 2 },
   { key: "3M", label: "3M", months: 3 },
   { key: "6M", label: "6M", months: 6 },
   { key: "1Y", label: "1Y", months: 12 },
@@ -72,6 +73,23 @@ export function windowFor(sel: RangeSel, anchor: number | null): Window {
   return { lo: anchor - (months - 1), hi: anchor };
 }
 
+/** Months a preset spans (null for All / Custom). */
+export function presetMonths(key: RangeKey): number | null {
+  return OV_RANGES.find((r) => r.key === key)?.months ?? null;
+}
+
+/** Quarterly window (GDP). A preset of M months covers floor(M / 3) fiscal quarters ending at `anchor` (the first month
+ *  of the series' latest quarter): 1Y = 4 quarters, 5Y = 20. 2M is shorter than one quarter, so it returns null and the
+ *  caller says so. Custom keeps the chosen months: a quarter is included when its first month lies inside them. */
+export function quarterWindowFor(sel: RangeSel, anchor: number | null): Window | null {
+  if (sel.key === "Custom") return { lo: ymNumber(sel.from), hi: ymNumber(sel.to) };
+  const months = presetMonths(sel.key);
+  if (months === null || anchor === null) return { lo: null, hi: null };
+  const quarters = Math.floor(months / 3);
+  if (quarters < 1) return null;
+  return { lo: anchor - 3 * (quarters - 1), hi: anchor };
+}
+
 export function inWindow(n: number, w: Window): boolean {
   return (w.lo === null || n >= w.lo) && (w.hi === null || n <= w.hi);
 }
@@ -107,6 +125,8 @@ export interface Derived {
   releaseKey: string | null;
   /** When ArthaSense retrieved this observation (not the official release date). */
   retrievedAt: string | null;
+  /** The SOURCE's own flag for this month, verbatim (e.g. "source_status_F*"); null when the source gave none. */
+  sourceStatus?: string | null;
 }
 
 /** All derivations happen inside ONE series (one base year). Never pass rows of two bases together. */
@@ -127,6 +147,7 @@ export function derive(observations: Observation[]): Derived[] {
       rate: o.rate,
       releaseKey: o.indexSource?.releaseKey ?? null,
       retrievedAt: o.indexSource?.retrievedAt ?? null,
+      sourceStatus: o.indexSource?.status && o.indexSource.status !== "retrieved" ? o.indexSource.status : null,
     };
   });
 }

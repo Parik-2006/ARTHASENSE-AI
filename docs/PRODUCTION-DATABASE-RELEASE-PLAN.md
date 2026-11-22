@@ -41,4 +41,12 @@ production backup, for step 1-3. No privileged credential is needed for the prev
 6. Post-release checks: `/api/v1/data/coverage` lists 30 series; the site's series switcher shows every base; spot-check CSVs.
 Expected website change: Overview V3 and Indicators show CPI 2012 (156 months), CPI back 2013-2024, CPI current to Oct 2026,
 WPI and IIP 2011-12 / 2004-05 / 1993-94, each as a separate series.
+### Addendum (2026-11-22): quarterly GDP / GVA
+* Needs **no new migration** (the `quarterly` frequency is allowed since 0001; the endpoints read base tables only).
+* Command after approval and backup: `python -m pipeline.ingest.nas --allow-host <host>`, expected additive rows: 20 series,
+  **300 observations**, 1 release `mospi-nas-2022-23-quarterly-<hash>` (local rehearsal in `arthasense_gdp`, re-run = 0 inserted).
+* Rollback: delete the observations and release with `release_key LIKE 'mospi-nas-2022-23-quarterly-%'`, then the 20
+  `mospi.nas.2022-23.%` series (no forecasts reference them).
+* Effect: the GDP card, Section 2, the comparison and `/indicators/gdp` switch from "not available yet" to the official data.
+
 **Do not** run `db.transfer` against the shared local database as-is, and do not use production as a test environment.

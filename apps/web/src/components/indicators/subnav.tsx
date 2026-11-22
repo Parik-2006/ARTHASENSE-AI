@@ -4,7 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CONFIG_LIST } from "@/lib/indicators";
 
-const ITEMS = [{ href: "/indicators", label: "Overview" }, ...CONFIG_LIST.map((c) => ({ href: c.path, label: c.navLabel }))];
+const ITEMS = [
+  { href: "/indicators", label: "All indicators" },
+  ...CONFIG_LIST.map((c) => ({ href: c.path, label: c.shortName })),
+  { href: "/indicators/gdp", label: "GDP" },
+];
 
 /** Second-level navigation shown on every /indicators page. */
 export function IndicatorsSubNav() {

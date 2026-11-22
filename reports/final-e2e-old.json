@@ -1,0 +1,168 @@
+{
+ "web": "http://localhost",
+ "profile": "old",
+ "passed": 32,
+ "total": 32,
+ "results": [
+  {
+   "n": "Overview: exactly three top-level sections",
+   "p": true,
+   "d": "indicators,changes,compare"
+  },
+  {
+   "n": "Overview: four cards link to /indicators/<key>",
+   "p": true,
+   "d": "/indicators/cpi,/indicators/wpi,/indicators/iip,/indicators/gdp"
+  },
+  {
+   "n": "Overview: no expanded chart panel",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Overview: GDP card shows the honest unavailable state (no figure)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Overview: CPI card shows 104.10 for Dec 2025 and NO inflation figure (none is stored in this database)",
+   "p": true,
+   "d": "CPI View details → Consumer Price Index Prices households pay for everyday goods and services. 104.10 Index, base 2024 = 100 · December 2025"
+  },
+  {
+   "n": "Overview: WPI rate is labelled calculated",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 2: one change panel; selector writes ?chg=iip",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 2: GDP quarterly change",
+   "p": true,
+   "d": "GDP change cannot be shown: official quarterly GDP is not stored yet. No figure is estimated."
+  },
+  {
+   "n": "Section 2: Back returns to the previous selection",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 3: monthly comparison by default (YoY %)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 3: GDP checkbox disabled while GDP is not stored",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Overview -> Indicators: clicking the WPI card opens /indicators/wpi",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Old ?open= link opens the Indicators view (base kept)",
+   "p": true,
+   "d": "http://127.0.0.1:3131/indicators/iip?base=2011-12"
+  },
+  {
+   "n": "/indicators/cpi: exactly two charts",
+   "p": true,
+   "d": "Consumer inflation rate (%) | CPI general index over time"
+  },
+  {
+   "n": "/indicators/cpi (12 stored months, no stored rate): index chart drawn, rate chart says no figure exists",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/cpi: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/ https://esankhyiki.mospi.gov.in/"
+  },
+  {
+   "n": "/indicators/wpi: exactly two charts",
+   "p": true,
+   "d": "Wholesale inflation rate (%) | WPI overall index over time"
+  },
+  {
+   "n": "/indicators/wpi: both charts are drawn",
+   "p": true,
+   "d": "1,1"
+  },
+  {
+   "n": "/indicators/wpi: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/ https://eaindustry.nic.in/"
+  },
+  {
+   "n": "/indicators/iip: exactly two charts",
+   "p": true,
+   "d": "Industrial production growth (%) | Sectoral industrial production trends"
+  },
+  {
+   "n": "/indicators/iip: both charts are drawn",
+   "p": true,
+   "d": "1,1"
+  },
+  {
+   "n": "/indicators/iip: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/ https://esankhyiki.mospi.gov.in/"
+  },
+  {
+   "n": "/indicators/gdp: exactly two charts",
+   "p": true,
+   "d": "Real GDP growth (%) by fiscal quarter | Sectoral GVA growth (%)"
+  },
+  {
+   "n": "/indicators/gdp: honest unavailable state, no drawn chart, no CSV",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators/gdp: official source links present",
+   "p": true,
+   "d": "https://www.mospi.gov.in/"
+  },
+  {
+   "n": "@360px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@390px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@768px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1024px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1440px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1920px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "No console errors or page errors",
+   "p": true,
+   "d": ""
+  }
+ ]
+}

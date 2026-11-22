@@ -22,6 +22,11 @@
   --warn: #a15c00;
   --ok: #2f6b3a;
   --demo: #6b3fa0;
+  /* indicator identity (Overview + Indicators): CPI teal, WPI blue, IIP violet, GDP orange */
+  --ind-cpi: #0f766e;
+  --ind-wpi: #1d4ed8;
+  --ind-iip: #6d28d9;
+  --ind-gdp: #c2410c;
   color-scheme: light;
 }
 
@@ -41,6 +46,10 @@
   --warn: #e0a040;
   --ok: #7cc48a;
   --demo: #b48ae6;
+  --ind-cpi: #2dd4bf;
+  --ind-wpi: #60a5fa;
+  --ind-iip: #a78bfa;
+  --ind-gdp: #fb923c;
   color-scheme: dark;
 }
 

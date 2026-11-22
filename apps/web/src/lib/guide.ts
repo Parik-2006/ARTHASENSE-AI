@@ -279,10 +279,10 @@ export interface TourStep {
 }
 
 export const OVERVIEW_TOUR: TourStep[] = [
-  { target: "hero", title: "Welcome", body: "Three views of India's economy, all from official data with the source shown." },
+  { target: "hero", title: "Welcome", body: "A quick snapshot of India's economy in three short sections, all from official data with the source shown." },
   { target: "cards", title: "Four indicators", body: "CPI is consumer prices, WPI wholesale prices, IIP industrial output and GDP total production." },
-  { target: "card-index", title: "Open a graph", body: "Select a card to open its full chart below. Select it again to close it. An index is a level against a base of 100, not a percentage." },
-  { target: "range", title: "Time filters", body: "Pick 3M to All, or Custom months. Your choice stays in the page link, and the Back button works." },
+  { target: "cards", title: "Open an indicator", body: "Select a card to open that indicator's detailed page with two charts, filters and the data. An index is a level against a base of 100, not a percentage." },
+  { target: "range", title: "Time filters", body: "Pick 2M to All, or Custom months. Your choice stays in the page link, and the Back button works." },
   { target: "changes", title: "How things are changing", body: "Bars above zero are rises, below are falls. Official figures are labelled as such; calculated ones say so." },
   { target: "compare", title: "Comparing trends", body: "We compare percentage changes, never raw levels. GDP is quarterly, so selecting it switches the comparison to quarters." },
   { target: "cards", title: "Check the source", body: "Every card and chart has a source line and a Source details panel with links to the publisher." },

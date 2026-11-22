@@ -32,7 +32,10 @@ export function TimeChart({
   signed = false,
   stepMonths = 1,
   formatN,
+  barColor = "sign",
 }: {
+  /** Bars: "sign" = rise/fall colours; "series" = the series colour for rises and grey for falls. */
+  barColor?: "sign" | "series";
   series: ChartSeries[];
   kind?: "line" | "bars";
   yLabel: string;
@@ -58,7 +61,8 @@ export function TimeChart({
 
   const model = useMemo(() => {
     const all = series.flatMap((s) => s.points);
-    const ns = [...new Set(all.map((p) => p.n))].sort((a, b) => a - b);
+    // The x-range covers periods that have a value; missing periods INSIDE it stay visible as gaps.
+    const ns = [...new Set(all.filter((p) => p.v !== null).map((p) => p.n))].sort((a, b) => a - b);
     const vals = all.map((p) => p.v).filter((v): v is number => v !== null);
     return { ns, vals };
   }, [series]);
@@ -79,7 +83,13 @@ export function TimeChart({
   const sy = (v: number) => M.t + (1 - (v - y0) / (y1 - y0)) * plotH;
   const yTicks = Array.from({ length: 5 }, (_, i) => y0 + ((y1 - y0) * i) / 4);
   const step = Math.max(1, Math.ceil((span / unit0 + 1) / Math.max(1, Math.floor(plotW / (formatN ? 84 : 58))))) * unit0;
-  const xTicks = ns.filter((n) => (n - n0) % step === 0);
+  // Keep labels at least one label-width apart so they never overlap (the last one is end-anchored).
+  const minGap = formatN ? 80 : 60;
+  const xTicks: number[] = [];
+  const labelX = (n: number) => (sx(n) > width - M.r - 26 ? sx(n) - minGap / 2 : sx(n)); // end-anchored labels sit further left
+  for (const n of ns.filter((m) => (m - n0) % step === 0)) {
+    if (!xTicks.length || labelX(n) - labelX(xTicks[xTicks.length - 1]) >= minGap) xTicks.push(n);
+  }
   const barW = Math.max(2, Math.min(28, (plotW / (span / unit0 + 1)) * 0.7));
   const fmt = (v: number) => `${signed && v > 0 ? "+" : ""}${v.toFixed(digits)}${unit}`;
 
@@ -198,7 +208,7 @@ export function TimeChart({
                   width={barW}
                   y={Math.min(sy(p.v), sy(0))}
                   height={Math.max(1, Math.abs(sy(p.v) - sy(0)))}
-                  fill={p.v >= 0 ? "var(--up)" : "var(--down)"}
+                  fill={barColor === "series" ? (p.v >= 0 ? series[0].stroke : "var(--ink-muted)") : p.v >= 0 ? "var(--up)" : "var(--down)"}
                   opacity={an === null || an === p.n ? 1 : 0.55}
                 />
               ),

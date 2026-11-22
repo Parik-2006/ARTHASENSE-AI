@@ -21,7 +21,7 @@ export default function IndicatorsPage() {
       <PageHeader
         eyebrow="Indicators"
         title="Indicators"
-        lede="Official monthly statistics, each shown on its own base year with its source and retrieval time. GDP and the repo rate are not ingested yet."
+        lede="Official statistics on prices, industrial output and growth (CPI, WPI, IIP and GDP), each shown on its own base year with its source and retrieval time."
       />
       <Suspense fallback={<div className="h-48 animate-pulse rounded-md border border-rule bg-surface" />}>
         <Overview />

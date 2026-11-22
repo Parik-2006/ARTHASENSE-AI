@@ -180,11 +180,11 @@ describe("navigation", () => {
     expect(NAV_ITEMS.filter((n) => n.href.startsWith("/indicators"))).toHaveLength(1);
     for (const c of CONFIG_LIST) expect(isActive(c.path, "/indicators")).toBe(true);
   });
-  it("sub-navigation links to Overview, CPI, WPI and IIP and marks the current page", () => {
+  it("sub-navigation links to all indicators, CPI, WPI, IIP and GDP and marks the current page", () => {
     const html = renderToStaticMarkup(<IndicatorsSubNav />);
-    for (const href of ["/indicators", "/indicators/cpi", "/indicators/wpi", "/indicators/iip"])
+    for (const href of ["/indicators", "/indicators/cpi", "/indicators/wpi", "/indicators/iip", "/indicators/gdp"])
       expect(html).toContain(`href="${href}"`);
-    for (const label of ["CPI Intelligence", "WPI Intelligence", "IIP Intelligence"]) expect(html).toContain(label);
+    for (const label of [">CPI<", ">WPI<", ">IIP<", ">GDP<"]) expect(html).toContain(label);
     expect(html.match(/aria-current="page"/g)).toHaveLength(1);
     expect(html).toMatch(/href="\/indicators\/wpi"[^>]*aria-current="page"|aria-current="page"[^>]*href="\/indicators\/wpi"/);
   });

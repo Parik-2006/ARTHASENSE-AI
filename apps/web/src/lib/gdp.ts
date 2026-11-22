@@ -182,3 +182,55 @@ export function gdpCsv(rows: GdpRow[], meta: { baseYear: string; unit: string; m
   ); // prettier-ignore
   return [head.join(","), ...lines].join("\r\n") + "\r\n";
 }
+
+// ---------- GVA by industry (official growth, quarterly) ----------
+
+export interface GvaIndustry {
+  key: string;
+  /** MoSPI's own industry label, verbatim. */
+  label: string;
+  points: { n: number; growth: number | null; releaseKey: string | null; retrievedAt: string | null }[];
+}
+export interface GvaData {
+  baseYear: string;
+  unit: string;
+  sourceUrl: string | null;
+  limitations: string[];
+  industries: GvaIndustry[];
+}
+export type GvaResult = { ok: true; data: GvaData } | { ok: false; state: "not_stored" | "error"; reason: string };
+
+/** Strict parser for GET /api/v1/indicators/gdp/gva. */
+export function parseGvaResponse(body: unknown): GvaData | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as Record<string, unknown>;
+  if (b.indicator !== "GVA" || b.frequency !== "quarterly" || !Array.isArray(b.industries)) return null;
+  const baseYear = str(b.base_year);
+  if (!baseYear) return null;
+  const industries: GvaIndustry[] = [];
+  for (const i of b.industries as Record<string, unknown>[]) {
+    const key = str(i?.key);
+    const label = str(i?.label);
+    if (!key || !label || !Array.isArray(i.observations)) return null;
+    const seen = new Set<number>();
+    const points: GvaIndustry["points"] = [];
+    for (const o of i.observations as Record<string, unknown>[]) {
+      const fy = str(o?.fiscal_year);
+      const q = o?.quarter;
+      if (!fy || (q !== 1 && q !== 2 && q !== 3 && q !== 4)) return null;
+      const n = quarterStartN(fy, q);
+      if (n === null || seen.has(n)) return null;
+      seen.add(n);
+      const src = o.growth_source as Record<string, unknown> | undefined;
+      points.push({ n, growth: num(o.growth_yoy), releaseKey: str(src?.release_key), retrievedAt: str(src?.retrieved_at) });
+    }
+    industries.push({ key, label, points: points.sort((x, y) => x.n - y.n) });
+  }
+  return {
+    baseYear,
+    unit: str(b.unit) ?? "%",
+    sourceUrl: str(b.source_url),
+    limitations: Array.isArray(b.limitations) ? b.limitations.filter((x): x is string => typeof x === "string") : [],
+    industries,
+  };
+}

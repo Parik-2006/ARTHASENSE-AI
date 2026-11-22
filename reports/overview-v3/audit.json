@@ -1,0 +1,546 @@
+{
+ "layout": [
+  {
+   "url": "/",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=wpi",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=iip",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=gdp",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi&range=Custom&from=2025-01&to=2025-12",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=aligned",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=rebased",
+   "width": 360,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=wpi",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=iip",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=gdp",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi&range=Custom&from=2025-01&to=2025-12",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=aligned",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=rebased",
+   "width": 390,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 1,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=wpi",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=iip",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=gdp",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi&range=Custom&from=2025-01&to=2025-12",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=aligned",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=rebased",
+   "width": 768,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=wpi",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=iip",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=gdp",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi&range=Custom&from=2025-01&to=2025-12",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=aligned",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=rebased",
+   "width": 1024,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 2,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=wpi",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=iip",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=gdp",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi&range=Custom&from=2025-01&to=2025-12",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=aligned",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=rebased",
+   "width": 1440,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=wpi",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=iip",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=gdp",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?open=cpi&range=Custom&from=2025-01&to=2025-12",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=aligned",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  },
+  {
+   "url": "/?cmp=rebased",
+   "width": 1920,
+   "page_overflow_px": 0,
+   "offenders": [],
+   "card_columns": 4,
+   "h2": 3,
+   "sections": 3,
+   "console_errors": []
+  }
+ ],
+ "interactions": [
+  {
+   "name": "initial: no panel open",
+   "result": "{\"url\":\"\",\"panels\":0,\"pressed\":0}"
+  },
+  {
+   "name": "click CPI card opens one panel",
+   "result": "{\"url\":\"?open=cpi\",\"panels\":1,\"pressed\":1}"
+  },
+  {
+   "name": "click WPI card replaces (still one panel)",
+   "result": "{\"url\":\"?open=wpi\",\"panels\":1,\"pressed\":1}"
+  },
+  {
+   "name": "click WPI again closes",
+   "result": "{\"url\":\"\",\"panels\":0,\"pressed\":0}"
+  },
+  {
+   "name": "Back restores WPI panel",
+   "result": "{\"url\":\"?open=wpi\",\"panels\":1,\"pressed\":1}"
+  },
+  {
+   "name": "Forward closes it again",
+   "result": "{\"url\":\"\",\"panels\":0,\"pressed\":0}"
+  },
+  {
+   "name": "range 2Y in panel persists",
+   "result": "?open=iip&range=2Y"
+  },
+  {
+   "name": "Custom range in panel shows month inputs",
+   "result": "6 ?open=cpi&range=Custom&from=2025-11&to=2026-10"
+  },
+  {
+   "name": "Escape/Close button closes",
+   "result": "|panels=0"
+  },
+  {
+   "name": "keyboard: Tab reaches first card button",
+   "result": "BUTTON expanded=false"
+  },
+  {
+   "name": "CSV button present in open CPI panel",
+   "result": true
+  },
+  {
+   "name": "GDP panel shows unavailable state, no CSV",
+   "result": true
+  },
+  {
+   "name": "compare: GDP checkbox disabled while unavailable",
+   "result": "CPI:on | WPI:on | IIP:on | GDP(not available yet):disabled"
+  },
+  {
+   "name": "source links open to official hosts",
+   "result": "api.mospi.gov.in, esankhyiki.mospi.gov.in"
+  },
+  {
+   "name": "tour opens, non-modal",
+   "result": "aria-modal=0 STEP 1 OF 7"
+  }
+ ]
+}

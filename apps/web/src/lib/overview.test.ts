@@ -177,9 +177,10 @@ describe("tour reducer", () => {
     expect(tourReducer({ open: true, step: total - 1 }, { type: "next" }, total).open).toBe(false);
     expect(tourReducer({ open: false, step: 0 }, { type: "next" }, total)).toEqual({ open: false, step: 0 });
   });
-  it("has unique targets and covers the ten required topics", () => {
-    expect(new Set(OVERVIEW_TOUR.map((t) => t.target)).size).toBe(total);
-    expect(total).toBe(10);
+  it("is the concise V3 tour: seven steps, each with a title and a short body", () => {
+    expect(total).toBe(7);
+    for (const t of OVERVIEW_TOUR) expect(t.body.length).toBeLessThan(200);
+    expect(OVERVIEW_TOUR.map((t) => t.target)).toEqual(expect.arrayContaining(["cards", "range", "changes", "compare"]));
   });
 });
 

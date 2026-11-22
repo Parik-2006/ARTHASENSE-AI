@@ -30,6 +30,8 @@ export function TimeChart({
   digits = 2,
   description,
   signed = false,
+  stepMonths = 1,
+  formatN,
 }: {
   series: ChartSeries[];
   kind?: "line" | "bars";
@@ -38,6 +40,10 @@ export function TimeChart({
   digits?: number;
   description: string;
   signed?: boolean;
+  /** Months between consecutive points: 1 for monthly data (default), 3 for quarterly data. Lines only join points exactly this far apart. */
+  stepMonths?: number;
+  /** Label for a point's month number (tooltip and axis); defaults to the month name. */
+  formatN?: (n: number) => string;
 }) {
   const [width, setWidth] = useState(640);
   const [active, setActive] = useState<number | null>(null);
@@ -67,13 +73,14 @@ export function TimeChart({
   const [y0, y1] = [kind === "bars" ? lo - (lo < 0 ? pad : 0) : lo - pad, hi + pad];
   const plotW = width - M.l - M.r;
   const plotH = H - M.t - M.b;
-  const inset = kind === "bars" ? plotW / (span + 1) / 2 : 0;
+  const unit0 = stepMonths;
+  const inset = kind === "bars" ? plotW / (span / unit0 + 1) / 2 : 0;
   const sx = (n: number) => M.l + inset + ((n - n0) / span) * (plotW - 2 * inset);
   const sy = (v: number) => M.t + (1 - (v - y0) / (y1 - y0)) * plotH;
   const yTicks = Array.from({ length: 5 }, (_, i) => y0 + ((y1 - y0) * i) / 4);
-  const step = Math.max(1, Math.ceil((span + 1) / Math.max(1, Math.floor(plotW / 58))));
+  const step = Math.max(1, Math.ceil((span / unit0 + 1) / Math.max(1, Math.floor(plotW / (formatN ? 84 : 58))))) * unit0;
   const xTicks = ns.filter((n) => (n - n0) % step === 0);
-  const barW = Math.max(2, Math.min(28, (plotW / (span + 1)) * 0.7));
+  const barW = Math.max(2, Math.min(28, (plotW / (span / unit0 + 1)) * 0.7));
   const fmt = (v: number) => `${signed && v > 0 ? "+" : ""}${v.toFixed(digits)}${unit}`;
 
   const nearest = (clientX: number, svg: SVGSVGElement) => {
@@ -90,7 +97,7 @@ export function TimeChart({
     an === null
       ? []
       : [
-          formatPeriod(periodOf(an), true),
+          formatN ? formatN(an) : formatPeriod(periodOf(an), true),
           ...series.map((s) => {
             const p = s.points.find((q) => q.n === an);
             return `${series.length > 1 ? `${s.label}: ` : ""}${p && p.v !== null ? fmt(p.v) : "no data"}`;
@@ -109,7 +116,7 @@ export function TimeChart({
         prev = null;
         continue;
       }
-      if (prev !== null && p.n - prev === 1) out[out.length - 1].push({ n: p.n, v: p.v });
+      if (prev !== null && p.n - prev === stepMonths) out[out.length - 1].push({ n: p.n, v: p.v });
       else out.push([{ n: p.n, v: p.v }]);
       prev = p.n;
     }
@@ -123,7 +130,7 @@ export function TimeChart({
         height={H}
         role="group"
         tabIndex={0}
-        aria-label={`${description} Use left and right arrow keys to read each month.`}
+        aria-label={`${description} Use left and right arrow keys to read each ${stepMonths === 3 ? "quarter" : "month"}.`}
         className="block touch-pan-y rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         onPointerMove={(e) => setActive(nearest(e.clientX, e.currentTarget))}
         onPointerLeave={() => setActive(null)}
@@ -150,8 +157,8 @@ export function TimeChart({
           <line x1={M.l} x2={width - M.r} y1={sy(0)} y2={sy(0)} stroke="var(--ink-muted)" strokeWidth={1.5} />
         )}
         {xTicks.map((n) => (
-          <text key={n} x={sx(n)} y={H - M.b + 18} textAnchor="middle" className="figure fill-ink-muted text-[11px]">
-            {formatPeriod(periodOf(n))}
+          <text key={n} x={sx(n)} y={H - M.b + 18} textAnchor={sx(n) > width - M.r - 26 ? "end" : "middle"} className="figure fill-ink-muted text-[11px]">
+            {formatN ? formatN(n) : formatPeriod(periodOf(n))}
           </text>
         ))}
         <text transform={`translate(12 ${M.t + plotH / 2}) rotate(-90)`} textAnchor="middle" className="fill-ink-muted text-[11px]">

@@ -27,6 +27,8 @@ COMMIT;
 ```
 Never touch `forecast_runs`, `forecasts` or `scores`: the import adds no series they depend on.
 
+**Tested on the staging rehearsal database** (inside a transaction, then rolled back): after this data rollback the counts returned exactly to the pre-import baseline (observations 415, series 13, releases 9, forecast runs 176, forecasts 1,195, scores 718).
+
 ## Roll back the schema (only if required, after the data rollback)
 ```sql
 BEGIN;

@@ -221,7 +221,7 @@ LEGACY_CPI_LIMITATIONS = [
     "CPI base 2012 is a separate series from the 2024 base (Current and Back). It is not linked or merged with them.",
     "The source has stopped publishing the 2012 base: its last month is December 2025.",
     "The first year (2013) has no year-on-year inflation, because the 2012 base starts in January 2013.",
-    "Some months carry a source flag other than final (for example F* in April and May 2020); the API does not document what it means.",
+    "April and May 2020 carry the source flag F*, which the API does not define. MoSPI's own press releases and technical note state that CPI indices for those two months were imputed because the lockdown halted price collection, and caution against naive time-series use; ArthaSense does not claim F* means the same thing.",
 ]
 
 

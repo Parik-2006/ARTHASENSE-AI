@@ -1,0 +1,67 @@
+{
+ "generated_at": "2026-11-22T05:03:14+00:00",
+ "status": "completed_on_simulated_staging",
+ "staging": "local database cloned from a production-shaped profile (migrations 0000-0002, primary series only). Not a restored production snapshot.",
+ "steps": [
+  {
+   "step": "clone profile",
+   "before_rows": {
+    "sources": 1,
+    "series": 13,
+    "releases": 9,
+    "observations": 415,
+    "forecast_runs": 176,
+    "forecasts": 1195,
+    "scores": 718
+   }
+  },
+  {
+   "step": "db.migrate (0003, 0004)",
+   "result": "applied 0003_data_foundation, 0004_source_artifacts; migrator re-verified 0000-0002 hashes; second run: nothing to apply",
+   "row_counts_unchanged": true
+  },
+  {
+   "step": "import run 1 (pipeline.ingest.history, --resume, live MoSPI source, 9 commands)",
+   "result": "all years SUCCESS; 2,714 observations inserted"
+  },
+  {
+   "step": "import run 2 (same commands, WITHOUT --resume: full re-fetch and re-store)",
+   "result": "0 inserted in every year logged; observation total unchanged at 3,129"
+  }
+ ],
+ "verification_after": {
+  "series_expected": 30,
+  "series_staged": 30,
+  "missing": [],
+  "extra": [],
+  "rows_or_hash_differ": [],
+  "total_observations_staged": 3129,
+  "manifest_total": 3129,
+  "orphans": 0,
+  "releases_without_observations": 0,
+  "duplicate_keys": 0,
+  "non_first_of_month": 0,
+  "revision_rows": 0,
+  "source_flags": [
+   [
+    "source_final",
+    296
+   ],
+   [
+    "source_status_F*",
+    2
+   ]
+  ],
+  "preexisting_rows": 415
+ },
+ "api_and_website": {
+  "staged_api_series_in_coverage": 30,
+  "browser_suites": {
+   "overview_v3": "31/31",
+   "indicators_11_series": "65/65",
+   "forecasts_v2": "56/56"
+  }
+ },
+ "rollback_exercised": false,
+ "not_rehearsed": "Restore from a real production backup and apply to a real restored copy (no production access)."
+}

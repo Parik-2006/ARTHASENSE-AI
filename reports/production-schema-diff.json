@@ -1,0 +1,41 @@
+{
+ "generated_at": "2026-11-22T05:02:48+00:00",
+ "status": "blocked_no_production_access",
+ "blocked_reason": "No read-only production connection or restored snapshot exists in this environment. Public API responses do not prove database state.",
+ "simulated_baseline": "SIMULATED production profile (local database built from migrations 0000-0002 and the primary series, matching what the public API shows). It is NOT a restored production snapshot: no production database connection or snapshot was available.",
+ "migrations_production_presumed": [
+  "0000_bootstrap",
+  "0001_core_schema",
+  "0002_forecasting"
+ ],
+ "migrations_target": [
+  "0000_bootstrap",
+  "0001_core_schema",
+  "0002_forecasting",
+  "0003_data_foundation",
+  "0004_source_artifacts"
+ ],
+ "objects_added_by_0003_0004": {
+  "tables_and_views": [
+   "current_observations",
+   "freshness_policy",
+   "ingestion_runs",
+   "observation_revisions",
+   "quality_checks",
+   "source_artifacts"
+  ],
+  "indexes": [
+   "freshness_policy_pkey",
+   "idx_ingestion_runs_indicator",
+   "idx_quality_checks_series",
+   "idx_source_artifacts_raw",
+   "idx_source_artifacts_release",
+   "ingestion_runs_pkey",
+   "quality_checks_pkey",
+   "source_artifacts_pkey",
+   "source_artifacts_release_id_raw_sha256_request_url_key"
+  ]
+ },
+ "objects_removed_or_changed": [],
+ "migrations_presumed_note": "Presumed from the task brief and the absence of /api/v1/data/* in production; NOT verified against production's schema_migrations table."
+}

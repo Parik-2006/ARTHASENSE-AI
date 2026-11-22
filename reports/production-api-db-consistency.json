@@ -1,0 +1,510 @@
+{
+ "summary": {
+  "series": 50,
+  "passed": 50,
+  "observations_checked": 3429,
+  "duplicate_rows_in_db": 0
+ },
+ "results": [
+  {
+   "series": "mospi.cpi.2012.current.all_india.combined.general.index",
+   "ok": true,
+   "periods": 156,
+   "served": 156,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.cpi.2012.current.all_india.combined.general.inflation_yoy",
+   "ok": true,
+   "periods": 142,
+   "served": 142,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.cpi.2024.back.all_india.combined.general.index",
+   "ok": true,
+   "periods": 144,
+   "served": 144,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.cpi.2024.back.all_india.combined.general.inflation_yoy",
+   "ok": true,
+   "periods": 132,
+   "served": 132,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.cpi.2024.current.all_india.combined.general.index",
+   "ok": true,
+   "periods": 22,
+   "served": 22,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.cpi.2024.current.all_india.combined.general.inflation_yoy",
+   "ok": true,
+   "periods": 10,
+   "served": 10,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.1993-94.india.general.index",
+   "ok": true,
+   "periods": 207,
+   "served": 207,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2004-05.india.general.index",
+   "ok": true,
+   "periods": 144,
+   "served": 144,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.electricity.growth_yoy",
+   "ok": true,
+   "periods": 155,
+   "served": 155,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.electricity.index",
+   "ok": true,
+   "periods": 159,
+   "served": 159,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.general.growth_yoy",
+   "ok": true,
+   "periods": 155,
+   "served": 155,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.general.index",
+   "ok": true,
+   "periods": 159,
+   "served": 159,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.manufacturing.growth_yoy",
+   "ok": true,
+   "periods": 155,
+   "served": 155,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.manufacturing.index",
+   "ok": true,
+   "periods": 159,
+   "served": 159,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.mining.growth_yoy",
+   "ok": true,
+   "periods": 155,
+   "served": 155,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2011-12.india.mining.index",
+   "ok": true,
+   "periods": 159,
+   "served": 159,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.electricity.growth_yoy",
+   "ok": true,
+   "periods": 30,
+   "served": 30,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.electricity.index",
+   "ok": true,
+   "periods": 42,
+   "served": 42,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.general.growth_yoy",
+   "ok": true,
+   "periods": 30,
+   "served": 30,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.general.index",
+   "ok": true,
+   "periods": 42,
+   "served": 42,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.manufacturing.growth_yoy",
+   "ok": true,
+   "periods": 30,
+   "served": 30,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.manufacturing.index",
+   "ok": true,
+   "periods": 42,
+   "served": 42,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.mining.growth_yoy",
+   "ok": true,
+   "periods": 30,
+   "served": 30,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.mining.index",
+   "ok": true,
+   "periods": 42,
+   "served": 42,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.water.growth_yoy",
+   "ok": true,
+   "periods": 30,
+   "served": 30,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.iip.2022-23.india.water.index",
+   "ok": true,
+   "periods": 42,
+   "served": 42,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gdp.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gdp.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.agriculture.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.agriculture.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.construction.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.construction.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.electricity.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.electricity.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.financial.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.financial.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.manufacturing.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.manufacturing.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.mining.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.mining.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.public.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.public.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.total.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.total.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.trade.real.growth_yoy",
+   "ok": true,
+   "periods": 13,
+   "served": 13,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.nas.2022-23.india.gva.trade.real.level",
+   "ok": true,
+   "periods": 17,
+   "served": 17,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.wpi.1993-94.india.all_commodities.index",
+   "ok": true,
+   "periods": 197,
+   "served": 197,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.wpi.2004-05.india.all_commodities.index",
+   "ok": true,
+   "periods": 147,
+   "served": 147,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.wpi.2011-12.india.all_commodities.index",
+   "ok": true,
+   "periods": 169,
+   "served": 169,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  },
+  {
+   "series": "mospi.wpi.2022-23.india.all_commodities.index",
+   "ok": true,
+   "periods": 43,
+   "served": 43,
+   "missing": [],
+   "extra": [],
+   "mismatched": [],
+   "duplicates": 0
+  }
+ ]
+}

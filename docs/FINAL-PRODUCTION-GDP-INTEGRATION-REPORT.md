@@ -2,7 +2,7 @@
 
 Status legend: **DONE-LOCAL** completed locally · **VERIFIED-STAGING** proven on the isolated PostgreSQL 17 replica ·
 **APPROVED** approved by the owner for production · **EXECUTED-PROD** run against production · **VERIFIED-LIVE** checked on the live site.
-As of this update (2026-11-22, 22:00 IST), **nothing has been written to production**. The backup is taken and verified.
+**Final state (2026-11-22, 22:30 IST): the approved migrations and import were executed in production and verified on the live API and website.**
 
 | Step | Status |
 |---|---|
@@ -15,8 +15,10 @@ As of this update (2026-11-22, 22:00 IST), **nothing has been written to product
 | API ↔ database 50/50 series; browser 56/56 on the post-import replica | VERIFIED-STAGING |
 | Production backup + test restore | **DONE (read-only): checksum OK, restore matches the baseline on all 8 tables** |
 | Fresh pre-import read-only audit | DONE: production unchanged (all 8 fingerprints = baseline); staging re-run inserts 0 (no new MoSPI data) |
-| Production migrations + import | NOT APPROVED, NOT EXECUTED |
-| Live API / site with full data and GDP | NOT YET (production still has 415 observations, GDP 404) |
+| Production migrations 0003 + 0004 and import | **APPROVED** by the owner → **EXECUTED-PROD**: +3,014 observations, all steps exit 0 |
+| 14 post-import integrity checks on production | **EXECUTED-PROD: 14/14 pass** |
+| Live API (CPI, WPI, IIP, GDP, GVA) | **VERIFIED-LIVE**: GDP HTTP 200, 17 quarters; API = database for 50/50 series |
+| Live website browser suite | **VERIFIED-LIVE: 56/56** on https://arthasense-ai.vercel.app |
 
 ## 1. Initial production state (read-only, 2026-11-22)
 Access: the Supabase connector, **SELECT only, every query inside `BEGIN TRANSACTION READ ONLY`** (the server confirmed
@@ -108,3 +110,59 @@ post-import PostgreSQL 17 replica. The application test suites (346 Python, 326 
 * MoSPI can publish a new month between rehearsal and the production run; step 2 catches that (new rows only; revisions
   arrive as new releases, never overwrites).
 * Official GDP growth covers 13 quarters (no 2022-23 back series yet).
+
+## 7. Production execution (approved 2026-11-22) — actual results
+**Pre-write reconfirmation (read-only):** host `aws-1-ap-northeast-1.pooler.supabase.com`, user of project `yqcscbxiprinmejslilt`,
+PostgreSQL 17.12, migrations 0000–0002 with repository hashes, all 8 table fingerprints = baseline.
+
+**Executed** (`tools/import_plan.py`, log `reports/production-import-run.json`; every step exit 0):
+
+| Step | Inserted |
+|---|---:|
+| `db.migrate` | applied `0003_data_foundation`, `0004_source_artifacts` |
+| CPI current 2025–2026 | 20 |
+| CPI back series 2013–2024 | 276 |
+| CPI 2012 base 2013–2025 | 298 |
+| WPI 2022-23 | 0 (already present) |
+| WPI 2011-12 / 2004-05 / 1993-94 | 169 / 147 / 197 |
+| IIP 2022-23 | 0 (already present) |
+| IIP 2011-12 / 2004-05 / 1993-94 | 1,256 / 144 / 207 |
+| NAS GDP/GVA (base 2022-23) | 300 |
+| **Total** | **3,014** (= the approved delta: CPI 594, WPI 513, IIP 1,607, GDP/GVA 300) |
+
+**Post-import verification on production** (`tools/verify_import.py`, `reports/production-import-verification.json`): 14/14 checks pass —
+forecast_runs, forecasts, scores, linking_factors unchanged; the pre-existing 1 source / 12 series / 9 releases / 415 observations
+byte-identical to the backup baseline; no duplicates; no orphans; GDP/GVA quarterly only; zeros only the 4 published 0.0 IIP
+figures; every verified local series/period present with the same value; nothing extra.
+
+**Final production database:** 50 series · 126 releases · **3,429 observations** (CPI 6 series / 606, WPI 4 / 556, IIP 20 / 1,967,
+GDP/GVA 20 / 300) · forecast_runs 176 · forecasts 1,195 · scores 718 · migrations 0000–0004.
+
+**Live API** (`https://arthasense-ai.onrender.com`): `/health` ok. CPI current Jan 2025–Oct 2026 (22), back 2013–2024 (144),
+2012 base 2013–2025 (156); WPI 2022-23 (43), 2011-12 (169), 1993-94 (197); IIP 2022-23 (42), 2011-12 manufacturing (159),
+2004-05 (144). **`/gdp`: HTTP 200**, 17 quarters Q1 FY2022-23 … Q1 FY2026-27 (periods Jan/Apr/Jul/Oct only), 17 levels, 13 official
+growth values, latest ₹81,36,153 crore and 7.8%, base 2022-23, ₹ crore, not seasonally adjusted, MoSPI NAS source URL, release key,
+retrieval time (publication date null: not provided by the API). **`/gdp/gva`: HTTP 200**, 9 official industries × 17 quarters
+(e.g. Q1 FY2026-27 growth: agriculture 3.6, mining −2.4, manufacturing 9.2, financial 12.1, total GVA 8.2).
+`tools/api_db_consistency.py` live API vs production database: **50/50 series, 3,429 observations identical**
+(`reports/production-api-db-consistency.json`).
+
+**Live website** (`https://arthasense-ai.vercel.app`, deployed code `841ef95`, no redeploy needed): browser suite **56/56**
+(`reports/live/final-e2e-full.json`, screenshots `reports/live/ui/`): Overview 3 sections, GDP card 7.8% Q1 FY2026-27, Section 2 GDP
+growth and **Level** view, comparison switching to quarterly with GDP; four tabs × two charts all drawn with live data; CPI 2012
+2M…All = 2/3/6/12/24/36/60/156 months; custom range; year buttons 2022–2026; F* flags; WPI 2011-12 5Y; IIP sector selector
+(manufacturing); GDP 1Y = 4 quarters; GDP calendar year 2025; GDP 2M message; GVA measure selector (agriculture); rapid switching;
+keyboard; 8 pages × 360/390/768/1024/1440/1920 px with no overflow; no console errors.
+
+**Clean-up:** the two local containers holding copies of production data (staging replica and restore test) were removed; the
+verified dump stays at `P:\ArthaSense-AIackups\` (outside the repository).
+
+**Git / deployment:** no application code changed; nothing pushed or deployed in this step. Local commits on
+`feature/final-overview-indicators` beyond `origin/main` (`841ef95`): tooling, reports and this document only.
+
+**Rollback (if ever needed):** `tools/prod/rollback_data.sql` (removes everything with id above the baseline maxima: release 9,
+series 20, observation 415; tested on staging), schema rollback in `docs/PRODUCTION-DATABASE-ROLLBACK.md`, or restore
+`arthasense-prod-20261122T162405Z.dump`.
+
+**Remaining limitations:** official GDP growth covers 13 quarters (no 2022-23 back series yet); WPI inflation is calculated
+(the source publishes the index only); new MoSPI releases are not loaded automatically (run the same import plan after approval).

@@ -1,0 +1,288 @@
+{
+ "web": "https://arthasense-ai.vercel.app",
+ "profile": "full",
+ "passed": 56,
+ "total": 56,
+ "results": [
+  {
+   "n": "Overview: exactly three top-level sections",
+   "p": true,
+   "d": "indicators,changes,compare"
+  },
+  {
+   "n": "Overview: four cards link to /indicators/<key>",
+   "p": true,
+   "d": "/indicators/cpi,/indicators/wpi,/indicators/iip,/indicators/gdp"
+  },
+  {
+   "n": "Overview: no expanded chart panel",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Overview: GDP card shows official real growth 7.8% for Q1 FY2026-27",
+   "p": true,
+   "d": "GDP View details → Gross Domestic Product Value of everything the economy produces, after removing price changes. 7.8% R"
+  },
+  {
+   "n": "Overview: CPI card has value, month, base and official badge",
+   "p": true,
+   "d": "CPI View details → Consumer Price Index Prices households pay for everyday goods and services. 110.05 Index, base 2024 = 100 · October 2026 "
+  },
+  {
+   "n": "Overview: WPI rate is labelled calculated",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 2: one change panel; selector writes ?chg=iip",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 2: GDP quarterly change",
+   "p": true,
+   "d": "GDP: real growth by fiscal quarter (% year-on-year) ● Official data 0.0 2.4 4.8 7.2 9.6 Q1 FY23-24 Q"
+  },
+  {
+   "n": "Section 2: Back returns to the previous selection",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 3: monthly comparison by default (YoY %)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Section 3: adding GDP switches to quarterly and disables month-on-month",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Overview -> Indicators: clicking the WPI card opens /indicators/wpi",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Old ?open= link opens the Indicators view (base kept)",
+   "p": true,
+   "d": "https://arthasense-ai.vercel.app/indicators/iip?base=2011-12"
+  },
+  {
+   "n": "/indicators/cpi: exactly two charts",
+   "p": true,
+   "d": "CPI index history | CPI inflation history (%)"
+  },
+  {
+   "n": "/indicators/cpi: both charts are drawn",
+   "p": true,
+   "d": "1,1"
+  },
+  {
+   "n": "/indicators/cpi: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/ https://esankhyiki.mospi.gov.in/"
+  },
+  {
+   "n": "/indicators/wpi: exactly two charts",
+   "p": true,
+   "d": "WPI index history | WPI inflation, year-on-year (%)"
+  },
+  {
+   "n": "/indicators/wpi: both charts are drawn",
+   "p": true,
+   "d": "1,1"
+  },
+  {
+   "n": "/indicators/wpi: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/ https://eaindustry.nic.in/"
+  },
+  {
+   "n": "/indicators/iip: exactly two charts",
+   "p": true,
+   "d": "IIP index history · General (headline) | IIP growth history (%)"
+  },
+  {
+   "n": "/indicators/iip: both charts are drawn",
+   "p": true,
+   "d": "1,1"
+  },
+  {
+   "n": "/indicators/iip: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/ https://esankhyiki.mospi.gov.in/"
+  },
+  {
+   "n": "/indicators/gdp: exactly two charts",
+   "p": true,
+   "d": "Real GDP quarterly level | Official real GDP growth, year-on-year (%)"
+  },
+  {
+   "n": "/indicators/gdp: both charts are drawn",
+   "p": true,
+   "d": "1,1"
+  },
+  {
+   "n": "/indicators/gdp: official source links present",
+   "p": true,
+   "d": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly https://www.mospi.gov.in/"
+  },
+  {
+   "n": "CPI 2012: 2M/3M/6M/1Y/2Y/3Y/5Y/All give exactly 2/3/6/12/24/36/60/156 CSV rows ending Dec 2025, own series id",
+   "p": true,
+   "d": "2M:2 3M:3 6M:6 1Y:12 2Y:24 3Y:36 5Y:60 All:156"
+  },
+  {
+   "n": "Explanation text changes with every filter",
+   "p": true,
+   "d": "8/8"
+  },
+  {
+   "n": "URL holds the range and the base",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Back steps to the previous filter (5Y) and the page follows",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Forward returns to All",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Refresh / direct link keeps 3Y",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Custom Apr 2019 - Mar 2020: 12 rows, summary and explanation follow",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Custom window: the overall latest observation is shown separately",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "CPI 2012 F* flags exported verbatim (Apr + May 2020) and flagged on the page",
+   "p": true,
+   "d": "2020-04,2020-05"
+  },
+  {
+   "n": "WPI 2011-12 5Y: 60 rows May 2021 - Apr 2026; rate labelled calculated",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "IIP sector selector lists the headline and the official sectors stored for 2022-23",
+   "p": true,
+   "d": "General (headline)|Mining|Manufacturing|Electricity|Water supply, sewerage & waste management"
+  },
+  {
+   "n": "IIP Manufacturing: both charts switch, 24 rows, own series id",
+   "p": true,
+   "d": "IIP index history · Manufacturing|IIP growth history (%) · Manufacturing"
+  },
+  {
+   "n": "GDP 1Y: 4 quarters (Q2 FY25-26 .. Q1 FY26-27), level 8136153 and official growth 7.8 last",
+   "p": true,
+   "d": "2026-27,Q1,2026-04,gdp,8136153,7.8,2022-23,\"NSO, MoSPI\",mospi-nas-2022-23-quarterly-1e90c354a9f2d720,2026-11-22T16:59:35.670734Z"
+  },
+  {
+   "n": "GDP calendar year 2025 = Q4 FY24-25 .. Q3 FY25-26 (stated on the page)",
+   "p": true,
+   "d": "2024-25,Q4|2025-26,Q1|2025-26,Q2|2025-26,Q3"
+  },
+  {
+   "n": "GDP 5Y: 17 quarters stored, shortfall stated for growth (13 of 20)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "GDP 2M: says a quarter is longer than two months",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "GDP: chart 1 real quarterly level, chart 2 official growth",
+   "p": true,
+   "d": "Real GDP quarterly level|Official real GDP growth, year-on-year (%)"
+  },
+  {
+   "n": "GDP measure = GVA Agriculture: both charts switch; CSV rows are gva_agriculture",
+   "p": true,
+   "d": "Real GVA · Agriculture quarterly level|Official real GVA (Agriculture) growth, year-on-year (%)"
+  },
+  {
+   "n": "Year buttons 2022-2026 on CPI 2012 (ends Dec 2025): 12/12/12/12/0 months, 2026 shows an empty state",
+   "p": true,
+   "d": "2022:12 2023:12 2024:12 2025:12 2026:0"
+  },
+  {
+   "n": "Rapid filter switching ends on the last choice (2Y = 24 months)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators opens the CPI tab; exactly four tabs CPI, WPI, IIP, GDP",
+   "p": true,
+   "d": "CPI,WPI,IIP,GDP"
+  },
+  {
+   "n": "Overview Section 2 'Level' for GDP shows quarterly real rupees",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Keyboard: Tab reaches the CPI card and Enter opens it",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "Tutorial is optional (collapsed) and explains index points vs percentages",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "@360px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@390px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@768px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1024px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1440px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "@1920px: 8 pages load (HTTP 200), no horizontal overflow, no clipped chart",
+   "p": true,
+   "d": "200,200,200,200,200,200,200,200"
+  },
+  {
+   "n": "No console errors or page errors",
+   "p": true,
+   "d": ""
+  }
+ ]
+}

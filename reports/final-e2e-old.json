@@ -72,7 +72,7 @@
   {
    "n": "/indicators/cpi: exactly two charts",
    "p": true,
-   "d": "Consumer inflation rate (%) | CPI general index over time"
+   "d": "CPI index history | CPI inflation history (%)"
   },
   {
    "n": "/indicators/cpi (12 stored months, no stored rate): index chart drawn, rate chart says no figure exists",
@@ -87,7 +87,7 @@
   {
    "n": "/indicators/wpi: exactly two charts",
    "p": true,
-   "d": "Wholesale inflation rate (%) | WPI overall index over time"
+   "d": "WPI index history | WPI inflation, year-on-year (%)"
   },
   {
    "n": "/indicators/wpi: both charts are drawn",
@@ -102,7 +102,7 @@
   {
    "n": "/indicators/iip: exactly two charts",
    "p": true,
-   "d": "Industrial production growth (%) | Sectoral industrial production trends"
+   "d": "IIP index history · General (headline) | IIP growth history (%)"
   },
   {
    "n": "/indicators/iip: both charts are drawn",
@@ -117,7 +117,7 @@
   {
    "n": "/indicators/gdp: exactly two charts",
    "p": true,
-   "d": "Real GDP growth (%) by fiscal quarter | Sectoral GVA growth (%)"
+   "d": "Real GDP quarterly level | Official real GDP growth, year-on-year (%)"
   },
   {
    "n": "/indicators/gdp: honest unavailable state, no drawn chart, no CSV",

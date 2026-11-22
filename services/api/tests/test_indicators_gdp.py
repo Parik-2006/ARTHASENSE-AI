@@ -113,3 +113,49 @@ def test_gdp_on_old_schema_without_0003(migrated_db_url, monkeypatch):
     r = TestClient(app).get("/api/v1/indicators/gdp")
     get_settings.cache_clear()
     assert r.status_code == 404
+
+
+@pytest.mark.integration
+def test_gdp_revisions_latest_snapshot_wins_and_dates_filter(migrated_db_url, monkeypatch):
+    """Two retrievals of the same quarters: one row per quarter from the newest, old snapshot still auditable."""
+    from datetime import timedelta
+
+    from pipeline.ingest import nas
+
+    lvl, gr = nas.series_code(nas.INDICATORS[0], None), nas.series_code(nas.INDICATORS[1], None)
+    q = [date(2025, 4, 1), date(2025, 7, 1), date(2025, 10, 1), date(2026, 1, 1)]
+    first = [nas.NasRecord(lvl, d, Decimal("100") + i) for i, d in enumerate(q)] + [
+        nas.NasRecord(gr, q[0], Decimal("7.0"))
+    ]
+    revised = [nas.NasRecord(lvl, d, Decimal("200") + i) for i, d in enumerate(q)] + [
+        nas.NasRecord(gr, q[0], Decimal("7.4"))
+    ]
+    with psycopg.connect(migrated_db_url) as conn:
+        nas.store_nas(conn, first, T1)
+        nas.store_nas(conn, revised, T1 + timedelta(days=30))
+        n_obs, n_rel = conn.execute(
+            "SELECT (SELECT count(*) FROM observations), (SELECT count(*) FROM releases)"
+        ).fetchone()
+        old_key = conn.execute("SELECT release_key FROM releases ORDER BY retrieved_at LIMIT 1").fetchone()[0]
+    assert (n_obs, n_rel) == (10, 2)  # both snapshots kept
+    monkeypatch.setenv("ARTHASENSE_DATABASE_URL", migrated_db_url)
+    get_settings.cache_clear()
+    c = TestClient(app)
+    obs = c.get("/api/v1/indicators/gdp").json()["observations"]
+    assert [o["period"] for o in obs] == [
+        "2025-04-01",
+        "2025-07-01",
+        "2025-10-01",
+        "2026-01-01",
+    ]  # no duplicate dates, ordered
+    assert [o["level"] for o in obs] == [200, 201, 202, 203] and obs[0]["growth_yoy"] == 7.4
+    assert obs[3]["fiscal_year"] == "2025-26" and obs[3]["quarter"] == 4
+    pinned = c.get(f"/api/v1/indicators/gdp?release_key={old_key}").json()["observations"]
+    assert pinned[0]["level"] == 100 and pinned[0]["growth_yoy"] == 7.0
+    ranged = c.get("/api/v1/indicators/gdp?start=2025-07-01&end=2025-10-01").json()["observations"]
+    assert [o["period"] for o in ranged] == ["2025-07-01", "2025-10-01"]
+    assert (
+        c.get("/api/v1/indicators/gdp?start=2030-01-01").status_code == 404
+    )  # empty range: honest 404, nothing invented
+    assert c.get("/api/v1/indicators/gdp?start=2026-01-01&end=2025-01-01").status_code == 400
+    get_settings.cache_clear()

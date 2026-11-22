@@ -1,13 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useMemo } from "react";
 import { HelpTip } from "@/components/guide/help-tip";
 import { useRange } from "@/components/indicators/detail/use-range";
-import { type ChartSeries, TimeChart } from "@/components/overview/time-chart";
+import { TimeChart } from "@/components/overview/time-chart";
 import { downloadCsv, Empty } from "@/components/overview/v3/ui";
 import { ClassBadge, periodSpan, SourceAttribution } from "@/components/source/source-attribution";
-import { deriveGdp, type GdpData, type GdpResult, type GvaResult, quarterLabel, quarterShort } from "@/lib/gdp";
+import { deriveGdp, fiscalQuarterOf, type GdpData, type GdpResult, type GdpRow, type GvaResult, quarterLabel, quarterShort } from "@/lib/gdp";
 import { formatIndex, formatPeriod, latestObservation } from "@/lib/indicator";
 import type { IndicatorConfig } from "@/lib/indicators";
 import {
@@ -134,13 +134,6 @@ function Explanation({ children }: { children: ReactNode }) {
 
 // ---------------------------------------------------------------- monthly indicators (CPI, WPI, IIP)
 
-const SECTOR_KEYS = ["mining", "manufacturing", "electricity"] as const;
-const SECTOR_STROKE: Record<string, { stroke: string; dash?: string }> = {
-  mining: { stroke: "var(--ind-wpi)" },
-  manufacturing: { stroke: "var(--ind-iip)", dash: "6 3" },
-  electricity: { stroke: "var(--ind-gdp)", dash: "2 3" },
-};
-
 export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bundles: SeriesBundle[] }) {
   const k = config.key;
   const prepared = useMemo(() => bundles.map((b) => ({ b, rows: b.result.ok ? derive(b.result.data.observations) : ([] as Derived[]) })), [bundles]);
@@ -171,7 +164,7 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
             id={`${k}-base`}
             value={current.b.option.id}
             onChange={(e) => go({ base: e.target.value === prepared[0].b.option.id ? null : e.target.value })}
-            className={`rounded border border-rule bg-bg px-2 py-1 ${focusRing}`}
+            className={`min-w-0 max-w-full truncate rounded border border-rule bg-bg px-2 py-1 ${focusRing}`}
           >
             {prepared.map((p) => (
               <option key={p.b.option.id} value={p.b.option.id}>
@@ -208,39 +201,39 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
     );
   }
 
-  const w = monthlyWindow(rows, sel);
-  const ids = seriesIds(k, data.baseYear, "general", data.series ?? null);
-  const src: SourceInfo = { ...sourceFor(config, data), seriesIds: ids };
-  const hasOfficialRate = rows.some((r) => r.rate !== null);
+  // IIP: headline or one official sector, chosen with ?sector= (both charts follow it). Sectors exist only for some bases.
+  const sectorOpts =
+    k === "iip" && b.sectors?.ok
+      ? b.sectors.data.sectors.filter((s) => s.observations.some((o) => o.index !== null)).map((s) => ({ key: s.key, label: s.label, rows: derive(s.observations) }))
+      : [];
+  const wantedSector = search.get("sector");
+  const sector = sectorOpts.find((s) => s.key === wantedSector) ?? null;
+  const viewRows = sector ? sector.rows : rows;
+  const sectorKey = sector?.key ?? "general";
+  const sectorLabel = sector ? sector.label : "General (headline)";
+
+  const w = monthlyWindow(viewRows, sel);
+  const ids = seriesIds(k, data.baseYear, sectorKey, data.series ?? null);
+  const src: SourceInfo = { ...sourceFor(config, data), seriesIds: ids, coverage: k === "iip" ? `India · ${sectorLabel}` : data.coverage };
+  const hasOfficialRate = viewRows.some((r) => r.rate !== null);
   const rateOfficial = hasOfficialRate && k !== "wpi";
-  const rateTitle = k === "cpi" ? "Consumer inflation rate (%)" : k === "wpi" ? "Wholesale inflation rate (%)" : "Industrial production growth (%)";
+  const name = config.shortName;
+  const indexTitle = `${name} index history${k === "iip" ? ` · ${sectorLabel}` : ""}`;
+  const rateTitle = k === "iip" ? `IIP growth history (%)${sector ? ` · ${sectorLabel}` : ""}` : k === "cpi" ? "CPI inflation history (%)" : "WPI inflation, year-on-year (%)";
   const rateName = k === "iip" ? "industrial production growth" : k === "cpi" ? "consumer inflation" : "wholesale inflation";
   const pick = (r: Derived) => (rateOfficial ? r.rate : r.yoyCalc);
   const ratePoints = w.rows.map((r) => ({ n: r.n, v: pick(r) }));
-  const latestAll = latestObservation(data.observations);
+  const latestAll = latestObservation(viewRows.map((r) => ({ period: r.period, index: r.index, rate: r.rate, indexSource: null, rateSource: null })));
   const period = periodSpan(w.first?.period ?? null, w.last?.period ?? null);
   const color = VIEW_COLOR[k];
   const short = shortfallNote(w.requestedMonths, w.stored, "month");
 
-  // ---- chart 2: index, or (IIP) the three sectors when they are stored for this base
-  const sectorRows =
-    k === "iip" && b.sectors?.ok
-      ? b.sectors.data.sectors
-          .filter((s) => (SECTOR_KEYS as readonly string[]).includes(s.key))
-          .map((s) => ({ key: s.key, label: s.label, rows: derive(s.observations) }))
-          .filter((s) => s.rows.some((r) => r.index !== null))
-      : [];
-  const inW = (n: number) => w.rows.length > 0 && n >= w.rows[0].n && n <= w.rows[w.rows.length - 1].n;
-  const sectorSeries: ChartSeries[] = sectorRows.map((s) => ({ key: s.key, label: s.label, ...SECTOR_STROKE[s.key], points: s.rows.filter((r) => inW(r.n)).map((r) => ({ n: r.n, v: r.index })) }));
-  const showSectors = sectorSeries.some((s) => s.points.filter((p) => p.v !== null).length >= 2);
-
   const csvHead = ["period", `${k}_index`, ...(rateOfficial ? [k === "cpi" ? "inflation_yoy_pct_official" : "growth_yoy_pct_official"] : []), "yoy_change_pct_calculated", "mom_change_pct_calculated",
-    ...(showSectors ? sectorRows.map((s) => `${s.key}_index`) : []), "base_year", "series_id", "publisher", "release_key", "retrieved_at", "source_status"]; // prettier-ignore
+    ...(k === "iip" ? ["sector"] : []), "base_year", "series_id", "publisher", "release_key", "retrieved_at", "source_status"]; // prettier-ignore
   const f4 = (v: number | null) => (v === null ? null : v.toFixed(4));
   const csvRows = w.rows.map((r) => [
     r.period, r.index, ...(rateOfficial ? [r.rate] : []), f4(r.yoyCalc), f4(r.mom),
-    ...(showSectors ? sectorRows.map((s) => s.rows.find((x) => x.n === r.n)?.index ?? null) : []),
-    data.baseYear, ids[0], config.publisher, r.releaseKey, r.retrievedAt, r.sourceStatus ?? null,
+    ...(k === "iip" ? [sectorKey] : []), data.baseYear, ids[0], config.publisher, r.releaseKey, r.retrievedAt, r.sourceStatus ?? null,
   ]); // prettier-ignore
   const flagged = w.rows.filter((r) => r.sourceStatus && r.sourceStatus !== "source_final");
 
@@ -250,6 +243,30 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
   return (
     <div className="space-y-5">
       {header}
+      {k === "iip" && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <label htmlFor="iip-sector" className="font-medium">
+            Sector
+          </label>
+          <HelpTip id="sectors" />
+          <select
+            id="iip-sector"
+            value={sector?.key ?? "general"}
+            disabled={sectorOpts.length === 0}
+            onChange={(e) => go({ sector: e.target.value === "general" ? null : e.target.value })}
+            className={`min-w-0 max-w-full truncate rounded border border-rule bg-bg px-2 py-1 ${focusRing}`}
+          >
+            <option value="general">General (headline)</option>
+            {sectorOpts.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          {sectorOpts.length === 0 && <span className="text-xs text-ink-muted">Sector series are not stored for base {data.baseYear}; only the headline index exists.</span>}
+          {wantedSector && !sector && <span role="status" className="text-xs text-warn">The sector &quot;{wantedSector}&quot; is not stored for this base, so the headline is shown.</span>}
+        </div>
+      )}
 
       <dl data-testid="range-summary" className="grid grid-cols-2 gap-4 rounded-md border border-rule bg-surface p-4 lg:grid-cols-4">
         <Stat label="Selected period" value={period} sub={`${w.stored} monthly observation${w.stored === 1 ? "" : "s"}`} />
@@ -278,37 +295,26 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
       )}
 
       <div className="grid gap-4 xl:grid-cols-2">
+        <ChartCard title={indexTitle} cls="official" help="base-year" note={`Official index points, base ${data.baseYear} = 100. Not a percentage.`}>
+          {w.stored >= 2 ? (
+            <TimeChart series={[{ key: "index", label: `${name} index`, stroke: color, points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${data.baseYear} = 100)`} description={`${indexTitle}, ${period}, base ${data.baseYear}.`} />
+          ) : (
+            <Empty>{w.stored === 1 ? "Only one month falls in this range; a trend needs at least two." : "No stored months fall in this range."}</Empty>
+          )}
+        </ChartCard>
+
         <ChartCard
           title={rateTitle}
           cls={rateOfficial ? "official" : "calculated"}
           help="yoy"
-          note={rateOfficial ? `Official year-on-year rate as published by ${config.sourceShort}.` : "Calculated by ArthaSense: (index ÷ index of the same month a year earlier − 1) × 100. Not an official published rate."}
+          note={rateOfficial ? `Official year-on-year rate as published by ${config.sourceShort}.` : "Calculated by ArthaSense: (index ÷ index of the same month a year earlier in the same series − 1) × 100. Not an official published rate."}
         >
-          {ratePoints.filter((p) => p.v !== null).length >= 1 ? (
-            <TimeChart signed unit="%" series={[{ key: "rate", label: rateTitle, stroke: color, points: ratePoints }]} yLabel="% change from a year earlier" description={`${rateTitle}, ${period}.`} />
+          {ratePoints.some((p) => p.v !== null) ? (
+            <TimeChart kind="bars" barColor="series" signed unit="%" series={[{ key: "rate", label: rateTitle, stroke: color, points: ratePoints }]} yLabel="% change from a year earlier" description={`${rateTitle}, ${period}.`} />
           ) : (
             <Empty>No {rateName} figure exists in this range. A calculated rate needs the same month a year earlier in the same series.</Empty>
           )}
         </ChartCard>
-
-        {showSectors ? (
-          <ChartCard title="Sectoral industrial production trends" cls="official" help="sectors" note={`Official sector indices, base ${data.baseYear} = 100. Each sector has its own weight in the headline IIP.`}>
-            <TimeChart series={sectorSeries} yLabel={`Index (base ${data.baseYear} = 100)`} description={`Mining, manufacturing and electricity indices, ${period}.`} />
-          </ChartCard>
-        ) : (
-          <ChartCard
-            title={k === "cpi" ? "CPI general index over time" : k === "wpi" ? "WPI overall index over time" : "IIP general index over time"}
-            cls="official"
-            help="base-year"
-            note={k === "iip" ? "Sector series are not stored for this base year, so the general index is shown instead." : `Index points, base ${data.baseYear} = 100. Not a percentage.`}
-          >
-            {w.stored >= 2 ? (
-              <TimeChart series={[{ key: "index", label: `${config.shortName} index`, stroke: color, points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${data.baseYear} = 100)`} description={`${config.shortName} index, ${period}, base ${data.baseYear}.`} />
-            ) : (
-              <Empty>{w.stored === 1 ? "Only one month falls in this range; a trend needs at least two." : "No months fall in this range."}</Empty>
-            )}
-          </ChartCard>
-        )}
       </div>
 
       <Explanation>
@@ -320,7 +326,7 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
         <button
           type="button"
           disabled={w.rows.length === 0}
-          onClick={() => downloadCsv(`india-${k}-${data.baseYear}-${w.rows.length ? `${ym(w.rows[0].period)}-to-${ym(w.rows[w.rows.length - 1].period)}` : "empty"}.csv`, toCsv(csvHead, csvRows))}
+          onClick={() => downloadCsv(`india-${k}-${data.baseYear}${k === "iip" ? `-${sectorKey}` : ""}-${w.rows.length ? `${ym(w.rows[0].period)}-to-${ym(w.rows[w.rows.length - 1].period)}` : "empty"}.csv`, toCsv(csvHead, csvRows))}
           className={`${btn} disabled:opacity-50`}
         >
           Download CSV ({w.rows.length} rows)
@@ -337,9 +343,9 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
         )}
       </div>
       <DataTable
-        caption={`${config.shortName} observations, ${period}`}
-        head={["Month", "Index", rateOfficial ? "Official rate %" : "Calculated YoY %", ...(showSectors ? sectorRows.map((s) => s.label) : [])]}
-        rows={[...w.rows].reverse().map((r) => [formatPeriod(r.period, true), r.index === null ? null : r.index.toFixed(2), pick(r) === null ? null : (pick(r) as number).toFixed(2), ...(showSectors ? sectorRows.map((s) => s.rows.find((x) => x.n === r.n)?.index?.toFixed(2) ?? null) : [])])}
+        caption={`${name} observations, ${period}`}
+        head={["Month", "Index", rateOfficial ? "Official rate %" : "Calculated YoY %"]}
+        rows={[...w.rows].reverse().map((r) => [formatPeriod(r.period, true), r.index === null ? null : r.index.toFixed(2), pick(r) === null ? null : (pick(r) as number).toFixed(2)])}
       />
       <SourceAttribution cls="official" sources={[src]} period={period} units={`Index, base ${data.baseYear} = 100; rates in %`} method={rateOfficial ? undefined : "Inflation rate calculated by ArthaSense from the official index."} />
       <Tutorial k={k} />
@@ -349,7 +355,6 @@ export function MonthlyDetail({ config, bundles }: { config: IndicatorConfig; bu
 
 // ---------------------------------------------------------------- GDP (quarterly)
 
-const GVA_DEFAULT = ["agriculture", "manufacturing", "construction", "financial"];
 const GVA_SHORT: Record<string, string> = {
   total: "Total GVA",
   agriculture: "Agriculture",
@@ -361,7 +366,6 @@ const GVA_SHORT: Record<string, string> = {
   financial: "Financial & real estate",
   public: "Public administration & other",
 };
-const GVA_STROKE = ["var(--ind-cpi)", "var(--ind-wpi)", "var(--ind-iip)", "var(--ind-gdp)", "var(--ink-muted)", "var(--target)", "var(--up)", "var(--down)", "var(--ok)"];
 
 export function gdpSource(d: GdpData): SourceInfo {
   const at = d.observations.map((o) => o.retrievedAt).filter((x): x is string => !!x).sort();
@@ -384,18 +388,52 @@ export function gdpSource(d: GdpData): SourceInfo {
 }
 
 export function GdpDetail({ gdp, gva }: { gdp: GdpResult; gva: GvaResult }) {
-  const rows = useMemo(() => (gdp.ok ? deriveGdp(gdp.data) : []), [gdp]);
-  const { sel, bar } = useRange(() => {
-    const ns = rows.filter((r) => r.growthOfficial !== null).map((r) => r.n);
+  const search = useSearchParams();
+  const gdpRows = useMemo(() => (gdp.ok ? deriveGdp(gdp.data) : []), [gdp]);
+  const industries = gva.ok ? gva.data.industries : [];
+  // ?measure=<industry> switches BOTH charts from GDP to that official GVA industry (same base, same quarters).
+  const wantedMeasure = search.get("measure");
+  const ind = industries.find((i) => i.key === wantedMeasure) ?? null;
+  const rows: GdpRow[] = ind
+    ? ind.points.map((p) => {
+        const fq = fiscalQuarterOf(p.n);
+        return { n: p.n, fiscalYear: fq.fiscalYear, quarter: fq.quarter, level: p.level, growthOfficial: p.growth, yoyCalc: null, qoq: null, releaseKey: p.releaseKey, retrievedAt: p.retrievedAt };
+      })
+    : gdpRows;
+  const { sel, bar, go } = useRange(() => {
+    const ns = rows.filter((r) => r.level !== null).map((r) => r.n);
     if (!ns.length) return null;
     const hi = ns[ns.length - 1];
     return { from: ym(periodOfN(Math.max(ns[0], hi - 9))), to: ym(periodOfN(hi + 2)) };
   });
-  const [picked, setPicked] = useState<string[]>(GVA_DEFAULT);
+  const measureName = ind ? `real GVA (${GVA_SHORT[ind.key] ?? ind.label})` : "real GDP";
+  const measureTitle = ind ? `Real GVA · ${GVA_SHORT[ind.key] ?? ind.label}` : "Real GDP";
 
   const header = (
     <div className="space-y-3">
       <p className="max-w-3xl text-base">{DEFINITION.gdp}</p>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <label htmlFor="gdp-measure" className="font-medium">
+          Measure
+        </label>
+        <HelpTip id="gdp" />
+        <select
+          id="gdp-measure"
+          value={ind?.key ?? "gdp"}
+          disabled={!gdp.ok || industries.length === 0}
+          onChange={(e) => go({ measure: e.target.value === "gdp" ? null : e.target.value })}
+          className={`min-w-0 max-w-full truncate rounded border border-rule bg-bg px-2 py-1 ${focusRing}`}
+        >
+          <option value="gdp">GDP (whole economy)</option>
+          {industries.map((i) => (
+            <option key={i.key} value={i.key}>
+              GVA: {i.label}
+            </option>
+          ))}
+        </select>
+        {wantedMeasure && !ind && gdp.ok && <span role="status" className="text-xs text-warn">The measure &quot;{wantedMeasure}&quot; is not stored, so GDP is shown.</span>}
+        {ind && <span className="w-full text-xs text-ink-muted">GVA is output by industry before product taxes and subsidies. Industry names are MoSPI&apos;s own; MoSPI&apos;s data service gives no agriculture / industry / services split.</span>}
+      </div>
       <div className="rounded-md border border-rule bg-surface p-3">{bar}</div>
     </div>
   );
@@ -418,12 +456,14 @@ export function GdpDetail({ gdp, gva }: { gdp: GdpResult; gva: GvaResult }) {
             </a>
           </p>
         </div>
-        <ChartCard title="Real GDP growth (%) by fiscal quarter" cls="official">
-          <Empty>Not available: GDP is not stored.</Empty>
-        </ChartCard>
-        <ChartCard title="Sectoral GVA growth (%)" cls="official">
-          <Empty>Not available: GVA is not stored.</Empty>
-        </ChartCard>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <ChartCard title="Real GDP quarterly level" cls="official">
+            <Empty>Not available: GDP is not stored.</Empty>
+          </ChartCard>
+          <ChartCard title="Official real GDP growth, year-on-year (%)" cls="official">
+            <Empty>Not available: GDP is not stored.</Empty>
+          </ChartCard>
+        </div>
         <Tutorial k="gdp" />
       </div>
     );
@@ -431,84 +471,63 @@ export function GdpDetail({ gdp, gva }: { gdp: GdpResult; gva: GvaResult }) {
 
   const data = gdp.data;
   const w = quarterWindow(rows, sel);
+  const levels = w.rows.filter((r) => r.level !== null);
   const growth = w.rows.filter((r) => r.growthOfficial !== null);
   const period = w.rows.length ? (w.rows.length === 1 ? quarterLabel(w.rows[0].n) : `${quarterShort(w.rows[0].n)} – ${quarterShort(w.rows[w.rows.length - 1].n)}`) : "no quarters";
-  const src = gdpSource(data);
+  const src = { ...gdpSource(data), dataset: ind ? `Quarterly GVA by industry (${ind.label}), constant 2022-23 prices` : gdpSource(data).dataset, seriesIds: ind ? [`mospi.nas.2022-23.india.gva.${ind.key}.real.level`, `mospi.nas.2022-23.india.gva.${ind.key}.real.growth_yoy`] : gdpSource(data).seriesIds };
   const short = shortfallNote(w.requestedQuarters, growth.length, "quarter");
-  const lastLevel = [...w.rows].reverse().find((r) => r.level !== null) ?? null;
+  const lastLevel = levels[levels.length - 1] ?? null;
   const lastGrowth = growth[growth.length - 1] ?? null;
-  const lo = w.rows[0]?.n ?? null;
-  const hi = w.rows[w.rows.length - 1]?.n ?? null;
-  const inQ = (n: number) => lo !== null && hi !== null && n >= lo && n <= hi;
-  const industries = gva.ok ? gva.data.industries : [];
-  const gvaSeries: ChartSeries[] = industries
-    .filter((i) => picked.includes(i.key))
-    .map((i) => ({ key: i.key, label: GVA_SHORT[i.key] ?? i.label, stroke: GVA_STROKE[industries.indexOf(i) % GVA_STROKE.length], dash: i.key === "total" ? "6 3" : undefined, points: i.points.filter((p) => inQ(p.n)).map((p) => ({ n: p.n, v: p.growth })) }));
-  const gvaHasData = gvaSeries.some((s) => s.points.some((p) => p.v !== null));
+  const calYear = sel.key === "Custom" && sel.from?.endsWith("-01") && sel.to?.endsWith("-12") && sel.from.slice(0, 4) === sel.to.slice(0, 4) ? sel.from.slice(0, 4) : null;
 
-  const csvHead = ["fiscal_year", "quarter", "quarter_first_month", "gdp_real_level_crore", "gdp_real_growth_yoy_pct_official",
-    ...industries.map((i) => `gva_${i.key}_growth_yoy_pct_official`), "base_year", "price_basis", "publisher", "release_key", "retrieved_at"]; // prettier-ignore
-  const csvRows = w.rows.map((r) => [
-    r.fiscalYear, `Q${r.quarter}`, ym(periodOfN(r.n)), r.level, r.growthOfficial,
-    ...industries.map((i) => i.points.find((p) => p.n === r.n)?.growth ?? null),
-    data.baseYear, "constant 2022-23 prices (real)", "NSO, MoSPI", r.releaseKey, r.retrievedAt,
-  ]); // prettier-ignore
+  const csvHead = ["fiscal_year", "quarter", "quarter_first_month", "measure", "real_level_crore_constant_2022_23", "growth_yoy_pct_official", "base_year", "publisher", "release_key", "retrieved_at"];
+  const csvRows = w.rows.map((r) => [r.fiscalYear, `Q${r.quarter}`, ym(periodOfN(r.n)), ind ? `gva_${ind.key}` : "gdp", r.level, r.growthOfficial, data.baseYear, "NSO, MoSPI", r.releaseKey, r.retrievedAt]);
 
   return (
     <div className="space-y-5">
       {header}
       <dl data-testid="range-summary" className="grid grid-cols-2 gap-4 rounded-md border border-rule bg-surface p-4 lg:grid-cols-4">
         <Stat label="Selected period" value={period} sub={`${w.rows.length} quarter${w.rows.length === 1 ? "" : "s"} · ${growth.length} with official growth`} />
-        <Stat label="Real GDP growth at end of period" value={lastGrowth ? `${(lastGrowth.growthOfficial as number).toFixed(1)}%` : "—"} sub={lastGrowth ? quarterLabel(lastGrowth.n) : undefined} />
-        <Stat label="Real GDP at end of period" value={lastLevel ? `₹${(lastLevel.level as number).toLocaleString("en-IN")} cr` : "—"} sub={lastLevel ? `${quarterShort(lastLevel.n)} · constant ${data.baseYear} prices` : undefined} />
-        <Stat label="Frequency" value="Quarterly" sub="Fiscal quarters, Q1 = Apr–Jun" />
+        <Stat label={`${measureTitle} at end of period`} value={lastLevel ? `₹${(lastLevel.level as number).toLocaleString("en-IN")} cr` : "—"} sub={lastLevel ? `${quarterShort(lastLevel.n)} · constant ${data.baseYear} prices` : undefined} />
+        <Stat label="Official growth at end of period" value={lastGrowth ? `${(lastGrowth.growthOfficial as number).toFixed(1)}%` : "—"} sub={lastGrowth ? quarterLabel(lastGrowth.n) : undefined} />
+        <Stat label="Frequency" value="Quarterly" sub="Fiscal quarters: Q1 Apr–Jun, Q2 Jul–Sep, Q3 Oct–Dec, Q4 Jan–Mar" />
       </dl>
+      {calYear && (
+        <p className="-mt-2 text-xs text-ink-muted">
+          Year {calYear} is a calendar year: it includes the quarters that start in January–December {calYear} (Q4 FY{Number(calYear) - 1}-{String(Number(calYear) % 100).padStart(2, "0")} to Q3 FY{calYear}-{String((Number(calYear) + 1) % 100).padStart(2, "0")}).
+        </p>
+      )}
       {short && <p className="-mt-2 text-xs text-warn">{short}</p>}
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <ChartCard title="Real GDP growth (%) by fiscal quarter" cls="official" help="gdp" note="Official year-on-year growth of real GDP (constant 2022-23 prices): each quarter against the same quarter a year earlier.">
+        <ChartCard title={`${measureTitle} quarterly level`} cls="official" help="gdp" note={`Official level at constant ${data.baseYear} prices (inflation removed), drawn in ₹ lakh crore (1 lakh crore = 1,00,000 crore); the table and CSV give exact ₹ crore. Quarterly figures are not seasonally adjusted, so quarters within a year differ partly for seasonal reasons.`}>
           {w.tooShort ? (
             <Empty>A 2-month range is shorter than one quarter. GDP is quarterly, so choose 3M or longer.</Empty>
-          ) : growth.length ? (
-            <TimeChart kind="bars" barColor="series" signed unit="%" digits={1} stepMonths={3} formatN={quarterShort} series={[{ key: "g", label: "Real GDP growth", stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.growthOfficial })) }]} yLabel="% change from a year earlier" description={`Official real GDP growth by fiscal quarter, ${period}.`} />
+          ) : levels.length ? (
+            <TimeChart kind="bars" barColor="series" digits={2} stepMonths={3} formatN={quarterShort} series={[{ key: "lvl", label: `${measureTitle} (₹ lakh crore)`, stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.level === null ? null : r.level / 1e5 })) }]} yLabel="₹ lakh crore, constant prices" description={`${measureTitle} quarterly level, ${period}.`} />
           ) : (
-            <Empty>No official GDP growth figure is stored for this range. The 2022-23 series starts in FY2022-23, so official growth begins in Q1 FY2023-24.</Empty>
+            <Empty>No quarterly level is stored for this range.</Empty>
           )}
         </ChartCard>
 
-        <ChartCard title="Sectoral GVA growth (%)" cls="official" help="gdp" note="Official year-on-year real growth for MoSPI's own industry groups. MoSPI's data service does not publish a single agriculture / industry / services split, so none is calculated here.">
-          {!gva.ok ? (
-            <Empty>Sector-wise GVA is not available: {gva.reason}</Empty>
-          ) : w.tooShort ? (
+        <ChartCard title={`Official ${measureName} growth, year-on-year (%)`} cls="official" help="yoy" note="Official year-on-year growth at constant prices: each quarter against the same quarter a year earlier.">
+          {w.tooShort ? (
             <Empty>A 2-month range is shorter than one quarter. Choose 3M or longer.</Empty>
+          ) : growth.length ? (
+            <TimeChart kind="bars" barColor="series" signed unit="%" digits={1} stepMonths={3} formatN={quarterShort} series={[{ key: "g", label: `${measureTitle} growth`, stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.growthOfficial })) }]} yLabel="% change from a year earlier" description={`Official ${measureName} growth by fiscal quarter, ${period}.`} />
           ) : (
-            <>
-              <fieldset className="mb-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                <legend className="sr-only">Industries to show</legend>
-                {industries.map((i) => (
-                  <label key={i.key} className="flex items-center gap-1" title={i.label}>
-                    <input type="checkbox" checked={picked.includes(i.key)} onChange={(e) => setPicked((x) => (e.target.checked ? [...x, i.key] : x.filter((y) => y !== i.key)))} />
-                    {GVA_SHORT[i.key] ?? i.label}
-                  </label>
-                ))}
-              </fieldset>
-              {gvaHasData ? (
-                <TimeChart signed unit="%" digits={1} stepMonths={3} formatN={quarterShort} series={gvaSeries} yLabel="% change from a year earlier" description={`Official real GVA growth by industry, ${period}.`} />
-              ) : (
-                <Empty>{picked.length ? "No official GVA growth is stored for the selected industries in this range." : "Select at least one industry."}</Empty>
-              )}
-            </>
+            <Empty>No official growth figure is stored for this range. The 2022-23 series starts in FY2022-23, so official growth begins in Q1 FY2023-24.</Empty>
           )}
         </ChartCard>
       </div>
 
       <Explanation>
-        <p>{explainGdp(w)}</p>
-        {growth.length > 0 && <p className="mt-1">GDP is measured at constant 2022-23 prices, so these growth rates are after removing the effect of price changes.</p>}
+        <p>{explainGdp(w, measureName)}</p>
+        {growth.length > 0 && <p className="mt-1">These figures are at constant 2022-23 prices, so growth is after removing the effect of price changes.</p>}
       </Explanation>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" disabled={w.rows.length === 0} onClick={() => downloadCsv(`india-gdp-quarterly-${data.baseYear}${w.rows.length ? `-${w.rows[0].fiscalYear}Q${w.rows[0].quarter}-to-${w.rows[w.rows.length - 1].fiscalYear}Q${w.rows[w.rows.length - 1].quarter}` : ""}.csv`, toCsv(csvHead, csvRows))} className={`${btn} disabled:opacity-50`}>
+        <button type="button" disabled={w.rows.length === 0} onClick={() => downloadCsv(`india-${ind ? `gva-${ind.key}` : "gdp"}-quarterly-${data.baseYear}${w.rows.length ? `-${w.rows[0].fiscalYear}Q${w.rows[0].quarter}-to-${w.rows[w.rows.length - 1].fiscalYear}Q${w.rows[w.rows.length - 1].quarter}` : ""}.csv`, toCsv(csvHead, csvRows))} className={`${btn} disabled:opacity-50`}>
           Download CSV ({w.rows.length} rows)
         </button>
         {src.url && (
@@ -521,8 +540,8 @@ export function GdpDetail({ gdp, gva }: { gdp: GdpResult; gva: GvaResult }) {
         </a>
       </div>
       <DataTable
-        caption={`Quarterly real GDP, ${period}`}
-        head={["Quarter", "Real GDP (₹ crore)", "Official growth %"]}
+        caption={`${measureTitle} by quarter, ${period}`}
+        head={["Quarter", "Level (₹ crore)", "Official growth %"]}
         rows={[...w.rows].reverse().map((r) => [quarterLabel(r.n), r.level === null ? null : r.level.toLocaleString("en-IN"), r.growthOfficial === null ? null : r.growthOfficial.toFixed(1)])}
       />
       <SourceAttribution cls="official" sources={[src]} period={period} units="₹ crore at constant 2022-23 prices; growth in % year-on-year" />

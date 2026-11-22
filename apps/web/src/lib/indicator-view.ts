@@ -135,16 +135,16 @@ export function explainRate(label: string, points: { period: string; v: number |
 }
 
 /** Sentences about official real GDP growth by quarter. Negative growth is called a fall, never hidden. */
-export function explainGdp(w: QuarterWindow): string {
+export function explainGdp(w: QuarterWindow, measure = "real GDP"): string {
   if (w.tooShort) return "GDP is published once a quarter (every three months), so a two-month range cannot contain a full quarter. Choose 3M or longer.";
   const g = w.rows.filter((r) => r.growthOfficial !== null);
-  if (g.length === 0) return "No official GDP growth figure is stored for this range.";
+  if (g.length === 0) return `No official ${measure} growth figure is stored for this range.`;
   const last = g[g.length - 1];
   const v = last.growthOfficial as number;
-  const first = `In ${quarterLabel(last.n)}, real GDP was ${Math.abs(v).toFixed(1)}% ${v >= 0 ? "higher" : "lower"} than in the same quarter a year earlier (official).`;
+  const first = `In ${quarterLabel(last.n)}, ${measure} was ${Math.abs(v).toFixed(1)}% ${v >= 0 ? "higher" : "lower"} than in the same quarter a year earlier (official).`;
   if (g.length === 1) return first;
   const vals = g.map((r) => r.growthOfficial as number);
-  return `${first} Across the ${g.length} quarters shown, growth ranged from ${pct(Math.min(...vals))} to ${pct(Math.max(...vals))}. Growth above zero means the economy produced more than a year before, not that everyone's income rose.`;
+  return `${first} Across the ${g.length} quarters shown, growth ranged from ${pct(Math.min(...vals))} to ${pct(Math.max(...vals))}. Growth above zero means more was produced than a year before, not that everyone's income rose.`;
 }
 
 // ---------- CSV ----------

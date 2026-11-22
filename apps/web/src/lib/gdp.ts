@@ -189,7 +189,8 @@ export interface GvaIndustry {
   key: string;
   /** MoSPI's own industry label, verbatim. */
   label: string;
-  points: { n: number; growth: number | null; releaseKey: string | null; retrievedAt: string | null }[];
+  /** Official real level (₹ crore, constant prices) and official YoY growth (%), per fiscal quarter. */
+  points: { n: number; level: number | null; growth: number | null; releaseKey: string | null; retrievedAt: string | null }[];
 }
 export interface GvaData {
   baseYear: string;
@@ -222,7 +223,7 @@ export function parseGvaResponse(body: unknown): GvaData | null {
       if (n === null || seen.has(n)) return null;
       seen.add(n);
       const src = o.growth_source as Record<string, unknown> | undefined;
-      points.push({ n, growth: num(o.growth_yoy), releaseKey: str(src?.release_key), retrievedAt: str(src?.retrieved_at) });
+      points.push({ n, level: num(o.level), growth: num(o.growth_yoy), releaseKey: str(src?.release_key), retrievedAt: str(src?.retrieved_at) });
     }
     industries.push({ key, label, points: points.sort((x, y) => x.n - y.n) });
   }

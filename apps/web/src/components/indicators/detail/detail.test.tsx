@@ -56,31 +56,56 @@ const csvText = async () => await blobs[blobs.length - 1].text();
 const rerender = (ui: () => React.ReactElement, r: ReturnType<typeof render>) => act(() => r.rerender(ui()));
 
 describe("Indicators: exactly two charts per indicator", () => {
-  it("CPI: official inflation rate + general index", () => {
+  it("CPI: index history + official inflation history", () => {
     render(<MonthlyDetail config={CONFIGS.cpi} bundles={bundles("cpi", { rate: true })} />);
-    expect(charts()).toHaveLength(2);
-    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["Consumer inflation rate (%)", "CPI general index over time"]);
-    expect(within(charts()[0]).getByText("Official data")).toBeTruthy();
+    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["CPI index history", "CPI inflation history (%)"]);
+    expect(within(charts()[1]).getByText("Official data")).toBeTruthy();
     expect(screen.getByText(/CPI measures changes in the prices households pay for everyday goods and services\./)).toBeTruthy();
   });
-  it("WPI: the rate is labelled 'Calculated by ArthaSense' because the source has no official rate", () => {
+  it("WPI: index history + year-on-year inflation labelled 'Calculated by ArthaSense' (the source has no official rate)", () => {
     render(<MonthlyDetail config={CONFIGS.wpi} bundles={bundles("wpi", { rate: false })} />);
-    expect(charts()).toHaveLength(2);
-    expect(charts()[0].getAttribute("aria-label")).toBe("Wholesale inflation rate (%)");
-    expect(within(charts()[0]).getByText("Calculated by ArthaSense")).toBeTruthy();
-    expect(charts()[1].getAttribute("aria-label")).toBe("WPI overall index over time");
+    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["WPI index history", "WPI inflation, year-on-year (%)"]);
+    expect(within(charts()[1]).getByText("Calculated by ArthaSense")).toBeTruthy();
   });
-  it("IIP: official growth + mining/manufacturing/electricity when sector series are stored", () => {
-    render(<MonthlyDetail config={CONFIGS.iip} bundles={bundles("iip", { rate: true, sectors: true })} />);
-    expect(charts()).toHaveLength(2);
-    expect(charts()[1].getAttribute("aria-label")).toBe("Sectoral industrial production trends");
-    for (const s of ["Mining", "Manufacturing", "Electricity"]) expect(within(charts()[1]).getAllByText(s).length).toBeGreaterThan(0);
+  it("IIP: index + growth history; the sector selector switches BOTH charts to that official sector", async () => {
+    const ui = () => <MonthlyDetail config={CONFIGS.iip} bundles={bundles("iip", { rate: true, sectors: true })} />;
+    const r = render(ui());
+    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["IIP index history · General (headline)", "IIP growth history (%)"]);
+    fireEvent.change(screen.getByLabelText("Sector"), { target: { value: "mining" } });
+    expect(push).toHaveBeenLastCalledWith("/indicators/x?sector=mining", { scroll: false });
+    rerender(ui, r);
+    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["IIP index history · Mining", "IIP growth history (%) · Mining"]);
+    fireEvent.click(screen.getByRole("button", { name: /Download CSV/ }));
+    const lines = (await csvText()).trim().split("\r\n");
+    expect(lines[0]).toMatch(/,sector,/);
+    expect(lines[1]).toMatch(/,mining,.*mospi\.iip\.2022-23\.india\.mining\.index/);
   });
-  it("IIP without stored sectors falls back to a labelled general-index chart (no invented sectors)", () => {
+  it("IIP without stored sectors: headline only, and the page says why (no invented sectors)", () => {
     render(<MonthlyDetail config={CONFIGS.iip} bundles={bundles("iip", { rate: true })} />);
     expect(charts()).toHaveLength(2);
-    expect(charts()[1].getAttribute("aria-label")).toBe("IIP general index over time");
-    expect(within(charts()[1]).getByText(/Sector series are not stored for this base year/)).toBeTruthy();
+    expect((screen.getByLabelText("Sector") as HTMLSelectElement).disabled).toBe(true);
+    expect(screen.getByText(/Sector series are not stored for base 2022-23/)).toBeTruthy();
+  });
+});
+
+describe("calendar-year buttons (2022-2026)", () => {
+  it("a year is January-December of that calendar year, shared with Custom and the URL", async () => {
+    const ui = () => <MonthlyDetail config={CONFIGS.cpi} bundles={bundles("cpi", { rate: true })} />;
+    const r = render(ui());
+    fireEvent.click(within(screen.getByRole("group", { name: "Calendar year" })).getByRole("button", { name: "2024" }));
+    expect(push).toHaveBeenLastCalledWith("/indicators/x?range=Custom&from=2024-01&to=2024-12", { scroll: false });
+    rerender(ui, r);
+    expect(within(screen.getByRole("group", { name: "Calendar year" })).getByRole("button", { name: "2024" }).getAttribute("aria-pressed")).toBe("true");
+    expect(within(screen.getByTestId("range-summary")).getByText("Jan 2024 – Dec 2024")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Download CSV \(12 rows\)/ }));
+    const lines = (await csvText()).trim().split("\r\n");
+    expect([lines[1].slice(0, 10), lines[12].slice(0, 10)]).toEqual(["2024-01-01", "2024-12-01"]);
+  });
+  it("a year before the stored history shows a truthful empty state", () => {
+    search = "range=Custom&from=2022-01&to=2022-12";
+    render(<MonthlyDetail config={CONFIGS.cpi} bundles={bundles("cpi", { rate: true })} />);
+    expect(within(screen.getByTestId("range-summary")).getByText("0 monthly observations")).toBeTruthy();
+    expect(charts().map((c) => c.querySelectorAll("svg[role=group]").length)).toEqual([0, 0]); // no chart drawn, nothing padded
   });
 });
 
@@ -202,19 +227,34 @@ const gvaOk = (): GvaResult => ({
 const notStored: GdpResult = { ok: false, state: "not_stored", reason: "x" };
 
 describe("GDP view", () => {
-  it("exactly two charts: quarterly real GDP growth and sectoral GVA growth", () => {
+  it("exactly two charts: real GDP quarterly level and official real GDP growth", () => {
     render(<GdpDetail gdp={gdpOk()} gva={gvaOk()} />);
-    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["Real GDP growth (%) by fiscal quarter", "Sectoral GVA growth (%)"]);
-    expect(within(charts()[1]).getByText(/does not publish a single agriculture \/ industry \/ services split/)).toBeTruthy();
+    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["Real GDP quarterly level", "Official real GDP growth, year-on-year (%)"]);
   });
-  it("1Y = 4 quarters; the CSV has quarters, never months", async () => {
+  it("the measure selector switches both charts to an official GVA industry (still two charts)", () => {
+    const ui = () => <GdpDetail gdp={gdpOk()} gva={gvaOk()} />;
+    const r = render(ui());
+    fireEvent.change(screen.getByLabelText("Measure"), { target: { value: "manufacturing" } });
+    expect(push).toHaveBeenLastCalledWith("/indicators/x?measure=manufacturing", { scroll: false });
+    rerender(ui, r);
+    expect(charts().map((c) => c.getAttribute("aria-label"))).toEqual(["Real GVA · Manufacturing quarterly level", "Official real GVA (Manufacturing) growth, year-on-year (%)"]);
+    expect(screen.getByText(/no agriculture \/ industry \/ services split/)).toBeTruthy();
+  });
+  it("1Y = 4 quarters with fiscal labels; the CSV has quarters, never months", async () => {
     search = "range=1Y";
     render(<GdpDetail gdp={gdpOk()} gva={gvaOk()} />);
     fireEvent.click(screen.getByRole("button", { name: /Download CSV \(4 rows\)/ }));
     const lines = (await csvText()).trim().split("\r\n");
     expect(lines).toHaveLength(5);
     expect(lines.slice(1).map((l) => l.split(",").slice(0, 3).join(" "))).toEqual(["2025-26 Q2 2025-07", "2025-26 Q3 2025-10", "2025-26 Q4 2026-01", "2026-27 Q1 2026-04"]);
-    expect(lines[0]).toMatch(/gva_agriculture_growth_yoy_pct_official/);
+  });
+  it("calendar year 2025 = quarters starting Jan-Dec 2025 (Q4 FY2024-25 to Q3 FY2025-26), stated on the page", async () => {
+    search = "range=Custom&from=2025-01&to=2025-12";
+    render(<GdpDetail gdp={gdpOk()} gva={gvaOk()} />);
+    expect(screen.getByText(/Year 2025 is a calendar year: it includes the quarters that start in January–December 2025 \(Q4 FY2024-25 to Q3 FY2025-26\)/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Download CSV \(4 rows\)/ }));
+    const lines = (await csvText()).trim().split("\r\n");
+    expect(lines.slice(1).map((l) => l.split(",").slice(0, 2).join(" "))).toEqual(["2024-25 Q4", "2025-26 Q1", "2025-26 Q2", "2025-26 Q3"]);
   });
   it("2M explains that a quarter is longer than two months", () => {
     search = "range=2M";

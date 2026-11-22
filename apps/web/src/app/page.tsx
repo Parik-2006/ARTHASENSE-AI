@@ -34,7 +34,7 @@ export default function OverviewPage({ searchParams }: { searchParams: Search })
         <p className="mt-3 max-w-3xl text-base text-ink-muted">A quick snapshot of official prices, production and growth data from the Government of India.</p>
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
           <TourButton className="inline-flex items-center rounded border border-rule px-3 py-1.5 font-medium hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Take a tour</TourButton>
-          <Link href="/indicators" className="text-accent underline">All indicators</Link>
+          <Link href="/indicators/cpi" className="text-accent underline">Explore the indicators</Link>
         </div>
       </header>
       <Suspense fallback={<div aria-hidden className="mt-8 h-96 animate-pulse rounded-md border border-rule bg-surface" />}>

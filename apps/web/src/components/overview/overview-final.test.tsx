@@ -112,6 +112,23 @@ describe("Section 2: one compact change view with an indicator selector", () => 
   });
 });
 
+describe("Section 2: level or year-on-year change", () => {
+  it("'Level' shows the index (not a percentage) and writes ?chgm=level", () => {
+    search = "chg=iip";
+    const ui = () => <OverviewFinal bundles={all()} gdp={gdpOk()} />;
+    const r = render(ui());
+    fireEvent.click(within(screen.getByRole("group", { name: "Show" })).getByRole("button", { name: "Level" }));
+    expect(push).toHaveBeenLastCalledWith("/?chg=iip&chgm=level", { scroll: false });
+    act(() => r.rerender(ui()));
+    expect(screen.getByTestId("change-panel").textContent).toMatch(/IIP: index level \(base 2022-23 = 100\)/);
+  });
+  it("GDP level is quarterly rupees at constant prices", () => {
+    search = "chg=gdp&chgm=level";
+    render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
+    expect(screen.getByTestId("change-panel").textContent).toMatch(/GDP: real level by fiscal quarter \(₹ crore, constant 2022-23 prices\)/);
+  });
+});
+
 describe("Section 3: comparison is by percentage change only", () => {
   it("defaults to the monthly indicators, year-on-year", () => {
     render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);

@@ -17,7 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/indicators",
     label: "Indicators",
     milestone: "M9",
-    summary: "History of CPI, IIP, WPI, GDP and the repo rate, with base-year breaks marked.",
+    summary: "CPI, WPI, IIP and GDP: two charts each, with filters, sources and CSV downloads.",
   },
   {
     href: "/forecasting",

@@ -4,11 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CONFIG_LIST } from "@/lib/indicators";
 
-const ITEMS = [
-  { href: "/indicators", label: "All indicators" },
-  ...CONFIG_LIST.map((c) => ({ href: c.path, label: c.shortName })),
-  { href: "/indicators/gdp", label: "GDP" },
-];
+/** Exactly four tabs: CPI, WPI, IIP and GDP. */
+const ITEMS = [...CONFIG_LIST.map((c) => ({ href: c.path, label: c.shortName })), { href: "/indicators/gdp", label: "GDP" }];
 
 /** Second-level navigation shown on every /indicators page. */
 export function IndicatorsSubNav() {

@@ -10,8 +10,8 @@ import { type ChartSeries, TimeChart } from "@/components/overview/time-chart";
 import { Empty, SectionShell, Seg } from "@/components/overview/v3/ui";
 import { ClassBadge, periodSpan, SourceAttribution } from "@/components/source/source-attribution";
 import { deriveGdp, type GdpResult, type GdpRow, quarterLabel, quarterShort } from "@/lib/gdp";
-import { formatIndex, formatPeriod } from "@/lib/indicator";
-import { explainGdp, explainRate, monthlyWindow, pathFor, quarterWindow, VIEW_COLOR, VIEW_KEYS, VIEW_NAME, type ViewKey } from "@/lib/indicator-view";
+import { formatIndex, formatPeriod, formatTimestamp } from "@/lib/indicator";
+import { explainGdp, explainLevel, explainRate, monthlyWindow, pathFor, quarterWindow, VIEW_COLOR, VIEW_KEYS, VIEW_NAME, type ViewKey } from "@/lib/indicator-view";
 import { derive, type Derived, seedCustomRange } from "@/lib/overview";
 import type { IndicatorBundle } from "@/lib/overview-data";
 import { buildComparison, type CmpMode, parseCmpMode, parseCompareSel } from "@/lib/overview-v3";
@@ -33,6 +33,8 @@ interface Prep {
 }
 
 const rateOf = (p: Prep, r: Derived) => (p.official ? r.rate : r.yoyCalc);
+type ChangeMetric = "yoy" | "level";
+const day = (iso: string | null | undefined) => (iso ? formatTimestamp(iso).split(",")[0] : null);
 
 export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gdp: GdpResult }) {
   const prepared: Prep[] = useMemo(
@@ -98,7 +100,15 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     const valid = p ? p.rows.filter((r) => r.index !== null) : [];
     const last = valid[valid.length - 1];
     const rateRow = p ? [...p.rows].reverse().find((r) => rateOf(p, r) !== null) : undefined;
-    const footer = p && seg ? <>Source: {p.b.source.short} · base {seg.baseYear}</> : <>Source: MoSPI</>;
+    const footer =
+      p && seg ? (
+        <>
+          Source: {p.b.source.short} · base {seg.baseYear}
+          {day(p.b.source.retrievedAt) && <> · retrieved {day(p.b.source.retrievedAt)}</>}
+        </>
+      ) : (
+        <>Source: MoSPI</>
+      );
     return (
       CardLink(
         k,
@@ -133,7 +143,14 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     return (
       CardLink(
         "gdp",
-        gdp.ok ? <>Source: MoSPI (NSO) National Accounts · base {gdp.data.baseYear}</> : <>Source: MoSPI (NSO) National Accounts</>,
+        gdp.ok ? (
+          <>
+            Source: MoSPI (NSO) National Accounts · base {gdp.data.baseYear}
+            {day(gdpSource(gdp.data).retrievedAt) && <> · retrieved {day(gdpSource(gdp.data).retrievedAt)}</>}
+          </>
+        ) : (
+          <>Source: MoSPI (NSO) National Accounts</>
+        ),
         gdp.ok && last ? (
           <span className="mt-3 flex items-end justify-between gap-2">
             <span className="min-w-0">
@@ -159,20 +176,24 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     const def: ViewKey = VIEW_KEYS.find(hasRate) ?? "cpi";
     const k = (VIEW_KEYS as readonly string[]).includes(params.get("chg") ?? "") ? (params.get("chg") as ViewKey) : def;
     const pick = (key: ViewKey) => go({ chg: key === def ? null : key });
+    const m: ChangeMetric = params.get("chgm") === "level" ? "level" : "yoy";
     return (
-      <SectionShell id="changes" tour="changes" title="How are things changing?" help="yoy" intro="Change compared with the same period a year earlier. Choose an indicator and a time range.">
+      <SectionShell id="changes" tour="changes" title="How are things changing?" help="yoy" intro="Choose an indicator, what to show and a time range. Year-on-year change compares each period with the same period a year earlier.">
         <div className="rounded-md border border-rule bg-surface p-4">
           <div className="mb-3 flex flex-col gap-3">
-            <Seg label="Indicator" value={k} onChange={pick} options={VIEW_KEYS.map((x) => ({ key: x, label: VIEW_NAME[x].short }))} />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Seg label="Indicator" value={k} onChange={pick} options={VIEW_KEYS.map((x) => ({ key: x, label: VIEW_NAME[x].short }))} />
+              <Seg label="Show" value={m} onChange={(x) => go({ chgm: x === "yoy" ? null : x })} options={[{ key: "yoy", label: "Year-on-year change %" }, { key: "level", label: "Level" }]} />
+            </div>
             {bar}
           </div>
-          {k === "gdp" ? GdpChange() : MonthlyChange({ k })}
+          {k === "gdp" ? GdpChange(m) : MonthlyChange({ k, m })}
         </div>
       </SectionShell>
     );
   }
 
-  function MonthlyChange({ k }: { k: Exclude<ViewKey, "gdp"> }) {
+  function MonthlyChange({ k, m }: { k: Exclude<ViewKey, "gdp">; m: ChangeMetric }) {
     const p = byKey(k);
     if (!p || p.b.error) {
       return (
@@ -185,6 +206,26 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     const points = w.rows.map((r) => ({ n: r.n, v: rateOf(p, r) }));
     const label = k === "iip" ? "industrial production growth" : k === "cpi" ? "consumer inflation" : "wholesale inflation";
     const period = periodSpan(w.first?.period ?? null, w.last?.period ?? null);
+    const base = p.b.segments[0]?.baseYear ?? "";
+    if (m === "level") {
+      return (
+        <div data-testid="change-panel">
+          <p className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">
+            {VIEW_NAME[k].short}: index level (base {base} = 100) <ClassBadge cls="official" />
+          </p>
+          {w.stored >= 2 ? (
+            <TimeChart series={[{ key: k, label: `${VIEW_NAME[k].short} index`, stroke: VIEW_COLOR[k], points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${base} = 100)`} description={`${VIEW_NAME[k].short} index, ${period}.`} />
+          ) : (
+            <Empty>{w.stored === 1 ? "Only one month falls in this range; a trend needs at least two." : "No stored months fall in this range."}</Empty>
+          )}
+          <p className="mt-2 text-sm">{explainLevel(k, w)}</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <SourceAttribution cls="official" sources={[p.b.source]} period={period} units={`Index points, base ${base} = 100`} />
+            <Link href={pathFor(k)} className="text-sm font-medium text-accent underline">Explore {VIEW_NAME[k].short} in detail →</Link>
+          </div>
+        </div>
+      );
+    }
     return (
       <div data-testid="change-panel">
         <p className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">
@@ -204,7 +245,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     );
   }
 
-  function GdpChange() {
+  function GdpChange(m: ChangeMetric) {
     if (!gdp.ok) {
       return (
         <div data-testid="change-panel">
@@ -214,6 +255,27 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     }
     const w = quarterWindow(gdpRows, sel);
     const period = w.rows.length ? `${quarterShort(w.rows[0].n)} – ${quarterShort(w.rows[w.rows.length - 1].n)}` : "no quarters";
+    if (m === "level") {
+      return (
+        <div data-testid="change-panel">
+          <p className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">
+            GDP: real level by fiscal quarter (₹ crore, constant {gdp.data.baseYear} prices) <ClassBadge cls="official" />
+          </p>
+          {w.tooShort ? (
+            <Empty>GDP is quarterly, so a 2-month range cannot contain a full quarter. Choose 3M or longer.</Empty>
+          ) : w.rows.some((r) => r.level !== null) ? (
+            <TimeChart kind="bars" barColor="series" digits={2} stepMonths={3} formatN={quarterShort} series={[{ key: "gdp", label: "Real GDP (₹ lakh crore)", stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.level === null ? null : r.level / 1e5 })) }]} yLabel="₹ lakh crore, constant prices" description={`Real GDP level by quarter, ${period}.`} />
+          ) : (
+            <Empty>No GDP level is stored in this range.</Empty>
+          )}
+          <p className="mt-2 text-sm">Quarterly levels are not seasonally adjusted: compare a quarter with the same quarter of other years, not with the quarter before.</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <SourceAttribution cls="official" sources={[gdpSource(gdp.data)]} period={period} units="₹ crore, constant 2022-23 prices" />
+            <Link href={pathFor("gdp")} className="text-sm font-medium text-accent underline">Explore GDP in detail →</Link>
+          </div>
+        </div>
+      );
+    }
     return (
       <div data-testid="change-panel">
         <p className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">

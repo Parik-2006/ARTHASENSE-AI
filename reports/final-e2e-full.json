@@ -1,8 +1,8 @@
 {
  "web": "http://localhost",
  "profile": "full",
- "passed": 50,
- "total": 50,
+ "passed": 56,
+ "total": 56,
  "results": [
   {
    "n": "Overview: exactly three top-level sections",
@@ -72,7 +72,7 @@
   {
    "n": "/indicators/cpi: exactly two charts",
    "p": true,
-   "d": "Consumer inflation rate (%) | CPI general index over time"
+   "d": "CPI index history | CPI inflation history (%)"
   },
   {
    "n": "/indicators/cpi: both charts are drawn",
@@ -87,7 +87,7 @@
   {
    "n": "/indicators/wpi: exactly two charts",
    "p": true,
-   "d": "Wholesale inflation rate (%) | WPI overall index over time"
+   "d": "WPI index history | WPI inflation, year-on-year (%)"
   },
   {
    "n": "/indicators/wpi: both charts are drawn",
@@ -102,7 +102,7 @@
   {
    "n": "/indicators/iip: exactly two charts",
    "p": true,
-   "d": "Industrial production growth (%) | Sectoral industrial production trends"
+   "d": "IIP index history · General (headline) | IIP growth history (%)"
   },
   {
    "n": "/indicators/iip: both charts are drawn",
@@ -117,7 +117,7 @@
   {
    "n": "/indicators/gdp: exactly two charts",
    "p": true,
-   "d": "Real GDP growth (%) by fiscal quarter | Sectoral GVA growth (%)"
+   "d": "Real GDP quarterly level | Official real GDP growth, year-on-year (%)"
   },
   {
    "n": "/indicators/gdp: both charts are drawn",
@@ -180,19 +180,24 @@
    "d": ""
   },
   {
-   "n": "IIP: chart 2 shows Mining, Manufacturing and Electricity",
+   "n": "IIP sector selector lists the headline and the official sectors stored for 2022-23",
    "p": true,
-   "d": ""
+   "d": "General (headline)|Mining|Manufacturing|Electricity|Water supply, sewerage & waste management"
   },
   {
-   "n": "IIP 2Y CSV: 24 rows with sector columns",
+   "n": "IIP Manufacturing: both charts switch, 24 rows, own series id",
    "p": true,
-   "d": ""
+   "d": "IIP index history · Manufacturing|IIP growth history (%) · Manufacturing"
   },
   {
-   "n": "GDP 1Y: 4 quarters (Q2 FY25-26 .. Q1 FY26-27), official growth 7.8 last",
+   "n": "GDP 1Y: 4 quarters (Q2 FY25-26 .. Q1 FY26-27), level 8136153 and official growth 7.8 last",
    "p": true,
-   "d": "2026-27,Q1,2026-04,8136153,7.8,8.2,3.6,-2.4,9.2,8.9,7.7,8.5,12.1,7.5,2022-23,constant 2022-23 prices (real),\"NSO, MoSPI\",mospi-nas-2022-23-quarterly-1e90c354a9f2d720,2026-11-22T05:16:35.515241Z"
+   "d": "2026-27,Q1,2026-04,gdp,8136153,7.8,2022-23,\"NSO, MoSPI\",mospi-nas-2022-23-quarterly-1e90c354a9f2d720,2026-11-22T14:12:49.904244Z"
+  },
+  {
+   "n": "GDP calendar year 2025 = Q4 FY24-25 .. Q3 FY25-26 (stated on the page)",
+   "p": true,
+   "d": "2024-25,Q4|2025-26,Q1|2025-26,Q2|2025-26,Q3"
   },
   {
    "n": "GDP 5Y: 17 quarters stored, shortfall stated for growth (13 of 20)",
@@ -205,7 +210,32 @@
    "d": ""
   },
   {
-   "n": "GDP chart 2: official MoSPI industries, no invented services/industry split",
+   "n": "GDP: chart 1 real quarterly level, chart 2 official growth",
+   "p": true,
+   "d": "Real GDP quarterly level|Official real GDP growth, year-on-year (%)"
+  },
+  {
+   "n": "GDP measure = GVA Agriculture: both charts switch; CSV rows are gva_agriculture",
+   "p": true,
+   "d": "Real GVA · Agriculture quarterly level|Official real GVA (Agriculture) growth, year-on-year (%)"
+  },
+  {
+   "n": "Year buttons 2022-2026 on CPI 2012 (ends Dec 2025): 12/12/12/12/0 months, 2026 shows an empty state",
+   "p": true,
+   "d": "2022:12 2023:12 2024:12 2025:12 2026:0"
+  },
+  {
+   "n": "Rapid filter switching ends on the last choice (2Y = 24 months)",
+   "p": true,
+   "d": ""
+  },
+  {
+   "n": "/indicators opens the CPI tab; exactly four tabs CPI, WPI, IIP, GDP",
+   "p": true,
+   "d": "CPI,WPI,IIP,GDP"
+  },
+  {
+   "n": "Overview Section 2 'Level' for GDP shows quarterly real rupees",
    "p": true,
    "d": ""
   },

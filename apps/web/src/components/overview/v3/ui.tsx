@@ -85,6 +85,8 @@ export function RangeBar({
   onPreset,
   onCustom,
   hidePresets = [],
+  years = [],
+  onYear,
 }: {
   sel: RangeSel;
   error: string | null;
@@ -93,7 +95,11 @@ export function RangeBar({
   onPreset: (key: string) => void;
   onCustom: (from: string, to: string) => void;
   hidePresets?: string[];
+  /** Calendar years offered as one-click Custom ranges (January–December). */
+  years?: number[];
+  onYear?: (year: number) => void;
 }) {
+  const activeYear = sel.key === "Custom" && sel.from && sel.to && sel.from.endsWith("-01") && sel.to.endsWith("-12") && sel.from.slice(0, 4) === sel.to.slice(0, 4) ? Number(sel.from.slice(0, 4)) : null;
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-tour="range">
       <Seg
@@ -102,6 +108,22 @@ export function RangeBar({
         options={OV_RANGES.filter((r) => !hidePresets.includes(r.key)).map((r) => ({ key: r.key, label: r.label }))}
         onChange={onPreset}
       />
+      {years.length > 0 && onYear && (
+        <div role="group" aria-label="Calendar year" className="flex flex-wrap items-center gap-1">
+          <span className="mr-1 text-xs text-ink-muted" title="A calendar year: January to December">Year (Jan–Dec)</span>
+          {years.map((y) => (
+            <button
+              key={y}
+              type="button"
+              aria-pressed={activeYear === y}
+              onClick={() => onYear(y)}
+              className={`rounded border px-2 py-0.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent ${activeYear === y ? "border-accent bg-accent text-accent-ink" : "border-rule hover:border-accent"}`}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      )}
       {sel.key === "Custom" && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <label>

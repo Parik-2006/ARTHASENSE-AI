@@ -5,6 +5,8 @@ import { useState } from "react";
 import { RangeBar } from "@/components/overview/v3/ui";
 import { parseRange, type RangeSel, ymNumber } from "@/lib/overview";
 
+export const YEARS = [2022, 2023, 2024, 2025, 2026];
+
 /** The one historical-range state used by the Overview and every Indicators view: `?range=&from=&to=` in the URL.
  *  Presets push a history entry (Back/Forward step through them); typing custom months replaces it. Other
  *  parameters (for example `base`) are kept. Invalid URL values fall back to All and say so. */
@@ -50,6 +52,12 @@ export function useRange(seed: () => { from: string; to: string } | null) {
     setToIn(t);
     if (valid(f, t)) go({ range: "Custom", from: f, to: t }, true);
   };
+  /** A calendar year is a Custom range January–December, so it shares every Custom code path (and the URL). */
+  const onYear = (y: number) => {
+    setFromIn(`${y}-01`);
+    setToIn(`${y}-12`);
+    go({ range: "Custom", from: `${y}-01`, to: `${y}-12` });
+  };
   const customBad = !!fromIn && !!toIn && ymNumber(fromIn) !== null && ymNumber(toIn) !== null && !valid(fromIn, toIn);
   const bar = (
     <RangeBar
@@ -59,6 +67,8 @@ export function useRange(seed: () => { from: string; to: string } | null) {
       toIn={toIn}
       onPreset={onPreset}
       onCustom={onCustom}
+      years={YEARS}
+      onYear={onYear}
     />
   );
   return { sel: sel as RangeSel, bar, go, params };

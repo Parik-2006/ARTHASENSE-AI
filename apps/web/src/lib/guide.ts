@@ -30,6 +30,34 @@ export const HELP: Record<string, HelpEntry> = {
     how: "Prefer the official year-on-year growth, because month-to-month moves follow the seasons.",
     mistake: "An IIP of 124.30 is not 24.30% growth. It is a level relative to a base period set at 100.",
   },
+  gdp: {
+    title: "Gross Domestic Product (GDP)",
+    what: "GDP is the total value of goods and services produced in the country. Here it is real GDP: measured at constant prices so inflation does not inflate it.",
+    why: "It is the broadest measure of how fast the economy is growing.",
+    how: "Read the year-on-year change: it compares a quarter with the same quarter a year earlier.",
+    mistake: "GDP is published quarterly. There is no monthly GDP, so none is drawn or estimated.",
+  },
+  "gdp-quarterly": {
+    title: "Why GDP is quarterly",
+    what: "India's GDP is estimated for each fiscal quarter (Q1 is April to June), not each month.",
+    why: "Mixing it with monthly series needs care.",
+    how: "When GDP is selected, monthly indicators are shown as quarterly averages, and only where all three months are stored.",
+    mistake: "Do not read a quarterly point as a monthly value, and do not compare raw index levels with GDP levels.",
+  },
+  "expand-graph": {
+    title: "Opening a full chart",
+    what: "Select a card to open its full historical chart below the cards. Select it again, or Close, to hide it.",
+    why: "Each indicator has its own scale and base year, so each gets its own chart.",
+    how: "Use 3M to All, or Custom months, to change the window. The browser Back button closes the chart.",
+    mistake: "A range longer than the stored history is not widened or filled in. The note under the chart says how many months exist.",
+  },
+  "history-gaps": {
+    title: "Why some history is missing",
+    what: "Official series start when the publisher started them, and a new base year starts a separate series.",
+    why: "Series on different base years cannot be joined into one line without a verified method.",
+    how: "Use the series selector on a chart to see an earlier base year on its own.",
+    mistake: "A missing month is not zero. It is shown as a gap.",
+  },
   "index-value": {
     title: "Index value",
     what: "An index shows a level relative to a base period, which is set to 100.",
@@ -174,16 +202,13 @@ export interface TourStep {
 }
 
 export const OVERVIEW_TOUR: TourStep[] = [
-  { target: "hero", title: "Welcome to ArthaSense AI", body: "This page shows official Indian economic data, what changed, and clearly labelled model forecasts, each with its source." },
-  { target: "cards", title: "Three indicators", body: "CPI follows consumer prices, WPI wholesale prices and IIP industrial output." },
-  { target: "card-index", title: "Reading an index value", body: "An index is a level against a base period set to 100. It is not a percentage rate." },
-  { target: "trends", title: "Historical charts", body: "Each chart plots one value per month. Hover or use the arrow keys to read a month." },
-  { target: "range", title: "Change the time range", body: "Switch between 3M, 6M, 1Y and longer windows. Charts that use the range update immediately." },
-  { target: "changes", title: "Monthly and annual change", body: "Monthly change compares with last month. Annual change compares with the same month a year ago." },
-  { target: "compare", title: "Compare safely", body: "Index levels of different indicators are not comparable, so we compare percentage changes." },
-  { target: "forecast", title: "Forecasts and uncertainty", body: "Forecasts come from stored model runs. The shaded band is the prediction interval." },
-  { target: "reliability", title: "Forecast reliability", body: "Backtests show how models did on earlier periods. Lower error is better only on the same data and horizon." },
-  { target: "coverage", title: "Verify the source", body: "Every chart has a source line and a 'Source details' panel. This table shows what data is stored." },
+  { target: "hero", title: "Welcome", body: "Three views of India's economy, all from official data with the source shown." },
+  { target: "cards", title: "Four indicators", body: "CPI is consumer prices, WPI wholesale prices, IIP industrial output and GDP total production." },
+  { target: "card-index", title: "Open a graph", body: "Select a card to open its full chart below. Select it again to close it. An index is a level against a base of 100, not a percentage." },
+  { target: "range", title: "Time filters", body: "Pick 3M to All, or Custom months. Your choice stays in the page link, and the Back button works." },
+  { target: "changes", title: "How things are changing", body: "Bars above zero are rises, below are falls. Official figures are labelled as such; calculated ones say so." },
+  { target: "compare", title: "Comparing trends", body: "We compare percentage changes, never raw levels. GDP is quarterly, so selecting it switches the comparison to quarters." },
+  { target: "cards", title: "Check the source", body: "Every card and chart has a source line and a Source details panel with links to the publisher." },
 ];
 
 /** Indicators page tour. Targets are `data-tour` attributes on the Indicators hub. */

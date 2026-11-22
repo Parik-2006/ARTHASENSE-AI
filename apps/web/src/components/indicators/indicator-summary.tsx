@@ -12,7 +12,7 @@ import {
 import type { IndicatorConfig } from "@/lib/indicators";
 
 /** Tiny trend line of the stored index. Gaps in the months break the line. */
-export function Sparkline({ values }: { values: { n: number; v: number }[] }) {
+export function Sparkline({ values, stepMonths = 1 }: { values: { n: number; v: number }[]; stepMonths?: number }) {
   if (values.length < 2) return null;
   const [n0, n1] = [values[0].n, values[values.length - 1].n];
   const [lo, hi] = [Math.min(...values.map((p) => p.v)), Math.max(...values.map((p) => p.v))];
@@ -22,7 +22,7 @@ export function Sparkline({ values }: { values: { n: number; v: number }[] }) {
   const segs: string[][] = [];
   values.forEach((p, i) => {
     const pt = `${x(p.n)},${y(p.v)}`;
-    if (i > 0 && p.n - values[i - 1].n === 1) segs[segs.length - 1].push(pt);
+    if (i > 0 && p.n - values[i - 1].n === stepMonths) segs[segs.length - 1].push(pt);
     else segs.push([pt]);
   });
   return (

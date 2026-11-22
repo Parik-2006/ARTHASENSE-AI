@@ -1,3 +1,4 @@
+import { type GdpResult, parseGdpResponse } from "@/lib/gdp";
 import {
   type Comparison,
   type ForecastRow,
@@ -112,6 +113,26 @@ export async function getIndicator(
     return { ok: true, data };
   } catch (err) {
     return { ok: false, error: errText(err) };
+  }
+}
+
+/** GDP (quarterly, constant prices). The backend endpoint does not exist until GDP is ingested (docs/GDP-INGESTION.md):
+ *  a 404 is reported as "not stored", which the UI shows honestly. Nothing here ever supplies a value of its own. */
+export async function getGdp(): Promise<GdpResult> {
+  try {
+    const res = await apiGet("/api/v1/indicators/gdp?limit=80");
+    if (res.status === 404) {
+      return { ok: false, state: "not_stored", reason: "The ArthaSense API has no GDP data yet: official GDP has not been ingested into the database." };
+    }
+    if (res.status < 200 || res.status >= 300) return { ok: false, state: "error", reason: httpError(res) };
+    const data = parseGdpResponse(res.body);
+    if (!data) return { ok: false, state: "error", reason: "Unexpected response shape from the API" };
+    if (!data.observations.some((o) => o.level !== null || o.growthYoy !== null)) {
+      return { ok: false, state: "not_stored", reason: "The GDP endpoint answered but holds no observations." };
+    }
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, state: "error", reason: errText(err) };
   }
 }
 

@@ -156,6 +156,12 @@ describe("Section 3: one year (2026), all four indicators, no filter controls", 
     expect(within(compare()).getByTestId("compare-year").textContent).toBe("2026");
     expect(within(compare()).getByRole("list", { name: "Legend" }).textContent).toContain("GDP");
   });
+  it("stays on 2026 even when a complete 2027 quarter exists", () => {
+    const longer = () => [bundle("cpi", series(S, 63, true)), bundle("wpi", series(S, 63, false)), bundle("iip", series(S, 63, true))]; // to Jun 2027
+    render(<OverviewFinal bundles={longer()} gdp={gdpOk()} />);
+    expect(within(compare()).getByTestId("compare-year").textContent).toBe("2026");
+    expect(within(compare()).getByTestId("compare-fiscal").textContent).not.toMatch(/2027|FY27-28/);
+  });
   it("without stored GDP it draws the monthly indices and says GDP is not drawn", () => {
     render(<OverviewFinal bundles={all()} gdp={none} />);
     const sec = compare();

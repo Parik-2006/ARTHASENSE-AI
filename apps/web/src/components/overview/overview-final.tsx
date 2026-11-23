@@ -19,6 +19,9 @@ import { seriesIds } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
+/** "Compare economic trends" always shows this calendar year (product decision, 2026-11-23). */
+export const COMPARE_YEAR = 2026;
+
 const ONE_LINE: Record<ViewKey, string> = {
   cpi: "Prices households pay for everyday goods and services.",
   wpi: "Prices of goods traded in bulk, before they reach shoppers.",
@@ -390,10 +393,11 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
   }
 
   // ============================== Section 3: compare (2026 only) ==============================
-  // One calendar year, all four indicators, year-on-year by quarter. No indicator, mode or range controls: this
-  // section does not read or write the URL, so stale ?ci= / ?cmp= links are ignored and Section 2's range is not shared.
+  // One calendar year, permanently 2026 (COMPARE_YEAR), all four indicators, year-on-year by quarter. No indicator,
+  // mode or range controls: this section does not read or write the URL, so stale ?ci= / ?cmp= links are ignored and
+  // Section 2's range is not shared.
   function Compare() {
-    const result = buildYearComparison({ monthly: prepared.map((p) => ({ key: p.b.key, rows: p.rows })), gdp: gdp.ok ? { rows: gdpRows } : null });
+    const result = buildYearComparison({ monthly: prepared.map((p) => ({ key: p.b.key, rows: p.rows })), gdp: gdp.ok ? { rows: gdpRows } : null, year: COMPARE_YEAR });
     const sources = [...prepared.map((p) => p.b.source), ...(gdp.ok ? [gdpSource(gdp.data)] : [])];
     const notes = [...result.notes, ...(gdp.ok ? [] : ["GDP is not stored yet, so it is not drawn. No GDP figure is estimated."])];
     const span = result.quarters.length ? `${calendarQuarter(result.quarters[0])} – ${calendarQuarter(result.quarters[result.quarters.length - 1])}` : "no quarters";

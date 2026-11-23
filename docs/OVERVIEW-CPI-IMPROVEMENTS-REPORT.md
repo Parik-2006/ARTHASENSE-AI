@@ -44,7 +44,7 @@ CPI/WPI/IIP only.
   * a monthly index enters as the average of a quarter's three months, only when all three are stored;
   * GDP keeps its own quarterly levels, and no monthly GDP is created;
   * YoY is computed on each current-base series' **full** history and then cut to 2026, so the 2025 lookback is not lost.
-* **The year** is the latest calendar year in which any indicator has a value (2026 today).
+* **The year** is fixed to 2026 (`COMPARE_YEAR`, a product decision). It does not move to 2027 when 2027 data arrives.
 * **One deliberate difference from the shared-window mode:** an indicator keeps quarters that GDP has not reached yet. The
   missing GDP point is a gap with a note, never an estimate.
 * **Labels:** quarters are labelled by calendar ("Jan–Mar 2026"), with the fiscal mapping below the chart

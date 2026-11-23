@@ -3,9 +3,11 @@
 Indian economic intelligence: official statistics with their sources, forecasts from evaluated
 models, and a public record of how accurate those forecasts were.
 
-> **Status:** CPI, WPI and IIP are ingested from the official MoSPI API; forecasts (naive, seasonal naive, drift, ETS, ARIMA,
-> SARIMA, XGBoost) are backtested and stored; the dashboards, API, research tables and an IEEE-style draft exist. See
-> [`docs/FINAL-PROJECT-STATUS.md`](docs/FINAL-PROJECT-STATUS.md) for exactly what is done and what is not.
+> **Status:** CPI, WPI, IIP and quarterly GDP/GVA are ingested from official MoSPI/OEA sources. Index-level forecasts
+> (naive, seasonal naive, drift, ETS, ARIMA, SARIMA, XGBoost) are backtested on identical origins and stored. CPI is
+> forecast on MoSPI's official 2024-base linked history (Back series 2013–2024 + Current series). See
+> [`docs/FINAL-PROJECT-STATUS.md`](docs/FINAL-PROJECT-STATUS.md) and
+> [`docs/OVERVIEW-CPI-IMPROVEMENTS-REPORT.md`](docs/OVERVIEW-CPI-IMPROVEMENTS-REPORT.md) for what is done and what is not.
 
 | | URL |
 |---|---|
@@ -21,15 +23,23 @@ Everything here runs for **zero cost**. No paid APIs, databases, hosting or GPUs
 ## Repository layout
 
 ```
-apps/web/          Next.js 16 + TypeScript + Tailwind 4 (Research Desk UI)
-services/api/      FastAPI, read-only (health checks only, for now)
-pipeline/          Python data pipeline; pipeline/verify = M1 read-only source probes
-db/                SQL migrations + tiny migration runner
-docs/              Verification report, roles, (later) methodology
-reports/           Local probe output (git-ignored)
+apps/web/              Next.js 16 + TypeScript + Tailwind 4: Overview, Indicators, Forecasts, Intelligence
+  public/logo.png      Overview hero logo
+services/api/          FastAPI, read-only: health, indicators (CPI/WPI/IIP/GDP), forecasting results
+pipeline/
+  ingest/              MoSPI/OEA ingestion (CPI 2024 Current + Back, CPI 2012, WPI, IIP, NAS GDP/GVA), linking factors
+  forecasting/         models, rolling-origin backtests, suites, persistence, CLI (offline only)
+  research/            gap-checked series loader (incl. the CPI official linked history), exports, quality
+  verify/ sourceaudit/ discovery/ audit/   read-only source probes and audits
+db/                    SQL migrations, migration runner, guarded transfer/verify tools
+tools/                 reproduction, evidence, import and verification scripts; tools/e2e = browser suites
+docs/                  methodology, verification and release reports
+reports/               curated evidence (screenshots, JSON); bulky probe output stays git-ignored
+.github/workflows/     CI (ruff, pytest, ESLint, typecheck, vitest, build) and source verification
 ```
 
-Coming later: `models/` (M5â€“M6) and `research/` (M5, M13).
+Production: web on Vercel (`apps/web`), API on Render (`services/api`), PostgreSQL on Supabase. Their settings live in
+those dashboards and in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md); there are no secrets in this repository.
 
 ## Prerequisites (all free)
 
@@ -90,6 +100,16 @@ cd apps/web && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
 CI runs the same steps on every push and pull request (`.github/workflows/ci.yml`).
+
+Browser suites (real Chrome via `playwright-core`, installed in a scratch folder; see `tools/e2e/README.md`), against a
+production build and a local API:
+
+```bash
+WEB=http://127.0.0.1:3124 API=http://127.0.0.1:8775 node tools/e2e/overview-cpi-e2e.mjs   # logo, 2026 comparison, CPI
+WEB=http://127.0.0.1:3124 API=http://127.0.0.1:8775 node tools/e2e/forecasts-e2e.mjs      # Forecasts V3
+WEB=http://127.0.0.1:3124 API=http://127.0.0.1:8775 node tools/e2e/forecasts-a11y.mjs     # axe, WCAG 2.1 AA
+python tools/forecast_reproduce.py      # refits every stored run (read-only) and diffs it with the database
+```
 
 ## CPI ingestion (2024 base)
 
@@ -164,13 +184,17 @@ mixed with them. Install the forecasting dependencies with `pip install -r requi
 .\.venv\Scripts\python.exe -m pipeline.forecasting.cli backtest --indicator wpi --models naive,ets --horizons 1,3
 .\.venv\Scripts\python.exe -m pipeline.forecasting.cli forecast --indicator iip --model ets --horizon 3
 .\.venv\Scripts\python.exe -m pipeline.forecasting.cli suite --name all --indicator all --save   # reproducible suites
+.\.venv\Scripts\python.exe -m pipeline.forecasting.cli suite --name all --indicator cpi --history linked --save  # CPI
 .\.venv\Scripts\python.exe -m pipeline.forecasting.report --out docs/research/generated        # tables + figures
 ```
 
 Nothing is written to PostgreSQL unless `--save` is given. Rules (documented in `docs/PROGRESS-phases-7-9.md`):
 at least 12 months of training, at least 5 usable origins to report any metric, fewer than 12 origins is
 "indicative, not rankable"; models are compared only on identical data and origins; a horizon that cannot be
-validated on the available history is refused. CPI Current (12 months) is therefore not evaluated.
+validated on the available history is refused. CPI's Current series alone (22 months) is too short, so CPI is
+trained with `--history linked` on MoSPI's official Back series (same 2024 base, documented linking factor) followed by
+the Current series, and its `linked_current` suite scores only Current-series months. `--save` writes only to a local
+database unless `--allow-host` names another host.
 Chronos-2 and TimesFM 2.5 are optional lazy adapters that report "unavailable" (they need PyTorch and a
 0.5-1 GB download that has not been approved); no output is ever invented for them.
 
@@ -185,7 +209,7 @@ python -m pipeline.verify --list   # what will be checked
 python -m pipeline.verify          # ~20 small read-only GETs; report saved to reports/verification/
 ```
 
-Or run **Actions â†’ Verify data sources â†’ Run workflow** on GitHub, then download the report artifact.
+Or run **Actions → Verify data sources → Run workflow** on GitHub, then download the report artifact.
 
 ## Ground rules
 

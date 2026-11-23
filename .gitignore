@@ -61,3 +61,17 @@ htmlcov/
 
 # discovery evidence (raw government responses, cached)
 data/evidence/
+
+# --- added 2026-11-23 (cleanup): secrets in other naming styles, local copies and generated output ---
+*.env
+!.env.example
+*.pgdump
+*.backup
+*.bundle
+backups/
+*.sqlite
+*.sqlite3
+*.db
+test-results/
+playwright-report/
+*.tsbuildinfo

@@ -12,7 +12,7 @@ The pages now answer three questions in order: *What might happen next? How unce
 | **Outlook** (`/forecasting`) | Compact hero, three cards (latest official vs model estimate, expected % change, 3-bar track-record meter, sparkline with bands, "Explore forecast"), a 3–4 line economic outlook, and one disclaimer line. CPI shows a clean **Not enough comparable history** card (22 months held, 23 needed). | Full reliability reasons per indicator, the selection rule, the model inventory and the latest experiments. |
 | **WPI / IIP explorer** | Title and one-line definition → 4 KPI cards (latest official, forecast + target month, expected change, reliability) → model selector and **1 / 3 / 6-month horizon** → large chart → "What this means" (3 plain sentences, including the past coverage of the 80% range) → data-connection note with a link to Indicators. | Backtest evidence table (model **and** naive baseline from one test set), MAE / RMSE / MASE / sMAPE / 80 and 95% coverage, origins, test window, caveats, run / comparison / experiment links, provenance (training window, fingerprint, interval method, selection rule), forecast table, CSV, both source attributions. |
 | **CPI** | "Not enough comparable history", the latest official value and a link to historical CPI. No forecast numbers. | Months needed per horizon (23 / 25 / 28) and a link to the skipped runs with their reasons. |
-| **Model comparison** | Indicator and horizon as segmented controls, a **Test set** chooser (defaults to the largest set with the baseline), a concise table (average error, vs baseline, inside-80%-range, track record), an error bar chart with a **naive reference line**, and "Lower error is generally better". "Lowest error" appears only for rankable sets (≥ 12 origins) and always comes with a "no significance test" note. | All metrics, run links, excluded models, CSV. |
+| **Model comparison** | Indicator and horizon as segmented controls, a **Test set** chooser (defaults to the largest set with the baseline), a concise table (average error, vs baseline, inside-80%-range, track record), an error bar chart with a **naive reference line**, and "Lower error is generally better". **Models are sorted by error only on rankable sets** (≥ 12 origins); smaller sets use a neutral order (baseline first, then alphabetical) in both table and bars, and say so. "Lowest error" appears only for rankable sets and always comes with a "no significance test" note. | All metrics, run links, excluded models, CSV. |
 | **Experiments** | Search + indicator / model / status filters, "More filters" disclosure (type, horizon, min origins), a lean table, **expandable rows** (training window, test window, scores, Reproducibility block with fingerprints, experiment id, seed, snapshot). | Adds sortable Origins / MAE / MASE columns. CSV and deep links work in both views. |
 
 **Chart (`outlook-chart.tsx`):**
@@ -37,6 +37,8 @@ The pages now answer three questions in order: *What might happen next? How unce
 - Links: "View historical WPI / IIP / CPI" goes to `/indicators/<id>`, carrying `?range=` only when Indicators parses it (3M–5Y). "Back to economic overview" goes to `/`. Model, horizon and view are never forwarded.
 - The "Overview" sub-tab is renamed **Outlook** to avoid confusion with the site Overview.
 
+**Controls and accessibility:** horizon, history, indicator and view controls are proper WAI-ARIA radio groups (`segmented.tsx`): one tab stop, ← → ↑ ↓ / Home / End. Scrollable tables are labelled, focusable regions. axe-core (WCAG 2.1 A/AA) over 7 Forecasts pages × Simple/Research × light/dark × 1440/390 px = 56 runs: **0 violations** (Forecasts-owned and shared chrome).
+
 ## Scientific changes (display logic only)
 - Reliability and the default model now use **one evaluation set** (see the verification report).
   - IIP's default changes from ETS (limited) to ARIMA (supported on 19 origins).
@@ -44,21 +46,24 @@ The pages now answer three questions in order: *What might happen next? How unce
 - Concerning results on any other matched set are shown as caveats and cap "supported".
 - 1- and 3-month views are steps 1..k of the stored 6-month run, labelled "first k of 6 stored months".
 - The hardcoded "CPI has only 12 observations" text is now derived from the API.
+- Explorer CSV for a 1- or 3-month view contains those 1 or 3 rows and records the **actual stored run** (`horizon_months` = 6, run id); the filename says `h1`/`h3`.
+- `reliabilityFor` (the V2 mixed-set helper) is still in `lib/forecast-v2.ts` because that file is shared with Indicators; no page calls it any more (a regression test documents its flaw). Removing it is a separate, approved change.
 
 ## Files
 
 Forecasts-only (modified):
+- `components/forecasting/run-detail.tsx` (focusable scroll regions only)
 - `app/forecasting/comparison/page.tsx`
 - `app/forecasting/experiments/page.tsx`
 - `components/forecasting/{comparison-view, experiments-view, forecast-explorer, forecast-pages, subnav, forecasting.test}.tsx`
 - `lib/forecast-data.ts`
 
 New:
-- `components/forecasting/{outlook-chart, spotlight-tour, view-mode, research-only, reliability-meter, interactive.test}.tsx`
+- `components/forecasting/{outlook-chart, spotlight-tour, segmented, view-mode, research-only, reliability-meter, interactive.test}.tsx`
 - `lib/{forecast-evidence, forecast-tours}.ts`
 - `lib/{forecast-evidence, forecast-crosspage}.test.ts`
 - `services/api/tests/test_forecast_crosspage.py`
-- `tools/e2e/forecasts-e2e.mjs`
+- `tools/e2e/{forecasts-e2e, forecasts-a11y}.mjs`
 - `tools/forecast_reproduce.py`
 - `docs/FORECASTS-V3-*.md`
 - `reports/forecasts-v3/`
@@ -71,10 +76,11 @@ New:
 
 | Suite | Before | After |
 |---|---|---|
-| Vitest (frontend) | 18 files / 339 passed | **21 files / 392 passed** |
+| Vitest (frontend) | 18 files / 339 passed | **21 files / 394 passed** |
 | `tsc --noEmit`, ESLint | clean | clean |
 | Pytest (backend + pipeline, test DB `arthasense_test_final`) | 346 passed | **349 passed** (+3 cross-page) |
 | `tools/e2e/forecasts-e2e.mjs` (Chrome) | — | **58 / 58** |
+| `tools/e2e/forecasts-a11y.mjs` (axe-core, 56 runs) | — | **0 violations** |
 | Layout audit: 12 pages × 6 widths (360, 390, 768, 1024, 1440, 1920) × 2 themes | 144 / 144 clean | **144 / 144 clean** (no horizontal overflow, no console errors) |
 | `tools/e2e/series-e2e.mjs` (older Indicators script) | 28 pass + failures | **identical outcome lines** on the untouched baseline build and on this branch |
 
@@ -93,7 +99,7 @@ The 58 browser checks cover:
 - 8 tours at 360 / 390 / 768 / 1440: every step visited; card inside the viewport and never covering the target; keyboard and Esc; focus return.
 - Deep links, the Indicators and Overview links, dark mode, and console and hydration errors.
 
-Screenshots: `reports/forecasts-v3/screens/` holds curated before/after pairs plus the tour, Research View and tooltip shots. The full 2 × 144 matrices are kept locally in `reports/forecasts-v3/{before,after}/` and are not committed.
+Screenshots: `reports/forecasts-v3/screens/` holds curated before/after pairs plus the tour, Research View and tooltip shots. The full 2 × 144 matrices are kept locally in `reports/forecasts-v3/{before,after}/`, excluded via `.git/info/exclude` (local only), and are not committed.
 
 ## Remaining scientific limitations
 - Short histories: WPI and IIP have about 42 months; evaluation sets have 19–25 origins. No significance test, so no winner is claimed.

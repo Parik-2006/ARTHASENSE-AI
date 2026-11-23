@@ -23,5 +23,8 @@ the card never covers its target), deep links, dark mode and console/hydration e
 WEB=http://127.0.0.1:3124 API=http://127.0.0.1:8775 OUT=report.json node forecasts-e2e.mjs
 ```
 
+`forecasts-a11y.mjs` (needs `axe-core` next to `playwright-core`): WCAG 2.1 A/AA over 7 Forecasts pages in Simple and
+Research view, light and dark, at 1440 and 390 px; Forecasts-owned and shared-chrome violations are reported separately.
+
 Note: `series-e2e.mjs` predates the Indicators redesign (`e01212d`, `841ef95`); some of its checks target controls
 that no longer exist. It produces identical results on `7fa0b92` and on `feature/forecasts-v3`.

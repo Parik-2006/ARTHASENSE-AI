@@ -232,3 +232,14 @@ def test_series_without_linked_runs_or_with_a_gap_claims_nothing(migrated_db_url
         assert cpi["training_history"] is None and cpi["forecast_status"] == "insufficient_history"
     finally:
         get_settings.cache_clear()
+
+
+def test_cli_save_refuses_a_remote_database_unless_named(monkeypatch, capsys):
+    from pipeline.forecasting import cli
+
+    monkeypatch.setenv(
+        "ARTHASENSE_DATABASE_URL", "postgresql://u:secret@db.example.supabase.co:5432/postgres"
+    )
+    code = cli.main(["suite", "--name", "all", "--indicator", "cpi", "--history", "linked", "--save"])
+    err = capsys.readouterr().err
+    assert code == 2 and "Refusing" in err and "secret" not in err

@@ -36,6 +36,7 @@ from pipeline.forecasting.experiments import (
 )
 from pipeline.forecasting.persistence import store_run
 from pipeline.ingest.config import database_url
+from pipeline.ingest.safety import RemoteTargetRefused, require_allowed_host
 from pipeline.research.loader import LoaderError
 
 
@@ -153,6 +154,10 @@ def main(argv: list[str] | None = None) -> int:
     f.add_argument("--json", action="store_true")
     f.add_argument("--history", default="current", choices=HISTORIES)
     f.add_argument("--save", action="store_true")
+    for sp in (b, su, f):
+        sp.add_argument(
+            "--allow-host", default=None, help="with --save: DB hosts accepted (default: local only)"
+        )
     args = p.parse_args(argv)
 
     if args.cmd == "models":
@@ -168,6 +173,12 @@ def main(argv: list[str] | None = None) -> int:
     if not url:
         print("Error: ARTHASENSE_DATABASE_URL is not set (see .env.example)", file=sys.stderr)
         return 2
+    if getattr(args, "save", False):
+        try:  # same rule as ingestion: stored runs go to a local database unless a host is named explicitly
+            require_allowed_host(url, args.allow_host)
+        except RemoteTargetRefused as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 2
     try:
         with psycopg.connect(url, connect_timeout=5) as conn:
             if args.cmd == "suite":

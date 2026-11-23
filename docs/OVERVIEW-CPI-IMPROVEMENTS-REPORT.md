@@ -173,6 +173,16 @@ is flagged "indicative only".
   * Drift's 80 % coverage falls to 60 % there (ETS 79 %), so its intervals are a little narrow over the long run.
 * **60-month rolling window instead of expanding.** The errors are almost identical (Drift h = 6 MAE 1.06, ARIMA h = 1
   0.30), so the pre-2020 data is not what drives the results.
+* **Applying the UI's reliability rules to the long-history numbers.** Drift h = 6 (143 origins, MAE 1.30 < 2.01, coverage
+  60.1 % / 88.8 %) would still be rated "supported", right at the 60 % floor. So leaving that suite unstored hid no
+  "concerning" result that the caveat path would have shown.
+
+**Model diagnostics** (stored in each run's configuration):
+
+* No origin has an explosive AR part.
+* ARIMA did not converge at 4 of 22 backtest origins (h = 1) and SARIMA at 1. Both are recorded and those origins are
+  still scored.
+* The stored future ARIMA fit converged and is stationary (smallest AR root modulus 1.84).
 
 **Default view and future forecasts** (origin Oct 2026, latest official **110.05**):
 
@@ -218,48 +228,63 @@ a new deterministic run (a new fingerprint and ids, with old runs kept) is creat
     never mixed in.
 * The Forecasts tour anchors on the first available card, which is now CPI. Missing targets are skipped as before.
 
-**A frontend-only deploy is safe.** I verified it with this branch's web build against the `fc2282a` API on a database
-without linked runs:
+**A code-only deploy is safe; importing data first is not.** I verified the code-only case with this branch's web build
+against the `fc2282a` API on a database without linked runs:
 
 * the CPI card stays "Not enough comparable history" with the new explanation;
 * WPI/IIP are unchanged (115.34 and 123.87);
 * 322/322 browser checks and 58/58 Forecasts V3 checks pass.
 
-**Production rollout plan (not performed; needs your approval):**
+The new backend without runs reports `ready_not_run`, which is also honest. **The reverse is not safe.** If the runs were
+imported while the old code is live, the old frontend would show a CPI forecast with no training-data line, and the old
+API would contradict it: `/series` would still say "insufficient_history", and `/comparison` would list models as
+excluded for "0 usable origins". So the **data import goes last**.
 
-1. **Back up first** with `tools/prod/backup_and_verify.sh`: a verified dump plus a test restore, as in the previous release.
-2. **Pre-check, read-only.** Run `tools/cpi_linked_evidence.py` with the production URL. Its session is forced read-only,
-   and the stored-run section is empty until the import.
+**Production rollout plan (not performed; needs your approval). Order: code first, data last.**
+
+1. **Deploy the backend to Render** (this branch's `services/api`).
+   * Check that `/series` CPI shows `ready_not_run` with `training_history.n_observations` 166, and that WPI/IIP responses
+     equal captures taken just before the deploy.
+2. **Deploy the frontend to Vercel.**
+   * The CPI card stays unavailable with the new explanation. Run `overview-cpi-e2e.mjs` with `EXPECT_CPI=unavailable`,
+     `forecasts-e2e.mjs` and `forecasts-a11y.mjs` against production.
+   * Tasks 1 and 2 are complete at this point.
+3. **Back up production** with `tools/prod/backup_and_verify.sh`: a verified dump plus a test restore, as in the previous
+   release.
+4. **Pre-check, read-only.** Run `tools/cpi_linked_evidence.py` with the production URL. Its session is forced read-only,
+   and the stored-run section is empty before the import.
    * Require: Back 144 and Current 22 months, 0 gaps, 0 overlap, and linked fingerprint **`e9b1f3b6f3fbf346`**.
-   * If CPI data has changed (for example the Nov 2026 release), the runs are still valid but get new ids. Review the new
-     numbers before continuing.
-3. **No schema migration is needed.** The existing tables and columns are used.
-4. **Import, idempotent.** With the pinned stack (Python 3.12.4, statsmodels 0.15.0, numpy 2.5.5, pandas 3.1.1):
-   `python -m pipeline.forecasting.cli suite --name all --indicator cpi --history linked --save`.
-   * This inserts exactly **28 `forecast_runs`, 444 `forecasts` and 216 `scores`** rows, with the experiment ids listed in
-     `reports/cpi-linked/evidence.json` › `stored_runs`.
-   * A repeat run inserts nothing.
-   * Nothing else is written: no observations and no WPI/IIP runs.
-5. **Post-import checks:**
+   * If CPI data has changed (for example the Nov 2026 release), stop and review the new numbers: the runs will get new ids.
+5. **No schema migration is needed.** The existing tables and columns are used.
+6. **Import.**
+   * **Tooling.** `db/transfer.py` copies only into an *empty* target, so it cannot add rows to production. The forecasting
+     CLI is the additive path. This branch gives its `--save` the same remote-host guard as ingestion: it refuses
+     non-local hosts unless `--allow-host` is given.
+   * **Command,** with the pinned stack (Python 3.12.4, statsmodels 0.15.0, numpy 2.5.5, pandas 3.1.1):
+     `python -m pipeline.forecasting.cli suite --name all --indicator cpi --history linked --save --allow-host <production host>`.
+   * **Why refit rather than copy?** The refit is deterministic. With fingerprint `e9b1f3b6f3fbf346`, it produces exactly the
+     **28 experiment ids** listed in `reports/cpi-linked/evidence.json` › `stored_runs`, which is checked in step 7.
+   * **Rows:** exactly **28 `forecast_runs`, 444 `forecasts` and 216 `scores`**. Nothing else is written: no observations
+     and no WPI/IIP runs.
+   * **Atomicity.** Each run is stored in its own transaction. If the import is interrupted, re-running it inserts only the
+     missing runs.
+7. **Post-import checks:**
+   * the stored experiment ids equal the 28 listed (any other id: run the rollback);
    * `tools/forecast_reproduce.py` returns `cpi_linked` 28/28, WPI 60/60 and IIP 60/60;
-   * re-run the integrity section of `tools/cpi_linked_evidence.py` and expect all zeros;
-   * compare row counts against step 4.
-6. **Deploy the backend to Render.** Then check that `/series` CPI shows `has_experiments` with `training_history.n_observations` 166, that
-   `/comparison?indicator=cpi&horizon=6` returns one rankable group of 6 models on 17 origins, and that the WPI/IIP
-   responses equal their pre-deploy captures.
-7. **Deploy the frontend to Vercel**, then run `tools/e2e/overview-cpi-e2e.mjs`, `forecasts-e2e.mjs` and
-   `forecasts-a11y.mjs` against production.
-8. **Rollback** (no FK cascade, so keep this order):
-   `DELETE FROM scores WHERE run_id IN (SELECT id FROM forecast_runs WHERE experiment_id = ANY(:ids)); DELETE FROM forecasts …; DELETE FROM forecast_runs …;`
-   with the 28 ids, then redeploy `fc2282a`.
-   * Any order of steps 6–7 is safe: each combination was shown above to fall back honestly.
+   * the integrity section of `tools/cpi_linked_evidence.py` is all zeros;
+   * `/series` CPI shows `has_experiments`, and `/comparison?indicator=cpi&horizon=6` returns one rankable group of
+     6 models on 17 origins;
+   * then run `overview-cpi-e2e.mjs` (default mode) and `forecasts-e2e.mjs` against production.
+8. **Rollback, data first** (there is no FK cascade):
+   `DELETE FROM scores WHERE run_id IN (SELECT id FROM forecast_runs WHERE experiment_id = ANY(:ids)); DELETE FROM forecasts WHERE run_id IN (…); DELETE FROM forecast_runs WHERE experiment_id = ANY(:ids);`
+   with the 28 ids. This returns the site to the honest unavailable state. Revert the code to `fc2282a` only if needed.
 
 ## 7. Tests
 
 | Check | Result |
 |---|---|
 | Vitest | **407 passed** (was 394). 13 new or replacement tests: `buildYearComparison` ×6, 2026 compare section ×4 + 1 rewritten, CPI card/explorer states ×6 (`cpi-history.test.tsx`). |
-| Pytest (local test DB) | **356 passed** (was 349): `pipeline/tests/test_forecasting_linked.py` ×7 (compatibility and base separation, overlap refusal, chronology and no look-ahead, identical origins, determinism, storage target, API states incl. a gap) |
+| Pytest (local test DB) | **357 passed** (was 349): `pipeline/tests/test_forecasting_linked.py` ×8 (remote `--save` guard, compatibility and base separation, overlap refusal, chronology and no look-ahead, identical origins, determinism, storage target, API states incl. a gap) |
 | Ruff check + format, ESLint, `tsc`, `next build` | clean |
 | `tools/e2e/overview-cpi-e2e.mjs` (new) | 366/366 with the CPI runs; 322/322 in fallback mode. Covers 6 widths × 2 themes: logo, 2026 comparison, Overview tour (Escape), Forecasts cards and the CPI explorer, Research, Comparison, Indicators CPI/WPI/IIP/GDP |
 | `tools/e2e/forecasts-e2e.mjs` | 58/58 in both modes |

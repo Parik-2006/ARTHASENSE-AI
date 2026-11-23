@@ -24,7 +24,7 @@ import {
   type Reliability,
   serializeForecastFilters,
 } from "@/lib/forecast-v2";
-import { type Comparison, fmt, fmtMetric, type ForecastRow, type IndicatorId, type ModelInfo, methodLabel, monthLabel, type Run } from "@/lib/forecasting";
+import { type Comparison, fmt, fmtMetric, type ForecastRow, type IndicatorId, methodLabel, type ModelInfo, monthLabel, type Run, type TrainingHistory, trainingLine } from "@/lib/forecasting";
 import type { Observation } from "@/lib/indicator";
 import { seriesIds, type SourceInfo } from "@/lib/source";
 
@@ -103,6 +103,7 @@ export function ForecastExplorer({
   runs,
   models,
   comparisons,
+  trainingHistory = null,
 }: {
   indicator: IndicatorId;
   shortName: string;
@@ -115,6 +116,8 @@ export function ForecastExplorer({
   runs: Run[];
   models: ModelInfo[];
   comparisons: Record<number, Comparison | null>;
+  /** Official linked training history (CPI); null when models train on the current series alone. */
+  trainingHistory?: TrainingHistory | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -285,6 +288,7 @@ export function ForecastExplorer({
         <p className="border-t border-rule px-5 py-2 text-xs text-ink-muted">
           Official data: {officialLabel}, base {baseYear}. Forecast: {modelName}, run #{cur.run.id}
           {cur.partial ? ` (first ${horizon} of ${cur.run.horizon} stored months)` : ""}, made from {origin ? monthLabel(origin, true) : "an unrecorded month"} data.
+          {trainingHistory && <span data-testid="training-history"> {trainingLine(trainingHistory)}</span>}
         </p>
       </section>
 
@@ -386,6 +390,9 @@ export function ForecastExplorer({
                     ["Horizon shown", cur.partial ? `${horizon} months (steps 1–${horizon} of run #${cur.run.id})` : `${horizon} months`],
                     ["Forecast origin", origin ? monthLabel(origin, true) : "Not recorded"],
                     ["Training window", `${cur.run.training_start ? monthLabel(cur.run.training_start) : "?"} – ${monthLabel(cur.run.training_cutoff)}`],
+                    ...(trainingHistory
+                      ? ([["Training data", `${trainingHistory.components.map((c) => `${c.series_code} (${monthLabel(c.first_period)} – ${monthLabel(c.last_period)}, ${c.n_observations} mo)`).join(" + ")}. ${trainingHistory.note}`]] as [string, string][])
+                      : []),
                     ["Intervals", methodLabel(rows.find((r) => r.interval_method)?.interval_method)],
                     ["Data fingerprint", cur.run.dataset_fingerprint ?? "Not recorded"],
                     ["Backtest training", bt?.training_start ? `${monthLabel(bt.training_start)} – ${monthLabel(bt.training_cutoff)} (expanding)` : "—"],

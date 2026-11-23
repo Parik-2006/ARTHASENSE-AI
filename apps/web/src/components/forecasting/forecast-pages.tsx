@@ -11,7 +11,7 @@ import { type IndicatorForecastData, loadIndicatorForecast } from "@/lib/forecas
 import { chooseView, type Evidence, type ForecastView, forecastViews, indicatorHref, monthsNeeded, plainReliability } from "@/lib/forecast-evidence";
 import { FORECAST_OVERVIEW_STEPS } from "@/lib/forecast-tours";
 import { changeFrom, FLAT_THRESHOLD_PCT } from "@/lib/forecast-v2";
-import { fmt, INDICATOR_IDS, INDICATOR_NAMES, type IndicatorId, loadErrorText, monthLabel, type ModelInfo } from "@/lib/forecasting";
+import { fmt, INDICATOR_IDS, INDICATOR_NAMES, type IndicatorId, loadErrorText, monthLabel, type ModelInfo, trainingLine } from "@/lib/forecasting";
 import { CONFIGS } from "@/lib/indicators";
 import { DEFINITION } from "@/lib/indicator-view";
 import { sourceFor } from "@/lib/source";
@@ -21,6 +21,11 @@ export const DISCLAIMER =
   "Accuracy figures come from rolling-origin backtests on a short history, so they are indicative.";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+
+/** Shown while no tested forecast is stored. Older official history exists; say what it is and why it is not used yet. */
+const OLDER_HISTORY: Partial<Record<IndicatorId, string>> = {
+  cpi: "Older official CPI does exist: MoSPI's back series on the same 2024 base (Jan 2013 – Dec 2024) and the discontinued 2012-base series. A forecast is shown only after models are tested on the official back + current history and those results are stored. The 2012-base levels are never mixed in.",
+};
 
 function ApiError({ what, error = "" }: { what: string; error?: string }) {
   return (
@@ -84,7 +89,7 @@ const plainLevel = (e: Evidence) => ({ supported: "stronger", limited: "limited"
 
 // ---------- overview ----------
 
-function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
+export function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
   const config = CONFIGS[s.id];
   const sel = s.selected;
   const last = sel?.view.rows[sel.view.rows.length - 1];
@@ -150,6 +155,11 @@ function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
             )}
           </div>
           <p className="px-5 pt-2 text-xs text-ink-muted">{plainReliability(sel.evidence)}</p>
+          {s.data.info?.training_history && (
+            <p className="px-5 pt-1 text-xs text-ink-muted" data-testid="card-training">
+              {trainingLine(s.data.info.training_history)}
+            </p>
+          )}
         </>
       ) : (
         <div className="mx-5 mt-4 rounded border border-dashed border-rule px-4 py-5" data-testid="card-unavailable">
@@ -159,6 +169,7 @@ function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
               <p className="mt-1 text-sm text-ink-muted">
                 {s.data.info ? `The base ${s.data.hist?.baseYear ?? ""} series has ${s.data.info.n_observations} months; testing a model needs at least ${monthsNeeded(1)}.` : s.reason}
               </p>
+              {OLDER_HISTORY[s.id] && <p className="mt-1 text-sm text-ink-muted">{OLDER_HISTORY[s.id]}</p>}
               {s.latest && (
                 <p className="mt-3 text-sm">
                   Latest official <span className="figure font-medium">{fmt(s.latest.value)}</span> <span className="text-ink-muted">({monthLabel(s.latest.period, true)})</span>
@@ -347,9 +358,7 @@ async function IndicatorData({ id }: { id: IndicatorId }) {
               ? `The current ${config.shortName} series (base ${data.hist.baseYear}) has ${n} monthly observations. Testing a model fairly needs at least ${monthsNeeded(1)}, so no forecast is shown.`
               : sum.reason || "No experiment has been run."}
           </p>
-          {id === "cpi" && (
-            <p className="mt-2 max-w-2xl text-sm text-ink-muted">Older CPI series use different base years and are never joined to the current one without a validated method.</p>
-          )}
+          {OLDER_HISTORY[id] && <p className="mt-2 max-w-2xl text-sm text-ink-muted">{OLDER_HISTORY[id]}</p>}
           {sum.latest && (
             <p className="mt-4 text-sm">
               Latest official index <span className="figure text-lg font-medium">{fmt(sum.latest.value)}</span> <span className="text-ink-muted">({monthLabel(sum.latest.period, true)})</span>
@@ -395,6 +404,7 @@ async function IndicatorData({ id }: { id: IndicatorId }) {
       runs={data.runs}
       models={data.models}
       comparisons={data.comparisons}
+      trainingHistory={data.info?.training_history ?? null}
     />
   );
 }

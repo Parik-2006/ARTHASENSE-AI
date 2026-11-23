@@ -33,9 +33,12 @@ def store_run(conn: psycopg.Connection, rec: RunRecord) -> tuple[str, int]:
         ).fetchone()
         if row:
             return "exists", row[0]
-        sid = conn.execute("SELECT id FROM series WHERE code = %s", (rec.series_code,)).fetchone()
+        code = (
+            rec.target_series_code or rec.series_code
+        )  # a composite history is stored against its target series
+        sid = conn.execute("SELECT id FROM series WHERE code = %s", (code,)).fetchone()
         if sid is None:
-            raise ValueError(f"series {rec.series_code!r} is not in the database")
+            raise ValueError(f"series {code!r} is not in the database")
         run_id = conn.execute(
             """INSERT INTO forecast_runs
                  (series_id, model_name, model_version, training_cutoff, horizon, configuration,

@@ -19,20 +19,42 @@ sys.path.insert(0, os.environ.get("REPO") or os.path.dirname(os.path.dirname(os.
 from pipeline.forecasting.experiments import (  # noqa: E402
     FUTURE_HORIZON,
     FUTURE_MODELS,
+    LINKED_SUITES,
     SUITES,
     dataset_fingerprint,
     forecast_record,
-    load_indicator,
+    load_training,
     suite_records,
+    target_code,
 )
 
 url = os.environ["ARTHASENSE_DATABASE_URL"]
+
+
+def _all_fps(conn: psycopg.Connection, code: str) -> list[str]:
+    """Stored dataset fingerprints of the current-series runs (original behaviour); linked runs excluded."""
+    return [
+        r[0]
+        for r in conn.execute(
+            "select distinct fr.dataset_fingerprint from forecast_runs fr join series s on s.id=fr.series_id"
+            " where s.code=%s and not (fr.configuration ? 'training_data')",
+            (code,),
+        )
+    ]
+
+
 out: dict = {"indicators": {}}
 with psycopg.connect(url, options="-c default_transaction_read_only=on") as conn:
     assert conn.execute("show default_transaction_read_only").fetchone()[0] == "on"
-    for ind in ("cpi", "wpi", "iip"):
-        rep: dict = {}
-        ts = load_indicator(conn, ind)
+    # (key, indicator, training history, suites); "cpi_linked" = CPI on the official linked history
+    for key, ind, history, suites in (
+        ("cpi", "cpi", "current", SUITES),
+        ("wpi", "wpi", "current", SUITES),
+        ("iip", "iip", "current", SUITES),
+        ("cpi_linked", "cpi", "linked", LINKED_SUITES),
+    ):
+        rep: dict = {"history": history}
+        ts = load_training(conn, ind, history)
         fp = dataset_fingerprint(ts)
         rep["n_obs"] = len(ts)
         rep["span"] = [str(ts.periods[0]), str(ts.periods[-1])]
@@ -41,13 +63,13 @@ with psycopg.connect(url, options="-c default_transaction_read_only=on") as conn
             eid: (rid, st, kind)
             for eid, rid, st, kind in conn.execute(
                 "select fr.experiment_id, fr.id, fr.status, fr.kind from forecast_runs fr"
-                " join series s on s.id=fr.series_id where s.code=%s",
-                (ts.series_code,),
+                " join series s on s.id=fr.series_id where s.code=%s and fr.dataset_fingerprint = any(%s)",
+                (target_code(ts), [fp] if history == "linked" else _all_fps(conn, target_code(ts))),
             )
         }
         rep["stored_runs"] = len(stored)
         recs = []
-        for name in SUITES:
+        for name in suites:
             recs += suite_records(ts, ind, name)
         for mid in FUTURE_MODELS:
             try:
@@ -109,5 +131,5 @@ with psycopg.connect(url, options="-c default_transaction_read_only=on") as conn
             max_abs_metric_diff=max_metric_diff,
             completed_recomputed=sum(1 for r in recs if r.status == "completed"),
         )
-        out["indicators"][ind] = rep
+        out["indicators"][key] = rep
 print(json.dumps(out, indent=1, default=str))

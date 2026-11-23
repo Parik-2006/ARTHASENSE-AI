@@ -21,7 +21,7 @@ from pipeline.forecasting.backtesting import (
     run_backtest,
 )
 from pipeline.forecasting.interfaces import LEVELS, ForecastModel, future_periods
-from pipeline.research.loader import GapError, LoaderError, TimeSeries, load_series
+from pipeline.research.loader import GapError, LoaderError, TimeSeries, load_cpi_2024_linked, load_series
 
 # Index LEVELS are forecast, never official inflation / growth rates.
 INDICATORS: dict[str, str] = {
@@ -32,6 +32,14 @@ INDICATORS: dict[str, str] = {
 DEFAULT_HORIZONS = (1, 3, 6, 12)
 MIN_INITIAL_TRAIN = 12  # at least one full seasonal cycle must be observed before anything is evaluated
 CODE_VERSION = "1"
+
+# Training histories. "current" (default) = the indicator's current-base series only. "linked" (CPI only) =
+# MoSPI's official Back series on base 2024=100 (Jan 2013-Dec 2024, published 12 Feb 2026 with a documented linking
+# factor; FAQs on CPI 2024, Annexure V, Q36-38) followed by the Current series (Jan 2025-). Same base, no overlap,
+# nothing rebased or invented by ArthaSense. Runs are stored against the CURRENT series (the forecast target) and
+# their configuration records the composite in `training_data`. See docs/OVERVIEW-CPI-IMPROVEMENTS-REPORT.md.
+HISTORIES = ("current", "linked")
+LINKED_LOADERS = {"cpi": load_cpi_2024_linked}
 
 
 def dataset_fingerprint(ts: TimeSeries) -> str:
@@ -61,6 +69,46 @@ def load_indicator(
         return load_series(conn, INDICATORS[indicator], policy=policy, as_of=as_of, require_complete=True)  # type: ignore[arg-type]
     except GapError as exc:
         raise LoaderError(f"{indicator}: series has missing months, refusing to forecast ({exc})") from exc
+
+
+def load_training(
+    conn: psycopg.Connection, indicator: str, history: str = "current", *, as_of=None
+) -> TimeSeries:
+    """The training series for `indicator`: the current series, or (CPI only) the official linked history."""
+    if history == "current":
+        return load_indicator(conn, indicator, as_of=as_of)
+    if history != "linked":
+        raise ValueError(f"unknown history {history!r}; choose from {', '.join(HISTORIES)}")
+    if indicator not in LINKED_LOADERS:
+        raise ValueError(
+            f"{indicator}: no official linked history is documented; only {', '.join(LINKED_LOADERS)}"
+        )
+    try:
+        ts = LINKED_LOADERS[indicator](conn, as_of=as_of, require_complete=True)
+    except GapError as exc:
+        raise LoaderError(
+            f"{indicator}: linked history has missing months, refusing to forecast ({exc})"
+        ) from exc
+    if not ts.components or ts.components[-1] != INDICATORS[indicator]:
+        raise LoaderError(
+            f"{indicator}: the linked history must end with the current series {INDICATORS[indicator]}"
+        )
+    return ts
+
+
+def target_code(ts: TimeSeries) -> str:
+    """The stored series a run forecasts: the series itself, or the last (current) component of a splice."""
+    return ts.components[-1] if ts.components else ts.series_code
+
+
+def training_data(ts: TimeSeries) -> dict[str, Any] | None:
+    """Provenance of a composite training series (None for a single series, so their configs are unchanged)."""
+    if not ts.components:
+        return None
+    return {"series_code": ts.series_code, "transformation": ts.transformation, "components": list(ts.components),
+            "join_period": ts.join_period.isoformat() if ts.join_period else None,
+            "first_period": ts.periods[0].isoformat(), "last_period": ts.periods[-1].isoformat(),
+            "n_observations": len(ts), "base_year": ts.base_year}  # fmt: skip
 
 
 def max_evaluable_horizon(n: int, initial_train: int, min_origins: int = MIN_ORIGINS_EVALUATE) -> int:
@@ -94,6 +142,8 @@ class RunRecord:
     metrics: dict[str, dict[str, Any]] = field(default_factory=dict)  # name -> {value, n, note}
     rankable: bool = False
     diagnostics: dict[str, Any] = field(default_factory=dict)
+    # Stored series lookup; defaults to series_code. Differs only for a composite training history.
+    target_series_code: str | None = None
 
 
 def _metric_dict(ev: HorizonEvaluation) -> dict[str, dict[str, Any]]:
@@ -144,8 +194,11 @@ def backtest_records(
     need = registry.min_train(model_id)
     ok_here, why_not = registry.availability(model_id)
 
+    td = training_data(ts)
+
     def make(h: int, status: str, error: str | None, **kw: Any) -> RunRecord:
-        cfg = {**base_cfg, "model": {**spec.config}, "diagnostics": kw.pop("diagnostics", {})}
+        cfg = {**base_cfg, "model": {**spec.config}, "diagnostics": kw.pop("diagnostics", {}),
+               **({"training_data": td} if td else {})}  # fmt: skip
         ident = experiment_id({"v": CODE_VERSION, "kind": "backtest", "series": ts.series_code, "model": model_id,
                                "mcfg": spec.config, "seed": seed, "h": h, "icfg": base_cfg, "fp": fp,
                                "ofp": kw.get("origins_fingerprint")})  # fmt: skip
@@ -153,7 +206,7 @@ def backtest_records(
                          seed, h, status, error, suite, ts.snapshot_policy, fp, kw.get("origins_fingerprint"),
                          kw.get("training_start"), kw.get("training_cutoff", periods[min(initial_train, len(periods)) - 1]),
                          kw.get("n_origins", 0), kw.get("runtime", 0.0), kw.get("rows", []), kw.get("metrics", {}),
-                         kw.get("rankable", False))  # fmt: skip
+                         kw.get("rankable", False), target_series_code=target_code(ts))  # fmt: skip
 
     if not ok_here:
         return [make(h, "skipped", f"unavailable: {why_not}") for h in horizons]
@@ -248,9 +301,12 @@ def forecast_record(
         rows.append(row)
     ident = experiment_id({"v": CODE_VERSION, "kind": "forecast", "series": ts.series_code, "model": model_id,
                            "mcfg": spec.config, "seed": seed, "h": horizon, "fp": fp})  # fmt: skip
+    td = training_data(ts)
+    cfg = {"model": spec.config, "diagnostics": model.diagnostics, **({"training_data": td} if td else {})}
     return RunRecord(ident, "forecast", indicator, ts.series_code, model_id, spec.name, spec.cls.version,
-                     {"model": spec.config, "diagnostics": model.diagnostics}, seed, horizon, "completed", None, None,
-                     ts.snapshot_policy, fp, None, ts.periods[0], ts.periods[-1], 1, 0.0, rows, {}, False)  # fmt: skip
+                     cfg, seed, horizon, "completed", None, None,
+                     ts.snapshot_policy, fp, None, ts.periods[0], ts.periods[-1], 1, 0.0, rows, {}, False,
+                     target_series_code=target_code(ts))  # fmt: skip
 
 
 # Predefined, reproducible research suites. All models of a suite share initial_train, so they are
@@ -268,15 +324,35 @@ SUITES: dict[str, dict[str, Any]] = {
     },
     "seasonal": {"models": ["naive", "snaive", "ets", "sarima"], "initial_train": 36, "horizons": (1, 3)},
 }
+# Suites for a LINKED history only. "linked_current": the first origin is the last month before the join and the
+# window expands from there, so every scored target is a genuine Current-series month (no scored month comes from
+# the Back series) while training uses the whole official history before each origin.
+LINKED_SUITES: dict[str, dict[str, Any]] = {
+    "linked_current": {
+        "models": ["naive", "snaive", "drift", "ets", "arima", "sarima"],
+        "initial_train": "join",
+        "horizons": (1, 3, 6, 12),
+    },
+}
 FUTURE_MODELS = ["naive", "drift", "ets", "arima"]
 FUTURE_HORIZON = 6
 
 
+def suite_initial_train(ts: TimeSeries, name: str) -> int:
+    cfg = SUITES.get(name) or LINKED_SUITES[name]
+    if cfg["initial_train"] != "join":
+        return int(cfg["initial_train"])
+    if ts.join_period is None:
+        raise ValueError(f"suite {name!r} needs a linked history (a series with a join)")
+    return sum(1 for p in ts.periods if p < ts.join_period)
+
+
 def suite_records(ts: TimeSeries, indicator: str, name: str, seed: int = 0) -> list[RunRecord]:
-    cfg = SUITES[name]
+    cfg = SUITES.get(name) or LINKED_SUITES[name]
+    initial_train = suite_initial_train(ts, name)
     out: list[RunRecord] = []
     for mid in cfg["models"]:
-        out += backtest_records(ts, indicator, mid, tuple(cfg["horizons"]), initial_train=cfg["initial_train"],
+        out += backtest_records(ts, indicator, mid, tuple(cfg["horizons"]), initial_train=initial_train,
                                 seed=seed, suite=name)  # fmt: skip
     return out
 
@@ -284,7 +360,13 @@ def suite_records(ts: TimeSeries, indicator: str, name: str, seed: int = 0) -> l
 __all__ = [
     "FUTURE_HORIZON",
     "FUTURE_MODELS",
+    "HISTORIES",
+    "LINKED_SUITES",
     "SUITES",
+    "load_training",
+    "suite_initial_train",
+    "target_code",
+    "training_data",
     "suite_records",
     "DEFAULT_HORIZONS",
     "INDICATORS",

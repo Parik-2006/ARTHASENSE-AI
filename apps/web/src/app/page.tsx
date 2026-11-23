@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -28,14 +29,27 @@ export default function OverviewPage({ searchParams }: { searchParams: Search })
   return (
     <>
       <Tour steps={OVERVIEW_TOUR} />
-      <header data-tour="hero" className="border-b border-rule pb-5">
-        <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-accent">Overview</p>
-        <h1 className="font-serif text-4xl leading-[1.15] font-semibold tracking-tight sm:text-5xl">India&apos;s Economy, Explained</h1>
-        <p className="mt-3 max-w-3xl text-base text-ink-muted">A quick snapshot of official prices, production and growth data from the Government of India.</p>
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-          <TourButton className="inline-flex items-center rounded border border-rule px-3 py-1.5 font-medium hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Take a tour</TourButton>
-          <Link href="/indicators/cpi" className="text-accent underline">Explore the indicators</Link>
+      <header data-tour="hero" className="flex flex-col gap-4 border-b border-rule pb-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+        <div className="min-w-0">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-accent">Overview</p>
+          <h1 className="font-serif text-4xl leading-[1.15] font-semibold tracking-tight sm:text-5xl">India&apos;s Economy, Explained</h1>
+          <p className="mt-3 max-w-3xl text-base text-ink-muted">A quick snapshot of official prices, production and growth data from the Government of India.</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+            <TourButton className="inline-flex items-center rounded border border-rule px-3 py-1.5 font-medium hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Take a tour</TourButton>
+            <Link href="/indicators/cpi" className="text-accent underline">Explore the indicators</Link>
+          </div>
         </div>
+        {/* Square logo, shown at its own aspect ratio. Mobile: small, above the text; wider screens: beside it. */}
+        <Image
+          src="/logo.png"
+          alt="ArthaSense AI logo"
+          width={1254}
+          height={1254}
+          preload
+          sizes="(min-width: 1024px) 176px, (min-width: 640px) 136px, 96px"
+          data-testid="hero-logo"
+          className="order-first h-24 w-24 shrink-0 object-contain sm:order-none sm:h-34 sm:w-34 lg:h-44 lg:w-44"
+        />
       </header>
       <Suspense fallback={<div aria-hidden className="mt-8 h-96 animate-pulse rounded-md border border-rule bg-surface" />}>
         <Body searchParams={searchParams} />

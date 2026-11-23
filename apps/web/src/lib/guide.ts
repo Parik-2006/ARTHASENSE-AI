@@ -41,7 +41,7 @@ export const HELP: Record<string, HelpEntry> = {
     title: "Why GDP is quarterly",
     what: "India's GDP is estimated for each fiscal quarter (Q1 is April to June), not each month.",
     why: "Mixing it with monthly series needs care.",
-    how: "When GDP is selected, monthly indicators are shown as quarterly averages, and only where all three months are stored.",
+    how: "Monthly indicators are shown as quarterly averages, and only where all three months are stored.",
     mistake: "Do not read a quarterly point as a monthly value, and do not compare raw index levels with GDP levels.",
   },
   "expand-graph": {
@@ -284,7 +284,7 @@ export const OVERVIEW_TOUR: TourStep[] = [
   { target: "cards", title: "Open an indicator", body: "Select a card to open that indicator's detailed page with two charts, filters and the data. An index is a level against a base of 100, not a percentage." },
   { target: "range", title: "Time filters", body: "Pick 2M to All, or Custom months. Your choice stays in the page link, and the Back button works." },
   { target: "changes", title: "How things are changing", body: "Bars above zero are rises, below are falls. Official figures are labelled as such; calculated ones say so." },
-  { target: "compare", title: "Comparing trends", body: "We compare percentage changes, never raw levels. GDP is quarterly, so selecting it switches the comparison to quarters." },
+  { target: "compare", title: "Comparing trends", body: "CPI, WPI, IIP and GDP in 2026, as change from a year earlier by quarter. GDP is quarterly, so the monthly indices are averaged over complete quarters." },
   { target: "cards", title: "Check the source", body: "Every card and chart has a source line and a Source details panel with links to the publisher." },
 ];
 

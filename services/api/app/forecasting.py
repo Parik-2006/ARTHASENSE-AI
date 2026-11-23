@@ -28,6 +28,15 @@ INDICATOR_SERIES: dict[str, str] = {
     "iip": "mospi.iip.2022-23.india.general.index",
 }
 SERIES_TO_INDICATOR = {v: k for k, v in INDICATOR_SERIES.items()}
+# Official linked training history (must match pipeline/forecasting/experiments.py LINKED_LOADERS): CPI is trained on
+# MoSPI's Back series on base 2024=100 (Jan 2013-Dec 2024, linking factor per FAQs on CPI 2024, Annexure V, Q36-38)
+# followed by the Current series. Index levels only; runs are stored against the Current series.
+LINKED_HISTORY: dict[str, tuple[str, ...]] = {
+    "cpi": ("mospi.cpi.2024.back.all_india.combined.general.index", INDICATOR_SERIES["cpi"]),
+}
+LINKED_NOTE = {
+    "cpi": "MoSPI publishes the Back series on the same 2024 = 100 base, calculated with a documented linking factor, so it extends the Current series without overlap. Before 2025 it follows the 2012 basket's price movements."
+}
 HORIZONS = (1, 3, 6, 12)
 MIN_ORIGINS_EVALUATE = 5
 MIN_ORIGINS_RANK = 12
@@ -158,6 +167,25 @@ def list_models() -> list[ModelInfo]:
 # ---- series -------------------------------------------------------------------------------------
 
 
+class TrainingComponent(BaseModel):
+    series_code: str
+    first_period: date
+    last_period: date
+    n_observations: int
+
+
+class TrainingHistory(BaseModel):
+    """The series models are trained on when it is longer than the indicator's current series (CPI only)."""
+
+    kind: Literal["official_linked"] = "official_linked"
+    n_observations: int
+    first_period: date
+    last_period: date
+    join_period: date
+    components: list[TrainingComponent]
+    note: str
+
+
 class SeriesInfo(BaseModel):
     indicator: str
     series_code: str
@@ -172,10 +200,39 @@ class SeriesInfo(BaseModel):
     completed_backtests: int
     future_forecasts: int
     last_experiment_at: datetime | None
+    training_history: TrainingHistory | None = None
 
 
 def _evaluable(n: int, initial_train: int = DEFAULT_INITIAL_TRAIN) -> list[int]:
     return [h for h in HORIZONS if n - initial_train - h + 1 >= MIN_ORIGINS_EVALUATE]
+
+
+def _months(a: date, b: date) -> int:
+    return (b.year - a.year) * 12 + b.month - a.month
+
+
+def _linked_history(conn: psycopg.Connection, indicator: str) -> TrainingHistory | None:
+    """The official linked history, only when every component is stored, gap-free and the parts join exactly."""
+    codes = LINKED_HISTORY.get(indicator)
+    if not codes:
+        return None
+    parts: list[TrainingComponent] = []
+    for code in codes:
+        n, first, last = conn.execute(
+            "SELECT count(DISTINCT o.period_date), min(o.period_date), max(o.period_date)"
+            " FROM observations o JOIN series s ON s.id=o.series_id WHERE s.code=%s",
+            (code,),
+        ).fetchone()
+        if not n or _months(first, last) + 1 != n:
+            return None  # missing component or a gap: no linked history is claimed
+        parts.append(
+            TrainingComponent(series_code=code, first_period=first, last_period=last, n_observations=n)
+        )
+    if any(_months(a.last_period, b.first_period) != 1 for a, b in zip(parts, parts[1:], strict=False)):
+        return None  # overlap or hole at a join
+    return TrainingHistory(n_observations=sum(p.n_observations for p in parts), first_period=parts[0].first_period,
+                           last_period=parts[-1].last_period, join_period=parts[-1].first_period, components=parts,
+                           note=LINKED_NOTE[indicator])  # fmt: skip
 
 
 @router.get("/series", response_model=list[SeriesInfo])
@@ -203,7 +260,8 @@ def list_series() -> list[SeriesInfo]:
                 " FROM forecast_runs fr JOIN series s ON s.id=fr.series_id WHERE s.code=%s",
                 (code,),
             ).fetchone()
-            ev = _evaluable(n)
+            linked = _linked_history(conn, ind)
+            ev = _evaluable(linked.n_observations if linked else n)
             if n == 0:
                 status, reason = "no_data", "No observations stored."
             elif not ev:
@@ -212,12 +270,17 @@ def list_series() -> list[SeriesInfo]:
                           f"(needs {DEFAULT_INITIAL_TRAIN} training months plus at least {MIN_ORIGINS_EVALUATE} backtest origins).")  # fmt: skip
             elif bt or fc:
                 status, reason = "has_experiments", None
+            elif linked:
+                status = "ready_not_run"
+                reason = (f"The official linked history ({linked.n_observations} months) is long enough to test models, "
+                          "but no tested forecast is stored yet.")  # fmt: skip
             else:
                 status, reason = "ready_not_run", "Data is sufficient but no experiment has been run yet."
             out.append(SeriesInfo(indicator=ind, series_code=code, base_year=meta[1] if meta else None,
                                   n_observations=n, first_period=first, last_period=last, latest_value=latest,
                                   evaluable_horizons=ev, forecast_status=status, reason=reason,
-                                  completed_backtests=bt, future_forecasts=fc, last_experiment_at=last_at))  # fmt: skip
+                                  completed_backtests=bt, future_forecasts=fc, last_experiment_at=last_at,
+                                  training_history=linked))  # fmt: skip
     return out
 
 
@@ -617,7 +680,13 @@ def comparison(indicator: Indicator, horizon: Annotated[int, Query(ge=1, le=24)]
     groups.sort(key=lambda g: (-len(g.models), -g.n_origins))
     excluded = []
     seen: set[str] = set()
+    # Runs on a superseded data vintage (e.g. CPI's 2025 runs on the 12-month Current series, before the linked
+    # history) are not reasons for excluding a model from today's comparison. When every run shares one dataset
+    # fingerprint (WPI, IIP) this changes nothing.
+    live_fps = {r[12] for r in done}
     for r in rows:
+        if live_fps and r[12] not in live_fps:
+            continue
         if r[5] != "completed" and r[3] not in seen:
             seen.add(r[3])
             excluded.append(ExcludedModel(model=r[3], model_name=MODEL_CATALOGUE.get(r[3], {}).get("name", r[3]),

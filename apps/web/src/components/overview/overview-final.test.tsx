@@ -129,24 +129,38 @@ describe("Section 2: level or year-on-year change", () => {
   });
 });
 
-describe("Section 3: comparison is by percentage change only", () => {
-  it("defaults to the monthly indicators, year-on-year", () => {
+describe("Section 3: one year (2026), all four indicators, no filter controls", () => {
+  const compare = () => document.getElementById("compare")!;
+  it("shows only a 2026 year indicator: no checkboxes, mode, range, custom or date controls", () => {
     render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
-    const sec = document.getElementById("compare")!;
-    expect(within(sec).getByText("Monthly comparison.")).toBeTruthy();
-    expect(within(sec).getByRole("button", { name: "Year-on-year %" }).getAttribute("aria-pressed")).toBe("true");
+    const sec = compare();
+    expect(within(sec).getByTestId("compare-year").textContent).toBe("2026");
+    expect(within(sec).queryAllByRole("checkbox")).toHaveLength(0);
+    expect(sec.querySelectorAll("input, select")).toHaveLength(0);
+    for (const name of ["Year-on-year %", "Month-on-month %", "% change from start", "Side by side", "2M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "All", "Custom", "2022", "2023", "2024", "2025"]) {
+      expect(within(sec).queryByRole("button", { name })).toBeNull();
+    }
   });
-  it("adding GDP makes it quarterly and disables month-on-month (no monthly GDP)", () => {
-    search = "ci=cpi,gdp";
+  it("draws CPI, WPI, IIP and GDP by quarter with fiscal labels; GDP stays quarterly", () => {
     render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
-    const sec = document.getElementById("compare")!;
-    expect(within(sec).getByText("Quarterly comparison.")).toBeTruthy();
-    expect((within(sec).getByRole("button", { name: "Month-on-month %" }) as HTMLButtonElement).disabled).toBe(true);
+    const sec = compare();
+    const legend = within(sec).getByRole("list", { name: "Legend" });
+    for (const k of ["CPI", "WPI", "IIP", "GDP"]) expect(legend.textContent).toContain(k);
+    expect(within(sec).getByTestId("compare-fiscal").textContent).toBe("Fiscal quarters: Jan–Mar = Q4 FY25-26 · Apr–Jun = Q1 FY26-27");
+    // fixtures end in Mar 2026 for the monthly indices: their Apr–Jun gap is stated, never filled
+    expect(within(sec).getByTestId("compare-notes").textContent).toMatch(/CPI for Apr–Jun 2026 is not published yet/);
   });
-  it("GDP cannot be selected while it is not stored", () => {
+  it("ignores stale ?ci= and ?cmp= links and does not share Section 2's range", () => {
+    search = "ci=cpi&cmp=mom&range=2M";
+    render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
+    expect(within(compare()).getByTestId("compare-year").textContent).toBe("2026");
+    expect(within(compare()).getByRole("list", { name: "Legend" }).textContent).toContain("GDP");
+  });
+  it("without stored GDP it draws the monthly indices and says GDP is not drawn", () => {
     render(<OverviewFinal bundles={all()} gdp={none} />);
-    const box = within(document.getElementById("compare")!).getByRole("checkbox", { name: /GDP/ }) as HTMLInputElement;
-    expect(box.disabled).toBe(true);
+    const sec = compare();
+    expect(within(sec).getByRole("list", { name: "Legend" }).textContent).not.toContain("GDP");
+    expect(within(sec).getByTestId("compare-notes").textContent).toMatch(/GDP is not stored yet/);
   });
 });
 
@@ -156,10 +170,13 @@ describe("defaults never open on an empty view (production-shaped data)", () => 
     render(<OverviewFinal bundles={short()} gdp={none} />);
     expect(screen.getByTestId("change-panel").textContent).toMatch(/WPI: wholesale inflation/);
   });
-  it("the comparison leaves out an indicator without any year-on-year value", () => {
+  it("the comparison leaves out an indicator without any value in the year, and says why", () => {
     render(<OverviewFinal bundles={short()} gdp={none} />);
-    const boxes = within(document.getElementById("compare")!).getAllByRole("checkbox") as HTMLInputElement[];
-    expect(boxes.map((b) => b.checked)).toEqual([false, true, true, false]);
+    const sec = document.getElementById("compare")!;
+    const legend = within(sec).getByRole("list", { name: "Legend" }).textContent ?? "";
+    expect(legend).not.toContain("CPI");
+    expect(legend).toContain("WPI");
+    expect(within(sec).getByTestId("compare-notes").textContent).toMatch(/CPI for Jan–Mar 2026 is not published yet/);
   });
 });
 

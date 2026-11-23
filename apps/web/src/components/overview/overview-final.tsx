@@ -6,7 +6,7 @@ import { HelpTip } from "@/components/guide/help-tip";
 import { Sparkline } from "@/components/indicators/indicator-summary";
 import { gdpSource } from "@/components/indicators/detail/indicator-detail";
 import { useRange } from "@/components/indicators/detail/use-range";
-import { type ChartSeries, TimeChart } from "@/components/overview/time-chart";
+import { TimeChart } from "@/components/overview/time-chart";
 import { Empty, SectionShell, Seg } from "@/components/overview/v3/ui";
 import { ClassBadge, periodSpan, SourceAttribution } from "@/components/source/source-attribution";
 import { deriveGdp, type GdpResult, type GdpRow, quarterLabel, quarterShort } from "@/lib/gdp";
@@ -14,7 +14,7 @@ import { formatIndex, formatPeriod, formatTimestamp } from "@/lib/indicator";
 import { explainGdp, explainLevel, explainRate, monthlyWindow, pathFor, quarterWindow, VIEW_COLOR, VIEW_KEYS, VIEW_NAME, type ViewKey } from "@/lib/indicator-view";
 import { derive, type Derived, seedCustomRange } from "@/lib/overview";
 import type { IndicatorBundle } from "@/lib/overview-data";
-import { buildComparison, type CmpMode, parseCmpMode, parseCompareSel } from "@/lib/overview-v3";
+import { buildYearComparison, calendarQuarter } from "@/lib/overview-v3";
 import { seriesIds } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
@@ -389,79 +389,53 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     );
   }
 
-  // ============================== Section 3: compare ==============================
+  // ============================== Section 3: compare (2026 only) ==============================
+  // One calendar year, all four indicators, year-on-year by quarter. No indicator, mode or range controls: this
+  // section does not read or write the URL, so stale ?ci= / ?cmp= links are ignored and Section 2's range is not shared.
   function Compare() {
-    const available: ViewKey[] = VIEW_KEYS.filter((k) => (k === "gdp" ? gdp.ok : !!byKey(k)?.rows.length));
-    const ci = params.get("ci");
-    // Default: the monthly indicators (a monthly comparison). GDP can be added; the comparison then becomes quarterly.
-    // Default: monthly indicators that have at least one year-on-year value (an indicator with too little history
-    // would only add an empty line); fall back to all monthly indicators.
-    const withYoy = available.filter((k) => k !== "gdp" && !!byKey(k)?.rows.some((r) => r.yoyCalc !== null));
-    const picked = ci === null ? (withYoy.length >= 2 ? withYoy : available.filter((k) => k !== "gdp")) : parseCompareSel(ci, available);
-    const requested: CmpMode = params.get("cmp") ? parseCmpMode(params.get("cmp")) : "yoy";
-    const result = buildComparison({ picked, monthly: prepared.map((p) => ({ key: p.b.key, rows: p.rows })), gdp: gdp.ok ? { rows: gdpRows } : null, sel, mode: requested });
-    const quarterly = result.frequency === "quarterly";
-    const setPick = (k: ViewKey, on: boolean) => {
-      const next = on ? [...picked, k] : picked.filter((x) => x !== k);
-      go({ ci: next.join(",") || "none" });
-    };
-    const modes: { key: CmpMode; label: string; disabled?: boolean }[] = [
-      { key: "yoy", label: "Year-on-year %" },
-      { key: "mom", label: "Month-on-month %", disabled: quarterly },
-      { key: "rebased", label: "% change from start" },
-      { key: "aligned", label: "Side by side" },
-    ];
-    const sources = [...prepared.filter((p) => picked.includes(p.b.key)).map((p) => p.b.source), ...(picked.includes("gdp") && gdp.ok ? [gdpSource(gdp.data)] : [])];
+    const result = buildYearComparison({ monthly: prepared.map((p) => ({ key: p.b.key, rows: p.rows })), gdp: gdp.ok ? { rows: gdpRows } : null });
+    const sources = [...prepared.map((p) => p.b.source), ...(gdp.ok ? [gdpSource(gdp.data)] : [])];
+    const notes = [...result.notes, ...(gdp.ok ? [] : ["GDP is not stored yet, so it is not drawn. No GDP figure is estimated."])];
+    const span = result.quarters.length ? `${calendarQuarter(result.quarters[0])} – ${calendarQuarter(result.quarters[result.quarters.length - 1])}` : "no quarters";
     return (
-      <SectionShell id="compare" tour="compare" title="Compare economic trends" help="comparison" intro="Indicators are compared by percentage change, never by raw levels: index points and rupees are different units. Moving together does not mean one causes the other.">
+      <SectionShell id="compare" tour="compare" title="Compare economic trends" help="comparison" intro="How prices, industrial output and GDP changed from a year earlier, quarter by quarter. Only percentage changes are compared: index points and rupees are different units.">
         <div className="rounded-md border border-rule bg-surface p-4">
-          <div className="mb-3 flex flex-col gap-3">
-            <fieldset className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <legend className="mb-1 text-xs text-ink-muted">Indicators</legend>
-              {VIEW_KEYS.map((k) => (
-                <label key={k} className={`flex items-center gap-1.5 ${available.includes(k) ? "" : "opacity-60"}`}>
-                  <input type="checkbox" checked={picked.includes(k)} disabled={!available.includes(k)} onChange={(e) => setPick(k, e.target.checked)} />
-                  <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: VIEW_COLOR[k] }} />
-                  {VIEW_NAME[k].short}
-                  {!available.includes(k) && <span className="text-xs text-ink-muted">(not available yet)</span>}
-                </label>
-              ))}
-            </fieldset>
-            <Seg label="Comparison mode" value={result.mode} options={modes} onChange={(m) => go({ cmp: m === "yoy" ? null : m })} />
-            {bar}
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-xs text-ink-muted">Year</span>
+            <span data-testid="compare-year" aria-label={`Showing calendar year ${result.year ?? "none"}`} className="rounded border border-accent bg-accent px-2.5 py-1 font-medium text-accent-ink">
+              {result.year ?? "—"}
+            </span>
           </div>
           <p className="mb-2 text-xs text-ink-muted">
-            <strong className="text-ink">{quarterly ? "Quarterly comparison" : "Monthly comparison"}.</strong>
-            {quarterly && <HelpTip id="gdp-quarterly" />}{" "}
-            {quarterly
-              ? "GDP is quarterly, so each monthly index enters as its average over the three months of a fiscal quarter, only where all three are stored. No monthly GDP is created."
-              : "Each indicator's current official series is used, over the months they all share."}
+            <strong className="text-ink">Quarterly, year-on-year.</strong>
+            <HelpTip id="gdp-quarterly" /> GDP is quarterly, so CPI, WPI and IIP enter as the average of a quarter&apos;s three months, only when all three are stored. No monthly GDP is created.
           </p>
-          {result.coerced && <p role="status" className="mb-2 rounded border border-warn px-2 py-1 text-xs text-warn">{result.coerced}</p>}
           {result.problem ? (
             <Empty>{result.problem}</Empty>
-          ) : result.mode === "aligned" ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {result.aligned.map((a) => (
-                <div key={a.key} className="min-w-0">
-                  <p className="mb-1 text-sm font-medium">{a.label} <span className="text-xs font-normal text-ink-muted">({a.frequency}, own scale)</span></p>
-                  <TimeChart stepMonths={a.stepMonths} formatN={a.stepMonths === 3 ? quarterShort : undefined} digits={a.key === "gdp" ? 0 : 2} series={[{ key: a.key, label: a.label, stroke: VIEW_COLOR[a.key], points: a.points }]} yLabel={a.yLabel} description={`${a.label}, ${a.frequency}, over the common window.`} />
-                </div>
-              ))}
-            </div>
           ) : (
-            <TimeChart
-              signed
-              unit="%"
-              stepMonths={quarterly ? 3 : 1}
-              formatN={quarterly ? quarterShort : undefined}
-              series={(result.series as ChartSeries[]).map((s) => ({ ...s, stroke: VIEW_COLOR[s.key as ViewKey] ?? s.stroke }))}
-              yLabel={result.mode === "mom" ? "Change from previous month (%)" : result.mode === "yoy" ? "Change from a year earlier (%)" : "Change since the first period shown (%)"}
-              description={`Comparison of ${picked.map((k) => VIEW_NAME[k].short).join(", ")} by ${result.mode === "rebased" ? "percentage change from a common start" : "percentage change"}.`}
-            />
-          )}
-          {!result.problem && (
-            <SourceAttribution className="mt-3" cls={result.mode === "aligned" ? "official" : "calculated"} sources={sources} period="the window shown above" units={result.mode === "aligned" ? "each on its own scale" : "% change"} method={result.mode === "aligned" ? undefined : "Percentage changes calculated by ArthaSense from each official series. Not official rates."} />
+            <>
+              <TimeChart
+                signed
+                unit="%"
+                digits={1}
+                stepMonths={3}
+                formatN={calendarQuarter}
+                series={result.series.map((s) => ({ ...s, stroke: VIEW_COLOR[s.key as ViewKey] ?? s.stroke }))}
+                yLabel="Change from the same quarter a year earlier (%)"
+                description={`Year-on-year change of ${result.series.map((s) => s.label).join(", ")} by quarter, ${span}.`}
+              />
+              <p className="mt-2 text-xs text-ink-muted" data-testid="compare-fiscal">
+                Fiscal quarters: {result.quarters.map((n) => `${calendarQuarter(n).replace(/ \d{4}$/, "")} = ${quarterShort(n)}`).join(" · ")}
+              </p>
+              {notes.length > 0 && (
+                <ul className="mt-2 space-y-1 text-xs text-ink-muted" data-testid="compare-notes">
+                  {notes.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
+              <SourceAttribution className="mt-3" cls="calculated" sources={sources} period={span} units="% change from a year earlier" method="Calculated by ArthaSense from each indicator's current official series (quarterly averages of monthly indices; GDP at constant prices). Not official rates." />
+            </>
           )}
         </div>
       </SectionShell>

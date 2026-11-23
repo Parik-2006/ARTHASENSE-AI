@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { deriveGdp, parseGdpResponse } from "@/lib/gdp";
 import type { Observation } from "@/lib/indicator";
 import { derive } from "@/lib/overview";
-import { buildComparison, parseCmpMode, parseCompareSel, parseOpen, quarterlyAverage } from "@/lib/overview-v3";
+import { buildComparison, buildYearComparison, calendarQuarter, parseCmpMode, parseCompareSel, parseOpen, quarterlyAverage } from "@/lib/overview-v3";
 
 const obs = (start: number, vals: (number | null)[]): Observation[] =>
   vals.map((v, i) => {
@@ -77,5 +77,50 @@ describe("buildComparison", () => {
   it("respects the range selection on a quarterly comparison", () => {
     const r = buildComparison({ picked: ["cpi", "gdp"], monthly: [long("cpi")], gdp: { rows: gdp(14) }, sel: { key: "1Y", from: null, to: null }, mode: "yoy" });
     expect(r.series[0].points.length).toBeLessThanOrEqual(4);
+  });
+});
+
+describe("buildYearComparison (Overview: one calendar year, all four indicators)", () => {
+  const ym = (y: number, m: number) => y * 12 + m - 1;
+  // Monthly index Jan 2025 - Oct 2026, +1 point a month; GDP Q1 FY22-23 .. Q1 FY26-27 (Apr-Jun 2026), +2 a quarter.
+  const cpi = monthly("cpi", ym(2025, 1), Array.from({ length: 22 }, (_, i) => 100 + i));
+  const wpi = monthly("wpi", ym(2023, 4), Array.from({ length: 43 }, (_, i) => 100 + i));
+  const iip = monthly("iip", ym(2023, 4), Array.from({ length: 42 }, (_, i) => 100 + i)); // ends Sep 2026
+  const g = { rows: gdp(17) };
+  const r = buildYearComparison({ monthly: [cpi, wpi, iip], gdp: g });
+  const val = (k: string, n: number) => r.series.find((s) => s.key === k)?.points.find((p) => p.n === n)?.v;
+
+  it("picks the latest year with data (2026) and its complete quarters only", () => {
+    expect(r.year).toBe(2026);
+    expect(r.quarters).toEqual([ym(2026, 1), ym(2026, 4), ym(2026, 7)]);
+    expect(r.quarters.map(calendarQuarter)).toEqual(["Jan–Mar 2026", "Apr–Jun 2026", "Jul–Sep 2026"]);
+    expect(r.series.map((s) => s.key)).toEqual(["cpi", "wpi", "iip", "gdp"]);
+  });
+  it("YoY uses the year-earlier quarter from the full history (lookback not lost by cutting to 2026)", () => {
+    // CPI Jan-Mar 2026 average = (112+113+114)/3 = 113; Jan-Mar 2025 = 101 -> +11.88%
+    expect(val("cpi", ym(2026, 1))).toBeCloseTo((113 / 101 - 1) * 100, 10);
+    // GDP Q4 FY25-26 (index 15 in the fixture: 100 + 15*2 = 130) vs Q4 FY24-25 (index 11: 122)
+    expect(val("gdp", ym(2026, 1))).toBeCloseTo((130 / 122 - 1) * 100, 10);
+  });
+  it("never creates monthly GDP: GDP appears only on quarter starts it has, later quarters are a stated gap", () => {
+    const gdpPts = r.series.find((s) => s.key === "gdp")!.points;
+    expect(gdpPts.every((p) => p.n % 3 === 0)).toBe(true);
+    expect(gdpPts.filter((p) => p.v !== null).map((p) => p.n)).toEqual([ym(2026, 1), ym(2026, 4)]);
+    expect(val("gdp", ym(2026, 7))).toBeNull();
+    expect(r.notes).toContain("GDP for Jul–Sep 2026 is not published yet, so it is not drawn.");
+  });
+  it("leaves out an incomplete quarter (Oct-Dec 2026) and says how many months exist", () => {
+    expect(r.quarters).not.toContain(ym(2026, 10));
+    expect(r.notes).toContain("Oct–Dec 2026 is not shown for CPI and WPI: the quarter is not complete yet (CPI 1 of 3 months, WPI 1 of 3 months).");
+  });
+  it("a partial quarter for one indicator is not also reported as unpublished", () => {
+    const iip2 = monthly("iip", ym(2023, 4), Array.from({ length: 41 }, (_, i) => 100 + i)); // ends Aug 2026
+    const r2 = buildYearComparison({ monthly: [cpi, wpi, iip2], gdp: g });
+    expect(r2.notes.filter((t) => t.includes("IIP"))).toEqual(["Jul–Sep 2026 is not shown for IIP: the quarter is not complete yet (IIP 2 of 3 months)."]);
+    expect(r2.series.find((s) => s.key === "iip")!.points.find((p) => p.n === ym(2026, 7))!.v).toBeNull();
+  });
+  it("respects an explicit year and reports when nothing can be compared", () => {
+    expect(buildYearComparison({ monthly: [cpi, wpi, iip], gdp: g, year: 2025 }).quarters).toEqual([ym(2025, 1), ym(2025, 4), ym(2025, 7), ym(2025, 10)]);
+    expect(buildYearComparison({ monthly: [monthly("cpi", ym(2026, 1), [100, 101, 102])], gdp: null }).problem).toMatch(/No indicator/);
   });
 });

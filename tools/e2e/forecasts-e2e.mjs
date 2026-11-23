@@ -12,6 +12,8 @@ const ok = (name, pass, detail = "") => {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`);
 };
 const api = async (p) => (await fetch(API + p)).json();
+// CPI is forecast only when the API serves stored runs on the official linked history (docs/OVERVIEW-CPI-IMPROVEMENTS-REPORT.md).
+const CPI_LIVE = ((await api("/api/v1/forecasting/series")).find((s) => s.indicator === "cpi")?.future_forecasts ?? 0) > 0;
 const browser = await chromium.launch({ executablePath: process.env.CHROME || "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true });
 const errors = [];
 async function page(w = 1440, h = 900, scheme = "light") {
@@ -57,13 +59,14 @@ ok("every stored future forecast date is after its training cutoff", after, `${f
       }),
     );
     await go(p, `/forecasting/${id}`);
-    const sel = id === "cpi" ? '[data-testid="not-enough-history"] .figure' : '[data-tour="fx-official"] dd >> nth=0';
+    const sel = id === "cpi" && !CPI_LIVE ? '[data-testid="not-enough-history"] .figure' : '[data-tour="fx-official"] dd >> nth=0';
     const fcVal = num(await p.locator(sel).first().innerText().catch(() => "NaN"));
     ok(`${id}: Forecasts page latest official == Indicators page`, Number.isFinite(indVal) && indVal === fcVal, `${fcVal} vs ${indVal}`);
   }
   // CPI: clean state, no forecast numbers
   await go(p, "/forecasting/cpi");
-  ok("CPI shows 'Not enough comparable history' and no explorer", (await p.getByText("Not enough comparable history").count()) > 0 && (await p.locator('[data-tour="fx-chart"]').count()) === 0);
+  if (CPI_LIVE) ok("CPI (linked-history runs stored) shows the explorer, not an unavailable state", (await p.getByText("Not enough comparable history").count()) === 0 && (await p.locator('[data-tour="fx-chart"]').count()) === 1);
+  else ok("CPI shows 'Not enough comparable history' and no explorer", (await p.getByText("Not enough comparable history").count()) > 0 && (await p.locator('[data-tour="fx-chart"]').count()) === 0);
   await p.context().close();
 }
 
@@ -173,7 +176,8 @@ await tour("/forecasting/experiments", 390, 844, 4, "Experiments 390");
   ok("comparison CSV downloads", /^indicator,horizon,model/.test(fs.readFileSync(await dl.path(), "utf8")), dl.suggestedFilename());
   await p.getByRole("radio", { name: "CPI" }).click();
   await p.waitForURL(/indicator=cpi/);
-  ok("comparison: CPI explains from real counts", (await p.getByText(/has \d+ monthly observations/).count()) > 0 && /view=research/.test(p.url()));
+  if (CPI_LIVE) ok("comparison: CPI shows a compared set", (await p.getByText(/has \d+ monthly observations/).count()) === 0 && (await p.locator("table").count()) > 0 && /view=research/.test(p.url()));
+  else ok("comparison: CPI explains from real counts", (await p.getByText(/has \d+ monthly observations/).count()) > 0 && /view=research/.test(p.url()));
   await go(p, "/forecasting/experiments?indicator=iip&status=completed");
   const cells = await p.locator("tbody tr:has(th a) td:nth-of-type(1)").allInnerTexts();
   const stat = await p.locator("tbody tr:has(th a) td:nth-of-type(4)").allInnerTexts();

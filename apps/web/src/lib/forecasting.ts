@@ -36,6 +36,25 @@ export interface SeriesInfo {
   completed_backtests: number;
   future_forecasts: number;
   last_experiment_at: string | null;
+  /** Present only when models train on a documented official linked history (CPI). Older APIs omit it. */
+  training_history?: TrainingHistory | null;
+}
+
+export interface TrainingHistory {
+  kind: "official_linked";
+  n_observations: number;
+  first_period: string;
+  last_period: string;
+  /** First month of the current series. */
+  join_period: string;
+  components: { series_code: string; first_period: string; last_period: string; n_observations: number }[];
+  note: string;
+}
+
+/** One plain sentence on what a linked-history model was trained on. */
+export function trainingLine(th: TrainingHistory): string {
+  const back = th.components[0];
+  return `Trained on ${th.n_observations} months of official data (${monthLabel(th.first_period)} – ${monthLabel(th.last_period)}): MoSPI's back series on the same base until ${monthLabel(back.last_period)}, then the current series.`;
 }
 
 export interface Run {

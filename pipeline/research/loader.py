@@ -55,6 +55,8 @@ class TimeSeries:
     as_of: datetime | None
     transformation: str = "none"
     components: tuple[str, ...] = field(default_factory=tuple)
+    # First period of the second component of a splice (the join); None for a single series.
+    join_period: date | None = None
 
     @property
     def frequency(self) -> str:
@@ -85,7 +87,7 @@ class TimeSeries:
 def _replace(ts: TimeSeries, points: tuple[Point, ...], missing: tuple[date, ...]) -> TimeSeries:
     return TimeSeries(
         ts.series_code, ts.indicator, ts.base_year, ts.unit, ts.geography, points, missing,
-        ts.snapshot_policy, ts.as_of, ts.transformation, ts.components,
+        ts.snapshot_policy, ts.as_of, ts.transformation, ts.components, ts.join_period,
     )  # fmt: skip
 
 
@@ -182,7 +184,7 @@ def splice(first: TimeSeries, second: TimeSeries, code: str) -> TimeSeries:
     return TimeSeries(
         code, first.indicator, first.base_year, first.unit, first.geography, points, missing,
         first.snapshot_policy, first.as_of, "spliced_official_back_series",
-        (first.series_code, second.series_code),
+        (first.series_code, second.series_code), second.points[0].period if second.points else None,
     )  # fmt: skip
 
 

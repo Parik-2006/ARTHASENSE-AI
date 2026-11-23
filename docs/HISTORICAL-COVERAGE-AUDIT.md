@@ -50,6 +50,9 @@ Reading it honestly:
 - **Forecast eligibility (E):** training uses the new-base series only (22 / 43 / 42 months). Longer history is available
   but would need a linked series, which is a methodological decision (see `docs/FORECAST-DATA-IMPACT.md`).
 
+> **Note (2026-11-23):** of the −1.20 % join step, about −1.02 pp is the real Jan 2025 price fall and about −0.17 pp is
+> the method. See `docs/OVERVIEW-CPI-IMPROVEMENTS-REPORT.md` §3 for this and for the CPI forecasting policy now used.
+
 ## 3. Linking factors
 
 Documented and reproduced in `docs/GOVERNMENT-SOURCE-DISCOVERY.md` §5 and codified in `pipeline/ingest/linking.py`.

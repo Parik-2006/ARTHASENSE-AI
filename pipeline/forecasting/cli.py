@@ -4,6 +4,7 @@
     python -m pipeline.forecasting.cli backtest --indicator wpi --models naive,snaive,ets --horizons 1,3,6
     python -m pipeline.forecasting.cli forecast --indicator iip --model ets --horizon 3
     python -m pipeline.forecasting.cli backtest ... --save        # also store in PostgreSQL
+    python -m pipeline.forecasting.cli suite --name all --indicator cpi --history linked   # CPI on the official linked history
 
 Reads the stored index series (read-only). Nothing is written unless --save is given, and --save
 needs migration 0002. Results printed here are real backtest outputs, never samples.
@@ -22,12 +23,15 @@ from pipeline.forecasting.experiments import (
     DEFAULT_HORIZONS,
     FUTURE_HORIZON,
     FUTURE_MODELS,
+    HISTORIES,
     INDICATORS,
+    LINKED_SUITES,
     SUITES,
     RunRecord,
     backtest_records,
     forecast_record,
-    load_indicator,
+    load_training,
+    suite_initial_train,
     suite_records,
 )
 from pipeline.forecasting.persistence import store_run
@@ -55,17 +59,30 @@ def print_table(records: list[RunRecord]) -> None:
 
 
 def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
-    names = [*SUITES, "future"] if args.name == "all" else [args.name]
+    linked = args.history == "linked"
+    if linked and args.indicator == "all":
+        print("Error: --history linked needs one --indicator (cpi)", file=sys.stderr)
+        return 2
+    if (args.name in LINKED_SUITES) != linked and args.name not in ("all", "future"):
+        print(
+            f"Error: suite {args.name!r} is for {'a linked' if args.name in LINKED_SUITES else 'the current'} history",
+            file=sys.stderr,
+        )
+        return 2
+    names = (([*LINKED_SUITES] if linked else [*SUITES]) + ["future"]) if args.name == "all" else [args.name]
     inds = sorted(INDICATORS) if args.indicator == "all" else [args.indicator]
     totals = {"stored": 0, "exists": 0, "records": 0, "skipped": 0}
     for ind in inds:
         try:
-            ts = load_indicator(conn, ind)
-        except LoaderError as exc:
+            ts = load_training(conn, ind, args.history)
+        except (LoaderError, ValueError) as exc:
             print(f"{ind.upper()}: not available ({exc})")
             continue
         span = f"{ts.periods[0]:%Y-%m}..{ts.periods[-1]:%Y-%m}"
-        print(f"\n== {ind.upper()}: {len(ts)} months {span}, base {ts.base_year}")
+        print(
+            f"\n== {ind.upper()}: {len(ts)} months {span}, base {ts.base_year}"
+            + (f", linked at {ts.join_period:%Y-%m} ({' + '.join(ts.components)})" if ts.join_period else "")
+        )
         for name in names:
             if name == "future":
                 recs = []
@@ -77,7 +94,7 @@ def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
                 print(f"-- future forecasts (h={FUTURE_HORIZON}): {len(recs)} run(s)")
             else:
                 recs = suite_records(ts, ind, name, args.seed)
-                print(f"-- suite {name} (initial train {SUITES[name]['initial_train']})")
+                print(f"-- suite {name} (initial train {suite_initial_train(ts, name)})")
                 print_table([r for r in recs if r.status == "completed"])
                 for r in recs:
                     if r.status != "completed":
@@ -114,10 +131,17 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--seed", type=int, default=0)
     b.add_argument("--suite", default=None)
     b.add_argument("--json", action="store_true")
+    b.add_argument("--history", default="current", choices=HISTORIES)
     b.add_argument("--save", action="store_true", help="store runs in PostgreSQL (idempotent)")
     su = sub.add_parser("suite", help="run a predefined research suite (reproducible)")
-    su.add_argument("--name", required=True, choices=[*SUITES, "future", "all"])
+    su.add_argument("--name", required=True, choices=[*SUITES, *LINKED_SUITES, "future", "all"])
     su.add_argument("--indicator", default="all", choices=[*sorted(INDICATORS), "all"])
+    su.add_argument(
+        "--history",
+        default="current",
+        choices=HISTORIES,
+        help="training history: current series (default) or the official linked history (CPI)",
+    )
     su.add_argument("--seed", type=int, default=0)
     su.add_argument("--save", action="store_true", help="store runs in PostgreSQL (idempotent)")
     f = sub.add_parser("forecast", help="forecast the genuine future from the full stored series")
@@ -127,6 +151,7 @@ def main(argv: list[str] | None = None) -> int:
     f.add_argument("--initial-train", type=int, default=18)
     f.add_argument("--seed", type=int, default=0)
     f.add_argument("--json", action="store_true")
+    f.add_argument("--history", default="current", choices=HISTORIES)
     f.add_argument("--save", action="store_true")
     args = p.parse_args(argv)
 
@@ -147,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         with psycopg.connect(url, connect_timeout=5) as conn:
             if args.cmd == "suite":
                 return run_suites(conn, args)
-            ts = load_indicator(conn, args.indicator)
+            ts = load_training(conn, args.indicator, args.history)
             n = len(ts)
             print(
                 f"{args.indicator.upper()} index, base {ts.base_year}, {n} months {ts.periods[0]:%Y-%m} to {ts.periods[-1]:%Y-%m}"

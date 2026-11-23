@@ -49,6 +49,11 @@ did not change any value in the trained ones. The monitor's live comparison conf
 origin saw the final revised history. This is a standing limitation of all stored scores (flagged in `docs/m1-data-verification.md`).
 
 ## 4. Base-year risks
+
+> **Correction (2026-11-23, `docs/OVERVIEW-CPI-IMPROVEMENTS-REPORT.md` §3):** most of the −1.20 % Dec 2024 → Jan 2025
+> step is a real price fall (CPI-2012 fell −1.02 % that month); only about −0.17 pp comes from the linking method. CPI is
+> now forecast on the official Back + Current history with every scored target a Current-series month.
+
 - Training on CPI Back + Current as one series would cross the Dec 2024 → Jan 2025 join (−1.20 %, an artifact of the linking
   method, not a price move). A model would learn a level break. **Not done; needs your approval and a documented treatment.**
 - WPI/IIP legacy bases (2011-12) must never be concatenated with the new base for training; they are separate series.

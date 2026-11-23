@@ -13,6 +13,15 @@ WEB=http://127.0.0.1:3114 API=http://127.0.0.1:8765 node series-e2e.mjs
 `C:/Program Files/Google/Chrome/Application/chrome.exe` (edit the path for other machines).
 `failure-state.mjs` expects the same build started with `ARTHASENSE_API_URL=http://127.0.0.1:9` on port 3115.
 
+## Overview logo, 2026 comparison and CPI forecasts
+
+`overview-cpi-e2e.mjs`: logo, 2026-only comparison, Overview tour, Forecasts cards and the CPI explorer at 360-1920 px in
+light and dark. `EXPECT_CPI=unavailable` checks the honest fallback against an API without linked CPI runs.
+
+```
+WEB=http://127.0.0.1:3124 API=http://127.0.0.1:8775 OUT=report.json SHOTS=shots node overview-cpi-e2e.mjs
+```
+
 ## Forecasts V3
 
 `forecasts-e2e.mjs`: 58 checks covering cross-page latest values (Forecasts vs Indicators), forecast dates after

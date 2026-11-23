@@ -225,6 +225,81 @@ function monthlyComparison(base: ComparisonResult, mon: MonthlyInput[], sel: Ran
   return { ...base, window, series, aligned, starts };
 }
 
+// ---------- one calendar year, all four indicators (Overview "Compare economic trends") ----------
+
+const MON3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** "Jan–Mar 2026" for the quarter starting at month number `n`. Calendar quarters coincide with fiscal quarters. */
+export const calendarQuarter = (n: number) => `${MON3[n % 12]}–${MON3[(n % 12) + 2]} ${Math.floor(n / 12)}`;
+
+export interface YearComparison {
+  /** The calendar year shown, or null when no indicator has a year-on-year value in any complete quarter. */
+  year: number | null;
+  /** Start month numbers of the quarters drawn (each has at least one value). */
+  quarters: number[];
+  series: ChartSeries[];
+  /** Plain statements about quarters or values left out. Nothing is ever filled in. */
+  notes: string[];
+  problem: string | null;
+}
+
+/** Year-on-year change by quarter for CPI, WPI, IIP and GDP over ONE calendar year (the latest with data, or `year`).
+ *
+ *  Same policy as the quarterly mode of `buildComparison`: a monthly index enters as the average of the three months
+ *  of a quarter only when all three are stored; GDP keeps its own quarterly levels; YoY is the quarter against the same
+ *  quarter a year earlier of the SAME current-base series, computed on the full history and only then cut to the year,
+ *  so the year-ago lookback is never lost. Unlike the shared-window mode, an indicator with more recent quarters keeps
+ *  them; a quarter another indicator lacks is a gap with a note, never an estimate. */
+export function buildYearComparison(args: { monthly: MonthlyInput[]; gdp: GdpInput | null; year?: number }): YearComparison {
+  const levels: { key: OvKey; pts: QPoint[] }[] = [
+    ...args.monthly.map((m) => ({ key: m.key as OvKey, pts: quarterlyAverage(m.rows) })),
+    ...(args.gdp ? [{ key: "gdp" as OvKey, pts: gdpLevels(args.gdp.rows) }] : []),
+  ].sort((a, b) => OV_KEYS.indexOf(a.key) - OV_KEYS.indexOf(b.key));
+  const yoy = new Map(levels.map((l) => [l.key, qYoy(l.pts)]));
+  const allN = [...yoy.values()].flatMap((m) => [...m.keys()]);
+  const year = args.year ?? (allN.length ? Math.floor(Math.max(...allN) / 12) : null);
+  const empty: YearComparison = { year, quarters: [], series: [], notes: [], problem: null };
+  if (year === null) return { ...empty, problem: "No indicator has a complete quarter with a year-earlier value yet, so nothing can be compared." };
+
+  const slots = [0, 3, 6, 9].map((m) => year * 12 + m);
+  const quarters = slots.filter((n) => [...yoy.values()].some((m) => m.has(n)));
+  if (!quarters.length) return { ...empty, problem: `No complete quarter of ${year} with a year-earlier value is stored yet.` };
+
+  const notes: string[] = [];
+  const name = (k: OvKey) => OV_NAMES[k].short;
+  const list = (ks: string[]) => (ks.length < 2 ? ks.join("") : `${ks.slice(0, -1).join(", ")} and ${ks[ks.length - 1]}`);
+  // Quarters of the year that are only partly stored: left out, with how many months each indicator has.
+  for (const n of slots.filter((s) => !quarters.includes(s) || args.monthly.some((m) => partial(m.rows, s)))) {
+    const parts = args.monthly.map((m) => ({ key: m.key, have: monthsIn(m.rows, n) })).filter((p) => p.have > 0 && p.have < 3);
+    if (parts.length) notes.push(`${calendarQuarter(n)} is not shown for ${list(parts.map((p) => name(p.key)))}: the quarter is not complete yet (${parts.map((p) => `${name(p.key)} ${p.have} of 3 months`).join(", ")}).`);
+  }
+  // A drawn quarter one indicator lacks: say why, never estimate.
+  for (const l of levels) {
+    const lastN = l.pts.length ? l.pts[l.pts.length - 1].n : -Infinity;
+    const rows = args.monthly.find((m) => m.key === l.key)?.rows;
+    const missing = quarters.filter((n) => !yoy.get(l.key)!.has(n) && !(rows && partial(rows, n))); // partial quarters are noted above
+    if (!missing.length) continue;
+    const later = missing.filter((n) => n > lastN);
+    const other = missing.filter((n) => n <= lastN);
+    if (later.length) notes.push(`${name(l.key)} for ${list(later.map(calendarQuarter))} is not published yet, so it is not drawn.`);
+    if (other.length) notes.push(`${name(l.key)} has no year-on-year value for ${list(other.map(calendarQuarter))} (a month or the year-earlier quarter is not stored).`);
+  }
+  const series: ChartSeries[] = levels
+    .map((l) => ({
+      key: l.key,
+      label: name(l.key),
+      ...OV_STROKE[l.key],
+      points: quarters.map((n) => ({ n, v: yoy.get(l.key)!.get(n) ?? null })),
+    }))
+    .filter((s) => s.points.some((p) => p.v !== null)); // an indicator with no value this year is explained in `notes`
+  return { year, quarters, series, notes, problem: null };
+}
+
+const monthsIn = (rows: Derived[], qStart: number) => rows.filter((r) => r.index !== null && r.n >= qStart && r.n < qStart + 3).length;
+const partial = (rows: Derived[], qStart: number) => {
+  const k = monthsIn(rows, qStart);
+  return k > 0 && k < 3;
+};
+
 // ---------- deterministic statement of the latest movement ----------
 
 /** One plain sentence about the latest movement. States facts only: never a cause, never a forecast. */

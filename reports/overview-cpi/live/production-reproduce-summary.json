@@ -1,0 +1,42 @@
+{
+ "cpi": {
+  "history": "current",
+  "stored_runs": 56,
+  "recomputed": 56,
+  "matched_by_experiment_id": 0,
+  "n_metric_diffs": 0,
+  "n_row_diffs": 0,
+  "max_abs_forecast_value_diff": 0.0,
+  "max_abs_metric_diff": 0.0
+ },
+ "wpi": {
+  "history": "current",
+  "stored_runs": 60,
+  "recomputed": 60,
+  "matched_by_experiment_id": 60,
+  "n_metric_diffs": 0,
+  "n_row_diffs": 0,
+  "max_abs_forecast_value_diff": 5.115907697472721e-13,
+  "max_abs_metric_diff": 0.0
+ },
+ "iip": {
+  "history": "current",
+  "stored_runs": 60,
+  "recomputed": 60,
+  "matched_by_experiment_id": 60,
+  "n_metric_diffs": 0,
+  "n_row_diffs": 0,
+  "max_abs_forecast_value_diff": 4.973799150320701e-13,
+  "max_abs_metric_diff": 0.0
+ },
+ "cpi_linked": {
+  "history": "linked",
+  "stored_runs": 28,
+  "recomputed": 28,
+  "matched_by_experiment_id": 28,
+  "n_metric_diffs": 0,
+  "n_row_diffs": 0,
+  "max_abs_forecast_value_diff": 4.973799150320701e-13,
+  "max_abs_metric_diff": 0.0
+ }
+}

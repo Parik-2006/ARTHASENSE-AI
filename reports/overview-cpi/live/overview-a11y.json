@@ -1,0 +1,22 @@
+[
+ {
+  "w": 390,
+  "t": "light",
+  "violations": []
+ },
+ {
+  "w": 390,
+  "t": "dark",
+  "violations": []
+ },
+ {
+  "w": 1440,
+  "t": "light",
+  "violations": []
+ },
+ {
+  "w": 1440,
+  "t": "dark",
+  "violations": []
+ }
+]

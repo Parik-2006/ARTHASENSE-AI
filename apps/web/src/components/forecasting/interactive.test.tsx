@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { OutlookChart, monthTicks, niceTicks, tooltipLines } from "@/components/forecasting/outlook-chart";
 import { FORECAST_TOUR_EVENT, ForecastTourButton, isTargetAvailable, SpotlightTour } from "@/components/forecasting/spotlight-tour";
+import { Segmented } from "@/components/forecasting/segmented";
 import { parseView, ViewModeToggle, withView } from "@/components/forecasting/view-mode";
 import { FORECAST_EXPLORER_STEPS, intersects, nextAvailable, placeTooltip, type SpotStep } from "@/lib/forecast-tours";
 import { fc } from "@/lib/forecasting-fixtures";
@@ -285,5 +286,26 @@ describe("Simple / Research view toggle", () => {
     expect(replace).toHaveBeenCalledWith("/forecasting/wpi?model=ets&horizon=3&view=research", { scroll: false });
     fireEvent.keyDown(screen.getByRole("radio", { name: "Simple" }), { key: "ArrowRight" });
     expect(replace).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("Segmented radio group", () => {
+  it("has one tab stop and moves selection with arrows, Home and End", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<Segmented label="Horizon" value={3} onChange={onChange} options={[1, 3, 6].map((h) => ({ value: h, label: `${h} mo` }))} />);
+    const radios = screen.getAllByRole("radio");
+    expect(radios.map((r) => r.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
+    expect(screen.getByRole("radiogroup", { name: "Horizon" })).toBeTruthy();
+    fireEvent.keyDown(radios[1], { key: "ArrowRight" });
+    expect(onChange).toHaveBeenLastCalledWith(6);
+    fireEvent.keyDown(radios[1], { key: "ArrowLeft" });
+    expect(onChange).toHaveBeenLastCalledWith(1);
+    fireEvent.keyDown(radios[1], { key: "End" });
+    expect(onChange).toHaveBeenLastCalledWith(6);
+    fireEvent.keyDown(radios[1], { key: "Home" });
+    expect(onChange).toHaveBeenLastCalledWith(1);
+    rerender(<Segmented label="Horizon" value={6} onChange={onChange} options={[1, 3, 6].map((h) => ({ value: h, label: `${h} mo` }))} />);
+    fireEvent.keyDown(screen.getAllByRole("radio")[2], { key: "ArrowRight" });
+    expect(onChange).toHaveBeenLastCalledWith(1); // wraps
   });
 });

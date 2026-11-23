@@ -232,6 +232,23 @@ describe("ComparisonView", () => {
     expect(html).toContain("indicative");
     expect(html).toContain("No model is marked as best");
   });
+  it("does not order by error on a non-rankable set (neutral order in table and bars), but does on a rankable one", () => {
+    const models = [
+      { run_id: 7, model: "arima", model_name: "ARIMA(1,1,0)", is_baseline: false, n_origins: 7, runtime_seconds: 1, metrics: { mae: 1.0 }, vs_baseline_mae_pct: -50 },
+      { run_id: 8, model: "drift", model_name: "Drift", is_baseline: false, n_origins: 7, runtime_seconds: 1, metrics: { mae: 9.0 }, vs_baseline_mae_pct: 350 },
+      { run_id: 9, model: "naive", model_name: "Naive", is_baseline: true, n_origins: 7, runtime_seconds: 1, metrics: { mae: 2.0 }, vs_baseline_mae_pct: null },
+      { run_id: 10, model: "ets", model_name: "ETS (damped trend)", is_baseline: false, n_origins: 7, runtime_seconds: 1, metrics: { mae: 0.5 }, vs_baseline_mae_pct: -75 },
+    ];
+    const order = (html: string) => ["Naive", "ARIMA(1,1,0)", "Drift", "ETS (damped trend)"].map((n) => ({ n, i: html.indexOf(n) })).sort((a, b) => a.i - b.i).map((x) => x.n);
+    const small = at("indicator=wpi&horizon=1", () => <ComparisonView data={{ "wpi-1": comparison(group({ rankable: false, best: {}, n_origins: 7, models })) }} />);
+    const table = small.slice(small.indexOf("<tbody"), small.indexOf("</tbody>"));
+    const bars = small.slice(small.indexOf("Error by model"));
+    expect(order(table)).toEqual(["Naive", "ARIMA(1,1,0)", "Drift", "ETS (damped trend)"]); // baseline first, then A-Z
+    expect(order(bars)).toEqual(["Naive", "ARIMA(1,1,0)", "Drift", "ETS (damped trend)"]);
+    expect(small).toContain("listed baseline first, then alphabetically");
+    const big = at("indicator=wpi&horizon=1", () => <ComparisonView data={{ "wpi-1": comparison(group({ rankable: true, best: { mae: "ets" }, n_origins: 25, models: models.map((m) => ({ ...m, n_origins: 25 })) })) }} />);
+    expect(order(big.slice(big.indexOf("<tbody"), big.indexOf("</tbody>")))).toEqual(["ETS (damped trend)", "ARIMA(1,1,0)", "Naive", "Drift"]);
+  });
   it("Research View adds all metrics, runs, exclusions and CSV", () => {
     const html = at("indicator=wpi&horizon=1&view=research", () => <ComparisonView data={{ "wpi-1": comparison() }} />);
     expect(html).toContain('data-testid="research-view"');

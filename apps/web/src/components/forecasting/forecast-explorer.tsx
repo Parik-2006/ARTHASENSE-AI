@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { HelpTip } from "@/components/guide/help-tip";
 import { OutlookChart } from "@/components/forecasting/outlook-chart";
+import { Segmented } from "@/components/forecasting/segmented";
 import { ReliabilityMeter } from "@/components/forecasting/reliability-meter";
 import { ForecastTourButton, SpotlightTour } from "@/components/forecasting/spotlight-tour";
 import { useViewMode, withView } from "@/components/forecasting/view-mode";
@@ -29,8 +30,6 @@ import { seriesIds, type SourceInfo } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const selectClass = `rounded border border-rule bg-surface px-2.5 py-1.5 text-sm ${focusRing}`;
-const segBtn = (on: boolean) =>
-  `rounded px-3 py-1 text-sm ${focusRing} ${on ? "bg-accent font-medium text-accent-ink" : "text-ink-muted hover:text-ink"}`;
 
 export interface StoredForecast {
   model: string;
@@ -171,7 +170,7 @@ export function ForecastExplorer({
   const download = () => {
     const csv = forecastsToCsvV2(rows, {
       indicator: shortName, baseYear, seriesId: seriesIds(indicator, baseYear)[0], publisher: source.publisher,
-      modelId: cur.model, modelName, run: { ...cur.run, horizon }, latest, reliability: ev.label,
+      modelId: cur.model, modelName, run: cur.run, latest, reliability: ev.label,
     }); // prettier-ignore
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -238,13 +237,12 @@ export function ForecastExplorer({
           <span id="fx-horizon-label" className="mb-1 block text-ink-muted">
             Forecast horizon <HelpTip id="forecast-horizon" />
           </span>
-          <div role="radiogroup" aria-labelledby="fx-horizon-label" className="inline-flex rounded-md border border-rule bg-surface p-0.5">
-            {(avail.byModel[cur.model] ?? []).map((h) => (
-              <button key={h} type="button" role="radio" aria-checked={h === horizon} className={segBtn(h === horizon)} onClick={() => push({ model: cur.model, horizon: h })}>
-                {h} {h === 1 ? "month" : "months"}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            labelledBy="fx-horizon-label"
+            value={horizon}
+            onChange={(h) => push({ model: cur.model, horizon: h })}
+            options={(avail.byModel[cur.model] ?? []).map((h) => ({ value: h, label: `${h} ${h === 1 ? "month" : "months"}` }))}
+          />
         </div>
         <ForecastTourButton className={`ml-auto rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a tour</ForecastTourButton>
       </div>
@@ -265,21 +263,15 @@ export function ForecastExplorer({
           <h2 id="fx-chart-title" className="text-sm font-semibold tracking-tight">
             {indexName}: official history and {horizon}-month forecast
           </h2>
-          <div role="radiogroup" aria-label="History shown" className="inline-flex items-center gap-1 text-xs">
-            <span className="mr-1 text-ink-muted">History</span>
-            {[...HISTORY_RANGES, ...(HISTORY_RANGES.includes(filters.range) ? [] : [filters.range])].map((r) => (
-              <button
-                key={r}
-                type="button"
-                role="radio"
-                aria-checked={filters.range === r}
-                disabled={r === "Custom"}
-                onClick={() => push({ range: r, custom: null })}
-                className={`rounded px-2 py-0.5 ${focusRing} ${filters.range === r ? "bg-bg font-medium text-ink ring-1 ring-rule" : "text-ink-muted hover:text-ink"}`}
-              >
-                {r}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-ink-muted">History</span>
+            <Segmented
+              size="sm"
+              label="History shown"
+              value={filters.range}
+              onChange={(r) => push({ range: r, custom: null })}
+              options={[...HISTORY_RANGES, ...(HISTORY_RANGES.includes(filters.range) ? [] : [filters.range])].map((r) => ({ value: r, label: r }))}
+            />
           </div>
         </div>
         <div className="px-3 py-4 sm:px-5" data-tour="fx-chart">
@@ -421,7 +413,7 @@ export function ForecastExplorer({
                 Download CSV
               </button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" role="region" aria-label="Forecast table (scrollable)" tabIndex={0}>
               <table className="w-full min-w-[36rem] text-sm">
                 <caption className="sr-only">Stored forecasts for {indexName} using {modelName}</caption>
                 <thead>

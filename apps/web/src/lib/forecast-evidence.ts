@@ -96,6 +96,17 @@ export function reliabilityOnGroup(group: ComparisonGroup, model: string): Relia
   return s ? assessSet(s, false) : null;
 }
 
+/** Display order for a comparison set. Sorting by error IS a ranking, so it is used only when the set is rankable
+ *  (enough origins, one origin set); otherwise the order is neutral: the baseline first, then alphabetical. */
+export function displayOrder<T extends { model: string; model_name: string; metrics: Record<string, number> }>(
+  models: T[],
+  rankable: boolean,
+  metric = "mae",
+): T[] {
+  if (rankable) return [...models].sort((a, b) => (a.metrics[metric] ?? Infinity) - (b.metrics[metric] ?? Infinity));
+  return [...models].sort((a, b) => Number(b.model === BASELINE) - Number(a.model === BASELINE) || a.model_name.localeCompare(b.model_name));
+}
+
 const LABEL_LIMITED = "Limited evidence";
 
 /** Reliability of `model` at one horizon, judged on one evaluation set. */

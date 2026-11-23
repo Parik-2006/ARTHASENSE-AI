@@ -210,7 +210,7 @@ export function ExperimentsView({ runs, total }: { runs: Run[]; total: number })
             </div>
           </div>
         </div>
-        <div data-tour="fe-table" className="overflow-x-auto px-5">
+        <div data-tour="fe-table" className="overflow-x-auto px-5 focus-visible:outline-2 focus-visible:outline-accent" role="region" aria-label="Experiments table (scrollable)" tabIndex={0}>
           <table className={`w-full text-sm ${research ? "min-w-[52rem]" : "min-w-[36rem]"}`}>
             <caption className="sr-only">
               Stored forecasting experiments, page {pg.page} of {pg.pages}

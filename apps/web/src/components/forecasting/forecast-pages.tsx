@@ -192,7 +192,7 @@ function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
 
 function ModelsTable({ models }: { models: ModelInfo[] }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" role="region" aria-label="Model inventory (scrollable)" tabIndex={0}>
       <table className="w-full min-w-[40rem] text-sm">
         <caption className="sr-only">Forecasting models and their status</caption>
         <thead>

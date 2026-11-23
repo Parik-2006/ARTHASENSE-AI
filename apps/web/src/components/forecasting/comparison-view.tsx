@@ -5,10 +5,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { HelpTip } from "@/components/guide/help-tip";
 import { ReliabilityMeter } from "@/components/forecasting/reliability-meter";
+import { Segmented } from "@/components/forecasting/segmented";
 import { ForecastTourButton, SpotlightTour } from "@/components/forecasting/spotlight-tour";
 import { parseView, withView } from "@/components/forecasting/view-mode";
 import { Panel } from "@/components/ui/primitives";
-import { BASELINE, monthsNeeded, primaryGroup, reliabilityOnGroup } from "@/lib/forecast-evidence";
+import { BASELINE, displayOrder, monthsNeeded, primaryGroup, reliabilityOnGroup } from "@/lib/forecast-evidence";
 import { COMPARISON_STEPS } from "@/lib/forecast-tours";
 import {
   type Comparison,
@@ -27,7 +28,6 @@ import {
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const selectClass = `rounded border border-rule bg-surface px-2 py-1.5 text-sm ${focusRing}`;
-const segBtn = (on: boolean) => `rounded px-3 py-1 text-sm ${focusRing} ${on ? "bg-accent font-medium text-accent-ink" : "text-ink-muted hover:text-ink"}`;
 const TABLE_METRICS = ["mae", "rmse", "mase", "smape", "coverage_80", "coverage_95"] as const;
 const BAR_METRICS = ["mae", "rmse", "mase", "smape"] as const;
 const DEFAULT_HORIZON = 6;
@@ -36,7 +36,7 @@ export type ComparisonMap = Record<string, Comparison | null>; // key `${indicat
 
 /** Horizontal error bars on one scale; the naive baseline is grey and marked with a reference line. */
 export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: string }) {
-  const rows = group.models.filter((m) => m.metrics[metric] !== undefined).sort((a, b) => a.metrics[metric] - b.metrics[metric]);
+  const rows = displayOrder(group.models.filter((m) => m.metrics[metric] !== undefined), group.rankable, metric);
   if (!rows.length) return <p className="text-sm text-ink-muted">No model has this metric on this test set.</p>;
   const max = Math.max(...rows.map((m) => m.metrics[metric])) * 1.08 || 1;
   const base = group.models.find((m) => m.model === BASELINE)?.metrics[metric];
@@ -114,25 +114,13 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
       <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
         <div className="text-sm" data-tour="fc-indicator">
           <span id="fc-ind-label" className="mb-1 block text-ink-muted">Indicator</span>
-          <div role="radiogroup" aria-labelledby="fc-ind-label" className="inline-flex rounded-md border border-rule bg-surface p-0.5">
-            {INDICATOR_IDS.map((i) => (
-              <button key={i} type="button" role="radio" aria-checked={i === indicator} title={INDICATOR_NAMES[i]} className={segBtn(i === indicator)} onClick={() => setView({ indicator: i, set: null })}>
-                {i.toUpperCase()}
-              </button>
-            ))}
-          </div>
+          <Segmented labelledBy="fc-ind-label" value={indicator} onChange={(i) => setView({ indicator: i, set: null })} options={INDICATOR_IDS.map((i) => ({ value: i, label: i.toUpperCase(), title: INDICATOR_NAMES[i] }))} />
         </div>
         <div className="text-sm" data-tour="fc-horizon">
           <span id="fc-h-label" className="mb-1 block text-ink-muted">
             Forecast horizon <HelpTip id="forecast-horizon" />
           </span>
-          <div role="radiogroup" aria-labelledby="fc-h-label" className="inline-flex rounded-md border border-rule bg-surface p-0.5">
-            {HORIZONS.map((h) => (
-              <button key={h} type="button" role="radio" aria-checked={h === horizon} className={segBtn(h === horizon)} onClick={() => setView({ horizon: h, set: null })}>
-                {h} mo
-              </button>
-            ))}
-          </div>
+          <Segmented labelledBy="fc-h-label" value={horizon} onChange={(h) => setView({ horizon: h, set: null })} options={HORIZONS.map((h) => ({ value: h, label: `${h} mo` }))} />
         </div>
         {cmp && cmp.groups.length > 1 && (
           <label className="min-w-0 max-w-full text-sm">
@@ -175,7 +163,7 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
                 {group.n_origins} test months{group.evaluation_start ? `, ${monthLabel(group.evaluation_start)} to ${monthLabel(group.evaluation_end ?? group.evaluation_start)}` : ""} · same months for every model
               </p>
             </div>
-            <div className="overflow-x-auto px-5 py-3" data-tour="fc-table">
+            <div className="overflow-x-auto px-5 py-3 focus-visible:outline-2 focus-visible:outline-accent" data-tour="fc-table" role="region" aria-label="Accuracy table (scrollable)" tabIndex={0}>
               <table className="w-full min-w-[34rem] text-sm">
                 <caption className="sr-only">Backtest accuracy by model on identical forecast origins</caption>
                 <thead>
@@ -192,9 +180,7 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
                   </tr>
                 </thead>
                 <tbody>
-                  {[...group.models]
-                    .sort((a, b) => (a.metrics.mae ?? Infinity) - (b.metrics.mae ?? Infinity))
-                    .map((m) => {
+                  {displayOrder(group.models, group.rankable).map((m) => {
                       const r = reliabilityOnGroup(group, m.model);
                       return (
                         <tr key={m.model} className={`border-b border-rule last:border-b-0 ${m.model === BASELINE ? "bg-bg/60" : ""}`}>
@@ -223,7 +209,7 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
               <p>
                 {group.rankable
                   ? "“Lowest error” marks the smallest average error on these months. Differences are not tested for statistical significance."
-                  : `No model is marked as best: ${group.n_origins < 12 ? `only ${group.n_origins} test months (fewer than 12)` : "too few models"} is not enough to rank fairly.`}{" "}
+                  : `No model is marked as best: ${group.n_origins < 12 ? `only ${group.n_origins} test months (fewer than 12)` : "too few models"} is not enough to rank fairly, so models are listed baseline first, then alphabetically.`}{" "}
                 “—” means not available, never zero.
               </p>
               {group.warnings
@@ -267,7 +253,7 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
                     Download CSV
                   </button>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" role="region" aria-label="All metrics table (scrollable)" tabIndex={0}>
                   <table className="w-full min-w-[44rem] text-sm">
                     <caption className="sr-only">All backtest metrics by model on identical forecast origins</caption>
                     <thead>

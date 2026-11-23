@@ -64,14 +64,14 @@ export function RunDetailView({ run, rows, totalRows }: { run: RunDetail; rows: 
         </Panel>
       )}
       <Panel title="Configuration">
-        <pre className="figure overflow-x-auto text-xs">{JSON.stringify(run.configuration, null, 2)}</pre>
+        <pre className="figure overflow-x-auto text-xs focus-visible:outline-2 focus-visible:outline-accent" role="region" aria-label="Run configuration (scrollable)" tabIndex={0}>{JSON.stringify(run.configuration, null, 2)}</pre>
       </Panel>
       {rows.length > 0 && (
         <Panel
           title={run.kind === "backtest" ? "Backtest predictions" : "Forecast"}
           footnote={`${rows.length} of ${totalRows} rows shown. ${run.disclaimer}`}
         >
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent" role="region" aria-label="Stored predictions (scrollable)" tabIndex={0}>
             <table className="w-full min-w-[36rem] text-sm">
               <caption className="sr-only">Stored predictions for this run</caption>
               <thead>

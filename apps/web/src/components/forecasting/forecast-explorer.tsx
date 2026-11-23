@@ -3,42 +3,34 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { FilterBar } from "@/components/indicators/explorer";
-import { ForecastChart } from "@/components/forecasting/forecast-chart";
-import { Tour, TourButton } from "@/components/guide/tour";
 import { HelpTip } from "@/components/guide/help-tip";
+import { OutlookChart } from "@/components/forecasting/outlook-chart";
+import { ReliabilityMeter } from "@/components/forecasting/reliability-meter";
+import { ForecastTourButton, SpotlightTour } from "@/components/forecasting/spotlight-tour";
+import { useViewMode, withView } from "@/components/forecasting/view-mode";
 import { SourceAttribution } from "@/components/source/source-attribution";
 import { Panel } from "@/components/ui/primitives";
-import { inWindow, resolveWindow, withDerived } from "@/lib/analysis";
+import { inWindow, type RangeKey, resolveWindow, withDerived } from "@/lib/analysis";
+import { chooseView, type Evidence, forecastViews, indicatorHref, plainReliability } from "@/lib/forecast-evidence";
+import { FORECAST_EXPLORER_STEPS } from "@/lib/forecast-tours";
 import {
   changeFrom,
+  FLAT_THRESHOLD_PCT,
   type ForecastFilters,
   forecastsToCsvV2,
   interpretForecast,
   parseForecastFilters,
-  pickDefault,
   type Reliability,
-  reliabilityFor,
   serializeForecastFilters,
-  toIndicatorQuery,
 } from "@/lib/forecast-v2";
-import {
-  type Comparison,
-  fmt,
-  fmtMetric,
-  type ForecastRow,
-  type IndicatorId,
-  type ModelInfo,
-  methodLabel,
-  monthLabel,
-  type Run,
-} from "@/lib/forecasting";
-import { FORECAST_EXPLORER_TOUR } from "@/lib/guide";
+import { type Comparison, fmt, fmtMetric, type ForecastRow, type IndicatorId, type ModelInfo, methodLabel, monthLabel, type Run } from "@/lib/forecasting";
 import type { Observation } from "@/lib/indicator";
 import { seriesIds, type SourceInfo } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
-const selectClass = `rounded border border-rule bg-surface px-2 py-1.5 text-sm ${focusRing}`;
+const selectClass = `rounded border border-rule bg-surface px-2.5 py-1.5 text-sm ${focusRing}`;
+const segBtn = (on: boolean) =>
+  `rounded px-3 py-1 text-sm ${focusRing} ${on ? "bg-accent font-medium text-accent-ink" : "text-ink-muted hover:text-ink"}`;
 
 export interface StoredForecast {
   model: string;
@@ -46,21 +38,14 @@ export interface StoredForecast {
   items: ForecastRow[]; // steps 1..run.horizon from the stored genuine-future forecast
 }
 
-const TONE: Record<Reliability["level"], string> = {
-  supported: "border-ok",
-  limited: "border-target",
-  insufficient: "border-rule",
-  concerning: "border-up",
-};
-const GLYPH: Record<Reliability["level"], string> = { supported: "✓", limited: "◐", insufficient: "?", concerning: "⚠" };
+const TONE: Record<Reliability["level"], string> = { supported: "border-ok", limited: "border-target", insufficient: "border-rule", concerning: "border-up" };
 
+/** Full rule-based reliability with every reason (Research View). */
 export function ReliabilityBanner({ r, className = "" }: { r: Reliability; className?: string }) {
   return (
-    <div role={r.level === "concerning" ? "alert" : "note"} data-testid="reliability" data-level={r.level} className={`rounded-md border bg-surface px-4 py-3 text-sm ${TONE[r.level]} ${className}`}>
+    <div role="note" data-testid="reliability" data-level={r.level} className={`rounded-md border bg-surface px-4 py-3 text-sm ${TONE[r.level]} ${className}`}>
       <p className="font-medium">
-        <span aria-hidden className="mr-1.5">{GLYPH[r.level]}</span>
-        Reliability: {r.label}
-        <HelpTip id="reliability" />
+        Reliability: {r.label} <HelpTip id="reliability" />
       </p>
       <ul className="mt-1 list-disc space-y-0.5 pl-5 text-ink-muted">
         {r.reasons.map((x) => (
@@ -72,8 +57,41 @@ export function ReliabilityBanner({ r, className = "" }: { r: Reliability; class
   );
 }
 
-/** History window, model and horizon over STORED forecasts. State lives in the URL
- *  (?range=&from=&to=&model=&horizon=). Nothing is generated in the browser. */
+const HISTORY_RANGES: RangeKey[] = ["1Y", "2Y", "3Y", "5Y", "All"];
+const pctText = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+
+/** Plain-English "What this means": three short sentences from stored numbers only. */
+export function plainMeaning(o: {
+  short: string;
+  modelName: string;
+  latest: { period: string; value: number } | null;
+  rows: ForecastRow[];
+  evidence: Evidence;
+}): string[] {
+  const last = o.rows[o.rows.length - 1];
+  if (!last) return [];
+  const out: string[] = [];
+  const c = o.latest ? changeFrom(o.latest.value, last.forecast) : null;
+  const when = monthLabel(last.target_date, true);
+  if (o.latest && c && c.pct !== null) {
+    const rel =
+      Math.abs(c.pct) <= FLAT_THRESHOLD_PCT
+        ? "roughly level with"
+        : `about ${Math.abs(c.pct).toFixed(1)}% ${c.pct > 0 ? "above" : "below"}`;
+    out.push(`${o.modelName} estimates the ${o.short} index at ${fmt(last.forecast)} in ${when}, ${rel} the official ${fmt(o.latest.value)} for ${monthLabel(o.latest.period, true)}.`);
+  } else out.push(`${o.modelName} estimates the ${o.short} index at ${fmt(last.forecast)} in ${when}.`);
+  if (last.lower_80 !== null && last.upper_80 !== null) {
+    const cov = o.evidence.set?.model.metrics.coverage_80;
+    out.push(
+      `Its 80% range for ${when} is ${fmt(last.lower_80)} to ${fmt(last.upper_80)}.${cov !== undefined ? ` In past tests, ${Math.round(cov * 100)}% of actual values fell inside its 80% ranges.` : ""} Values outside the range are possible.`,
+    );
+  } else out.push("This model gives no uncertainty range, so the spread of possible outcomes is not quantified.");
+  out.push(plainReliability(o.evidence));
+  return out;
+}
+
+/** Model, horizon and history window over STORED forecasts. State lives in the URL
+ *  (?range=&from=&to=&model=&horizon=&view=). Nothing is generated in the browser. */
 export function ForecastExplorer({
   indicator,
   shortName,
@@ -102,227 +120,309 @@ export function ForecastExplorer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const view = useViewMode();
+  const research = view === "research";
 
   const obs = useMemo(() => observations.filter((o) => o.index !== null), [observations]);
   const derived = useMemo(() => withDerived(obs), [obs]);
   const latest = obs.length ? { period: obs[obs.length - 1].period, value: obs[obs.length - 1].index as number } : null;
-
+  const views = useMemo(() => forecastViews(stored), [stored]);
   const avail = useMemo(() => {
     const byModel: Record<string, number[]> = {};
-    for (const s of stored) byModel[s.model] = [...(byModel[s.model] ?? []), s.run.horizon].sort((a, b) => a - b);
-    return { models: Object.keys(byModel), horizons: [...new Set(stored.map((s) => s.run.horizon))].sort((a, b) => a - b), byModel };
-  }, [stored]);
+    for (const v of views) byModel[v.model] = [...(byModel[v.model] ?? []), v.horizon].sort((a, b) => a - b);
+    return { models: Object.keys(byModel), horizons: [...new Set(views.map((v) => v.horizon))].sort((a, b) => a - b), byModel };
+  }, [views]);
   const { filters, notices } = useMemo(() => parseForecastFilters((k) => params?.get(k) ?? null, avail), [params, avail]);
-
-  const backtestOf = (model: string, h: number) => runs.find((r) => r.kind === "backtest" && r.status === "completed" && r.model === model && r.horizon === h);
-  const isStale = (s: StoredForecast) => {
-    const origin = s.items[0]?.origin_date;
-    return !!origin && !!latest && origin.slice(0, 7) < latest.period.slice(0, 7);
-  };
-  const candidates = useMemo(
-    () =>
-      stored.map((s) => {
-        const bt = backtestOf(s.model, s.run.horizon);
-        return { model: s.model, horizon: s.run.horizon, level: reliabilityFor(bt, comparisons[s.run.horizon], s.model, isStale(s)).level, mae: bt?.metrics.mae ?? null, createdAt: s.run.created_at };
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [stored, runs, comparisons, latest?.period],
+  const chosen = useMemo(
+    () => chooseView(views, comparisons, latest?.period ?? null, { model: filters.model, horizon: filters.horizon }),
+    [views, comparisons, latest?.period, filters.model, filters.horizon],
   );
-  const sel = pickDefault(candidates, { model: filters.model, horizon: filters.horizon });
-  const current = sel ? stored.find((s) => s.model === sel.model && s.run.horizon === sel.horizon) : undefined;
 
   const push = (patch: Partial<ForecastFilters>) => {
-    const qs = serializeForecastFilters({ ...filters, ...patch }).toString();
-    const url = qs ? `${pathname}?${qs}` : pathname;
-    // Presets, model and horizon are navigation steps (Back undoes them); month typing only refines one.
-    if (patch.custom !== undefined && patch.range === undefined && patch.model === undefined && patch.horizon === undefined) router.replace(url, { scroll: false });
-    else router.push(url, { scroll: false });
+    const qs = withView(serializeForecastFilters({ ...filters, ...patch }), view).toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
-  const reset = () => router.push(pathname, { scroll: false });
-  const hasFilters = params ? [...params.keys()].length > 0 : false;
+  const nameOf = (id: string) => models.find((m) => m.id === id)?.name ?? id;
 
-  const win = resolveWindow(obs, filters.range, filters.custom);
-  const windowed = inWindow(derived, win);
-  const history = windowed.map((o) => ({ period: o.period, index: o.index as number }));
-
-  const indicatorLink = `/indicators/${indicator}${toIndicatorQuery({ range: filters.range, custom: filters.custom, metric: "index" })}`;
-
-  if (!current || !sel) {
+  if (!chosen) {
     return (
       <Panel title="Forecast">
-        <p className="text-sm text-ink-muted">
-          No stored forecast exists for this indicator. A forecast is shown only after it has been generated and its
-          horizon backtested; none has been, so nothing is displayed.
-        </p>
+        <p className="text-sm text-ink-muted">No stored forecast exists for this indicator, so nothing is displayed. Forecasts appear only after a model has been run and tested.</p>
       </Panel>
     );
   }
 
-  const horizon = current.run.horizon;
-  const rows = current.items.filter((i) => (i.step ?? 0) <= horizon);
-  const info = models.find((m) => m.id === current.model);
-  const modelName = info?.name ?? current.model;
-  const bt = backtestOf(current.model, horizon);
-  const stale = isStale(current);
-  const rel = reliabilityFor(bt, comparisons[horizon], current.model, stale);
-  const hasInterval = rows.some((r) => r.lower_80 !== null);
+  const { view: cur, evidence: ev } = chosen;
+  const rows = cur.rows;
+  const horizon = cur.horizon;
+  const modelName = nameOf(cur.model);
+  const last = rows[rows.length - 1];
+  const change = latest ? changeFrom(latest.value, last.forecast) : null;
   const origin = rows[0]?.origin_date ?? null;
-  const others = stored
-    .filter((s) => s.run.horizon === horizon && s.model !== current.model)
-    .map((s) => ({ modelName: models.find((m) => m.id === s.model)?.name ?? s.model, finalForecast: s.items[s.items.length - 1]?.forecast ?? NaN, origin: s.items[0]?.origin_date ?? null }))
-    .filter((o) => Number.isFinite(o.finalForecast));
-  const statements = interpretForecast({ indicator: shortName, modelName, horizon, latest, rows, reliability: rel, others });
-  const span = history.length ? `${monthLabel(history[0].period)} – ${monthLabel(history[history.length - 1].period)}` : "no observations in this window";
+  const stale = ev.flags.stale;
+  const hasInterval = rows.some((r) => r.lower_80 !== null);
+  const win = resolveWindow(obs, filters.range, filters.custom);
+  const history = inWindow(derived, win).map((o) => ({ period: o.period, index: o.index as number }));
+  const historyHref = indicatorHref(indicator, filters.range);
+  const meaning = plainMeaning({ short: shortName, modelName, latest, rows, evidence: ev });
+  const bt = ev.set ? runs.find((r) => r.id === ev.set!.model.run_id) : undefined;
+  const officialLabel = source.short;
 
   const download = () => {
     const csv = forecastsToCsvV2(rows, {
-      indicator: shortName,
-      baseYear,
-      seriesId: seriesIds(indicator, baseYear)[0],
-      publisher: source.publisher,
-      modelId: current.model,
-      modelName,
-      run: current.run,
-      latest,
-      reliability: rel.label,
-    });
+      indicator: shortName, baseYear, seriesId: seriesIds(indicator, baseYear)[0], publisher: source.publisher,
+      modelId: cur.model, modelName, run: { ...cur.run, horizon }, latest, reliability: ev.label,
+    }); // prettier-ignore
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `forecast-${indicator}-${current.model}-h${horizon}.csv`;
+    a.download = `forecast-${indicator}-${cur.model}-h${horizon}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-6">
-      <Tour steps={FORECAST_EXPLORER_TOUR} />
-      <div data-tour="fx-controls" className="rounded-md border border-rule bg-surface p-4">
-        <FilterBar
-          filters={filters}
-          onChange={(p) => push({ ...(p.range !== undefined ? { range: p.range } : {}), ...(p.custom !== undefined ? { custom: p.custom } : {}) })}
-          metrics={["index"]}
-          rows={derived}
-          mode="line"
-          onMode={() => {}}
-          modes={["line"]}
-          lastMonth={latest ? latest.period.slice(0, 7) : null}
-        />
-        <div className="flex flex-wrap items-end gap-4">
-          <label className="text-sm">
-            <span className="mb-1 block text-ink-muted">Model</span>
-            <select
-              aria-label="Model"
-              className={selectClass}
-              value={current.model}
-              onChange={(e) => {
-                const hs = avail.byModel[e.target.value] ?? [];
-                push({ model: e.target.value, horizon: hs.includes(horizon) ? horizon : (hs[hs.length - 1] ?? null) });
-              }}
-            >
-              {avail.models.map((m) => (
-                <option key={m} value={m}>
-                  {models.find((x) => x.id === m)?.name ?? m}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block text-ink-muted">
-              Forecast horizon <HelpTip id="forecast-horizon" />
-            </span>
-            <select aria-label="Forecast horizon" className={selectClass} value={horizon} onChange={(e) => push({ model: current.model, horizon: Number(e.target.value) })}>
-              {(avail.byModel[current.model] ?? []).map((x) => (
-                <option key={x} value={x}>
-                  {x} month{x > 1 ? "s" : ""} ahead{backtestOf(current.model, x) ? "" : " (not backtested)"}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="button" onClick={reset} disabled={!hasFilters} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-40 ${focusRing}`}>
-            Reset filters
-          </button>
-          <TourButton className={`rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a Tour</TourButton>
+      <SpotlightTour steps={FORECAST_EXPLORER_STEPS} label={`${shortName} forecast tour`} />
+
+      {/* 1. KPI strip */}
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-rule bg-rule lg:grid-cols-4" data-testid="kpis">
+        <div className="bg-surface p-4" data-tour="fx-official">
+          <dt className="text-sm text-ink-muted">Latest official</dt>
+          <dd className="figure mt-1 text-2xl font-medium tracking-tight">{latest ? fmt(latest.value) : "—"}</dd>
+          <dd className="mt-1 text-xs text-ink-muted">{latest ? `${monthLabel(latest.period, true)} · base ${baseYear} = 100` : "No data"}</dd>
         </div>
-        <p className="mt-3 text-xs text-ink-muted">
-          Forecast origin <HelpTip id="forecast-origin" />: <span className="figure text-ink">{origin ? monthLabel(origin, true) : "not recorded"}</span> · latest observation{" "}
-          <span className="figure text-ink">{latest ? monthLabel(latest.period, true) : "—"}</span> · stored <span className="figure text-ink">{current.run.created_at.slice(0, 10)}</span> · run #{current.run.id}
+        <div className="bg-surface p-4">
+          <dt className="text-sm text-ink-muted">Forecast · {monthLabel(last.target_date, true)}</dt>
+          <dd className="figure mt-1 text-2xl font-medium tracking-tight text-target">{fmt(last.forecast)}</dd>
+          <dd className="mt-1 text-xs text-ink-muted">Model estimate · {modelName}</dd>
+        </div>
+        <div className="bg-surface p-4">
+          <dt className="text-sm text-ink-muted">Expected change</dt>
+          <dd className="figure mt-1 text-2xl font-medium tracking-tight">{change?.pct != null ? pctText(change.pct) : "—"}</dd>
+          <dd className="mt-1 text-xs text-ink-muted">{change ? `${change.abs > 0 ? "+" : ""}${change.abs.toFixed(2)} points vs ${latest ? monthLabel(latest.period) : "latest"} · model-derived` : "Not available"}</dd>
+        </div>
+        <div className="bg-surface p-4" data-tour="fx-reliability">
+          <dt className="text-sm text-ink-muted">
+            Reliability <HelpTip id="reliability" />
+          </dt>
+          <dd className="mt-1.5">
+            <ReliabilityMeter level={ev.level} />
+          </dd>
+          <dd className="mt-1 text-xs text-ink-muted">{plainReliability(ev)}</dd>
+        </div>
+      </dl>
+
+      {/* 2. Forecast controls (model + horizon), separate from the history window on the chart */}
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+        <label className="text-sm" data-tour="fx-model">
+          <span className="mb-1 block text-ink-muted">Model</span>
+          <select
+            aria-label="Model"
+            className={selectClass}
+            value={cur.model}
+            onChange={(e) => {
+              const hs = avail.byModel[e.target.value] ?? [];
+              push({ model: e.target.value, horizon: hs.includes(horizon) ? horizon : (hs[hs.length - 1] ?? null) });
+            }}
+          >
+            {avail.models.map((m) => (
+              <option key={m} value={m}>
+                {nameOf(m)}
+                {m === "naive" ? " (baseline)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="text-sm" data-tour="fx-horizon">
+          <span id="fx-horizon-label" className="mb-1 block text-ink-muted">
+            Forecast horizon <HelpTip id="forecast-horizon" />
+          </span>
+          <div role="radiogroup" aria-labelledby="fx-horizon-label" className="inline-flex rounded-md border border-rule bg-surface p-0.5">
+            {(avail.byModel[cur.model] ?? []).map((h) => (
+              <button key={h} type="button" role="radio" aria-checked={h === horizon} className={segBtn(h === horizon)} onClick={() => push({ model: cur.model, horizon: h })}>
+                {h} {h === 1 ? "month" : "months"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <ForecastTourButton className={`ml-auto rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a tour</ForecastTourButton>
+      </div>
+      {notices.map((n) => (
+        <p key={n} role="status" className="-mt-3 text-xs text-warn">
+          {n}
         </p>
-        <p className="mt-1 text-xs text-ink-muted">Selection: {sel.reason} Changing the history window does not change the forecast horizon.</p>
-        {notices.map((n) => (
-          <p key={n} role="status" className="mt-1 text-xs text-warn">
-            {n}
+      ))}
+      {stale && (
+        <p role="status" className="-mt-3 text-xs text-warn">
+          This forecast was made before the latest official month, so newer data is not reflected in it.
+        </p>
+      )}
+
+      {/* 3. Chart */}
+      <section className="rounded-md border border-rule bg-surface" aria-labelledby="fx-chart-title">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-3">
+          <h2 id="fx-chart-title" className="text-sm font-semibold tracking-tight">
+            {indexName}: official history and {horizon}-month forecast
+          </h2>
+          <div role="radiogroup" aria-label="History shown" className="inline-flex items-center gap-1 text-xs">
+            <span className="mr-1 text-ink-muted">History</span>
+            {[...HISTORY_RANGES, ...(HISTORY_RANGES.includes(filters.range) ? [] : [filters.range])].map((r) => (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={filters.range === r}
+                disabled={r === "Custom"}
+                onClick={() => push({ range: r, custom: null })}
+                className={`rounded px-2 py-0.5 ${focusRing} ${filters.range === r ? "bg-bg font-medium text-ink ring-1 ring-rule" : "text-ink-muted hover:text-ink"}`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="px-3 py-4 sm:px-5" data-tour="fx-chart">
+          {history.length < 2 ? (
+            <p className="rounded border border-dashed border-rule px-4 py-10 text-center text-sm text-ink-muted">Not enough official months in this window to draw the history. Choose a longer window.</p>
+          ) : (
+            <OutlookChart history={history} forecast={rows} name={indexName} axisLabel={axisLabel} officialSource={officialLabel} modelName={modelName} bandsTourId="fx-bands" />
+          )}
+          {!hasInterval && <p className="mt-2 text-xs text-warn">This model provides no uncertainty range, so no band is drawn.</p>}
+        </div>
+        <p className="border-t border-rule px-5 py-2 text-xs text-ink-muted">
+          Official data: {officialLabel}, base {baseYear}. Forecast: {modelName}, run #{cur.run.id}
+          {cur.partial ? ` (first ${horizon} of ${cur.run.horizon} stored months)` : ""}, made from {origin ? monthLabel(origin, true) : "an unrecorded month"} data.
+        </p>
+      </section>
+
+      {/* 4. What this means */}
+      <div data-testid="meaning" className="rounded-md border-l-4 border-accent bg-surface px-4 py-3 text-sm">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">What this means</p>
+        {meaning.map((t) => (
+          <p key={t} className="mt-1 first:mt-0">
+            {t}
+          </p>
+        ))}
+        {ev.caveats.map((c) => (
+          <p key={c} className="mt-1 text-xs text-warn">
+            {c}
           </p>
         ))}
       </div>
 
-      <div data-tour="fx-reliability">
-        <ReliabilityBanner r={rel} />
-        {rel.level === "concerning" && stale === false && (
-          <p className="mt-2 text-xs text-ink-muted">
-            Other stored models can be compared on the <Link href={`/forecasting/comparison?indicator=${indicator}&horizon=${horizon}`} className="text-accent underline">comparison page</Link>.
-          </p>
-        )}
-        {stale && (
-          <p role="status" className="mt-2 text-xs text-warn">
-            This forecast was issued before the latest official observation and is stale relative to the data above.
-          </p>
-        )}
-      </div>
+      {/* Data connection */}
+      <p className="text-sm text-ink-muted" data-testid="data-connection">
+        Historical observations come from the same official series shown in Indicators. Forecasts are separately generated statistical estimates, not official data
+        and not guaranteed.{" "}
+        <Link href={historyHref} className="whitespace-nowrap text-accent underline">
+          View historical {shortName} →
+        </Link>
+      </p>
 
-      <div data-tour="fx-chart">
-        <Panel
-          title={`${indexName}: observed and forecast`}
-          footnote={
-            <div className="space-y-2" data-tour="fx-source">
-              <SourceAttribution cls="official" sources={[source]} period={span} units={`Index, base ${baseYear} = 100`} />
-              <SourceAttribution
-                cls="forecast"
-                sources={[source]}
-                period={`${rows.length ? `${monthLabel(rows[0].target_date)} – ${monthLabel(rows[rows.length - 1].target_date)}` : "—"} (forecast months)`}
-                units="Index level"
-                method={`${modelName} (${current.model}) · run #${current.run.id} · origin ${origin ? monthLabel(origin) : "not recorded"} · horizon ${horizon} mo · intervals: ${methodLabel(rows.find((r) => r.interval_method)?.interval_method)} · training cutoff ${monthLabel(current.run.training_cutoff)}`}
-                retrievedAt={current.run.created_at}
-              />
-            </div>
-          }
-        >
-          {history.length < 2 ? (
-            <p className="rounded border border-dashed border-rule px-4 py-10 text-center text-sm text-ink-muted">
-              {filters.range === "Custom" && !win ? "Choose a valid start and end month to see this window." : "Not enough observations in this window to draw the history. Choose a longer window."}
-            </p>
-          ) : (
-            <ForecastChart history={history} forecast={rows} axisLabel={axisLabel} name={indexName} />
-          )}
-          <p className="mt-2 text-xs text-ink-muted">Solid line: official observations. Dashed line and bands: model forecast with 80% and 95% prediction intervals <HelpTip id="interval" />. Gaps are real gaps.</p>
-          {!hasInterval && <p className="mt-2 text-xs text-warn">This model provides no prediction interval here, so none is drawn.</p>}
-        </Panel>
-      </div>
+      {/* 5. Research View */}
+      {research ? (
+        <div className="space-y-6" data-testid="research-view">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr] [&>*]:min-w-0">
+            <Panel title={`Backtest evidence · ${horizon}-month horizon`}>
+              {ev.set ? (
+                <>
+                  <p className="mb-3 text-xs text-ink-muted">
+                    All figures below, including the naive baseline&apos;s, come from one test set: {ev.set.group.n_origins} forecast origins
+                    {ev.set.group.evaluation_start ? `, targets ${monthLabel(ev.set.group.evaluation_start)} to ${monthLabel(ev.set.group.evaluation_end ?? ev.set.group.evaluation_start)}` : ""}.
+                  </p>
+                  <table className="w-full text-sm">
+                    <caption className="sr-only">Backtest metrics for {modelName} and the naive baseline on identical origins</caption>
+                    <thead>
+                      <tr className="border-b border-rule text-left text-xs">
+                        <th scope="col" className="py-1.5 pr-3 font-semibold">Metric</th>
+                        <th scope="col" className="py-1.5 pr-3 text-right font-semibold">{modelName}</th>
+                        <th scope="col" className="py-1.5 text-right font-semibold">Naive baseline</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(["mae", "rmse", "mase", "smape", "coverage_80", "coverage_95"] as const).map((k) => (
+                        <tr key={k} className="border-b border-rule last:border-b-0">
+                          <th scope="row" className="py-1.5 pr-3 text-left font-normal text-ink-muted">
+                            {{ mae: "MAE", rmse: "RMSE", mase: "MASE", smape: "sMAPE (%)", coverage_80: "80% coverage", coverage_95: "95% coverage" }[k]}{" "}
+                            <HelpTip id={k.startsWith("coverage") ? "coverage" : k === "rmse" ? "mae" : k} />
+                          </th>
+                          <td className="figure py-1.5 pr-3 text-right">{fmtMetric(k, ev.set!.model.metrics[k])}</td>
+                          <td className="figure py-1.5 text-right text-ink-muted">{fmtMetric(k, ev.set!.baseline?.metrics[k])}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="mt-2 text-xs text-ink-muted">
+                    Lower is better for MAE, RMSE, MASE and sMAPE. MASE is scaled by one-month changes in the training data, so values above 1 at longer horizons do not by
+                    themselves mean &quot;worse than naive&quot;; compare with the baseline column. “—” means not available, never zero.
+                  </p>
+                  <ReliabilityBanner r={ev} className="mt-3" />
+                  {ev.caveats.length > 0 && (
+                    <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-warn">
+                      {ev.caveats.map((c) => (
+                        <li key={c}>{c}</li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                    <Link href={`/forecasting/experiments/${ev.set.model.run_id}?view=research`} className="text-accent underline">
+                      Backtest run #{ev.set.model.run_id} →
+                    </Link>
+                    <Link href={`/forecasting/comparison?indicator=${indicator}&horizon=${horizon}&view=research`} className="text-accent underline">
+                      Compare models →
+                    </Link>
+                    <Link href={`/forecasting/experiments?indicator=${indicator}&model=${cur.model}&view=research`} className="text-accent underline">
+                      All {modelName} runs →
+                    </Link>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-ink-muted">No backtest on a set that includes the naive baseline is stored for this horizon, so no accuracy is claimed.</p>
+                  <ReliabilityBanner r={ev} className="mt-3" />
+                </>
+              )}
+            </Panel>
+            <Panel title="Provenance">
+              <dl className="grid grid-cols-[9.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+                {(
+                  [
+                    ["Model", `${modelName} (${cur.model})`],
+                    ["Method", models.find((m) => m.id === cur.model)?.explanation ?? "—"],
+                    ["Forecast run", `#${cur.run.id}, ${cur.run.horizon}-month, stored ${cur.run.created_at.slice(0, 10)}`],
+                    ["Horizon shown", cur.partial ? `${horizon} months (steps 1–${horizon} of run #${cur.run.id})` : `${horizon} months`],
+                    ["Forecast origin", origin ? monthLabel(origin, true) : "Not recorded"],
+                    ["Training window", `${cur.run.training_start ? monthLabel(cur.run.training_start) : "?"} – ${monthLabel(cur.run.training_cutoff)}`],
+                    ["Intervals", methodLabel(rows.find((r) => r.interval_method)?.interval_method)],
+                    ["Data fingerprint", cur.run.dataset_fingerprint ?? "Not recorded"],
+                    ["Backtest training", bt?.training_start ? `${monthLabel(bt.training_start)} – ${monthLabel(bt.training_cutoff)} (expanding)` : "—"],
+                    ["Selection", chosen.reason],
+                  ] as [string, string][]
+                ).map(([k, v]) => (
+                  <div key={k} className="contents">
+                    <dt className="text-ink-muted">{k}</dt>
+                    <dd className={`min-w-0 break-words ${k === "Data fingerprint" ? "figure text-xs" : ""}`}>{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              {indicator === "iip" && (
+                <p className="mt-3 text-xs text-warn">
+                  IIP is not seasonally adjusted. {cur.model === "sarima" || cur.model === "snaive" ? "This model uses a yearly seasonal component." : "This model has no yearly seasonal component."}
+                </p>
+              )}
+            </Panel>
+          </div>
 
-      <div data-tour="fx-interpretation">
-        <Panel title="What this means" footnote="Generated by fixed rules from the stored numbers. No cause is claimed, and none of this is official data.">
-          <ul className="list-disc space-y-1.5 pl-5 text-sm">
-            {statements.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-          <p className="mt-3 text-sm">
-            <Link href={indicatorLink} className="text-accent underline">Historical {shortName} data in Indicators →</Link>
-          </p>
-        </Panel>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr] [&>*]:min-w-0">
-        <div data-tour="fx-table">
           <Panel title="Forecast table">
-            <div className="-mt-1 mb-3 flex items-center justify-between gap-2">
-              <p className="text-sm text-ink-muted">{rows.length} forecast months · model-generated</p>
+            <div className="-mt-1 mb-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-ink-muted">{rows.length} forecast months · model-generated, not official</p>
               <button type="button" onClick={download} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg ${focusRing}`}>
                 Download CSV
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[44rem] text-sm">
+              <table className="w-full min-w-[36rem] text-sm">
                 <caption className="sr-only">Stored forecasts for {indexName} using {modelName}</caption>
                 <thead>
                   <tr className="border-b border-rule text-left text-xs">
@@ -330,10 +430,7 @@ export function ForecastExplorer({
                     <th scope="col" className="py-2 pr-4 text-right font-semibold">Forecast index</th>
                     <th scope="col" className="py-2 pr-4 text-right font-semibold">Change from latest</th>
                     <th scope="col" className="py-2 pr-4 text-right font-semibold">80% interval</th>
-                    <th scope="col" className="py-2 pr-4 text-right font-semibold">95% interval</th>
-                    <th scope="col" className="py-2 pr-4 font-semibold">Model</th>
-                    <th scope="col" className="py-2 pr-4 font-semibold">Origin</th>
-                    <th scope="col" className="py-2 font-semibold">Run</th>
+                    <th scope="col" className="py-2 text-right font-semibold">95% interval</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -343,74 +440,44 @@ export function ForecastExplorer({
                       <tr key={r.target_date} className="border-b border-rule last:border-b-0">
                         <th scope="row" className="py-2 pr-4 text-left font-medium">{monthLabel(r.target_date, true)}</th>
                         <td className="figure py-2 pr-4 text-right">{fmt(r.forecast)}</td>
-                        <td className="figure py-2 pr-4 text-right" title="Model-derived, not an official rate">
-                          {c ? `${c.abs > 0 ? "+" : ""}${c.abs.toFixed(2)}${c.pct === null ? "" : ` (${c.pct > 0 ? "+" : ""}${c.pct.toFixed(2)}%)`}` : "—"}
-                        </td>
+                        <td className="figure py-2 pr-4 text-right">{c ? `${c.abs > 0 ? "+" : ""}${c.abs.toFixed(2)}${c.pct === null ? "" : ` (${pctText(c.pct)})`}` : "—"}</td>
                         <td className="figure py-2 pr-4 text-right">{r.lower_80 === null ? "—" : `${fmt(r.lower_80)} to ${fmt(r.upper_80)}`}</td>
-                        <td className="figure py-2 pr-4 text-right">{r.lower_95 === null ? "—" : `${fmt(r.lower_95)} to ${fmt(r.upper_95)}`}</td>
-                        <td className="py-2 pr-4 text-ink-muted">{modelName}</td>
-                        <td className="py-2 pr-4 text-ink-muted">{r.origin_date ? monthLabel(r.origin_date) : "—"}</td>
-                        <td className="figure py-2 text-ink-muted">#{current.run.id}</td>
+                        <td className="figure py-2 text-right">{r.lower_95 === null ? "—" : `${fmt(r.lower_95)} to ${fmt(r.upper_95)}`}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-xs text-ink-muted">
-              “—” means not available (the model supplied no interval, or no valid latest value exists). The change column is model-derived from the latest
-              official observation; it is not an official inflation or growth rate. Interval method: {methodLabel(rows.find((r) => r.interval_method)?.interval_method)}.
-            </p>
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-ink-muted">
+              {interpretForecast({ indicator: shortName, modelName, horizon, latest, rows, reliability: ev }).map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
           </Panel>
-        </div>
 
-        <div className="space-y-6">
-          <Panel title="About this model">
-            <p className="text-sm font-medium">{modelName}</p>
-            <p className="mt-1 text-sm text-ink-muted">{info?.explanation}</p>
-            {indicator === "iip" && (
-              <p className="mt-2 text-xs text-warn">
-                IIP is not seasonally adjusted and has strong yearly patterns.{" "}
-                {current.model === "sarima" || current.model === "snaive" ? "This model uses a yearly seasonal component." : "This model does not use a yearly seasonal component."}
-              </p>
-            )}
-          </Panel>
-          <Panel title={`Backtest accuracy, ${horizon}-month horizon`}>
-            {bt ? (
-              <dl className="space-y-1 text-sm">
-                {["mae", "rmse", "mase", "smape", "coverage_80", "coverage_95"].map((k) => (
-                  <div key={k} className="flex justify-between gap-3">
-                    <dt className="text-ink-muted">
-                      {k === "mae" ? "MAE" : k === "rmse" ? "RMSE" : k === "mase" ? "MASE" : k === "smape" ? "sMAPE (%)" : k === "coverage_80" ? "80% coverage" : "95% coverage"}
-                    </dt>
-                    <dd className="figure">{bt.metrics[k] === undefined ? "Not available" : fmtMetric(k, bt.metrics[k])}</dd>
-                  </div>
-                ))}
-                <div className="flex justify-between gap-3 border-t border-rule pt-1">
-                  <dt className="text-ink-muted">Backtest origins <HelpTip id="backtesting" /></dt>
-                  <dd className="figure">{bt.n_origins}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-muted">Training window <HelpTip id="training-window" /></dt>
-                  <dd className="figure text-right">{bt.training_start ? `${monthLabel(bt.training_start)} – ` : ""}{monthLabel(bt.training_cutoff)}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-muted">Data fingerprint <HelpTip id="data-fingerprint" /></dt>
-                  <dd className="figure break-all text-right text-xs">{bt.dataset_fingerprint ? bt.dataset_fingerprint.slice(0, 16) : "Not recorded"}</dd>
-                </div>
-                <p className="pt-1 text-xs text-ink-muted">
-                  What the metrics mean: MAE <HelpTip id="mae" />, MASE <HelpTip id="mase" />, sMAPE <HelpTip id="smape" />, coverage <HelpTip id="coverage" />.
-                </p>
-                <p className="text-xs text-ink-muted">
-                  <Link href={`/forecasting/experiments/${bt.id}`} className="text-accent underline">Backtest run #{bt.id} →</Link>
-                </p>
-              </dl>
-            ) : (
-              <p className="text-sm text-ink-muted">This horizon has not been backtested, so no accuracy is claimed for it.</p>
-            )}
-          </Panel>
+          <div className="space-y-2">
+            <SourceAttribution
+              cls="official"
+              sources={[source]}
+              period={history.length ? `${monthLabel(history[0].period)} – ${monthLabel(history[history.length - 1].period)}` : "no observations in this window"}
+              units={`Index, base ${baseYear} = 100`}
+            />
+            <SourceAttribution
+              cls="forecast"
+              sources={[source]}
+              period={`${monthLabel(rows[0].target_date)} – ${monthLabel(last.target_date)} (forecast months)`}
+              units="Index level"
+              method={`${modelName} (${cur.model}) · run #${cur.run.id} · origin ${origin ? monthLabel(origin) : "not recorded"} · horizon ${horizon} mo · intervals: ${methodLabel(rows.find((r) => r.interval_method)?.interval_method)} · training cutoff ${monthLabel(cur.run.training_cutoff)}`}
+              retrievedAt={cur.run.created_at}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <p className="text-xs text-ink-muted">
+          Want error metrics, backtest details, data fingerprints or a CSV? Switch to <span className="font-medium text-ink">Research</span> view at the top of the page.
+        </p>
+      )}
     </div>
   );
 }

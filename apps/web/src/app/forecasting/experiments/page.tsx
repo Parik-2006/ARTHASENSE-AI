@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ExperimentsView } from "@/components/forecasting/experiments-view";
-import { PageHeader } from "@/components/ui/primitives";
 import { getRuns } from "@/lib/api";
 import { loadErrorText } from "@/lib/forecasting";
 
@@ -21,11 +20,10 @@ async function Data() {
 export default function Page() {
   return (
     <>
-      <PageHeader
-        eyebrow="Forecasting"
-        title="Experiment history"
-        lede="Every stored run with its data fingerprint, training range, horizon and scores, so each result can be reproduced."
-      />
+      <header className="mb-6 max-w-3xl">
+        <h1 className="font-serif text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Experiments</h1>
+        <p className="mt-2 text-base text-ink-muted">Every stored model run, with what it was trained on and how it scored, so each result can be checked and reproduced.</p>
+      </header>
       <Suspense
         fallback={<div role="status" aria-label="Loading" className="h-96 animate-pulse rounded-md border border-rule bg-surface" />}
       >

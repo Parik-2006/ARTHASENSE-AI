@@ -3,7 +3,7 @@
 
 import type { StoredForecast } from "@/components/forecasting/forecast-explorer";
 import { getComparison, getForecastModels, getForecastSeries, getIndicator, getLatestForecast, getRuns } from "@/lib/api";
-import type { Comparison, IndicatorId, ModelInfo, Run, SeriesInfo } from "@/lib/forecasting";
+import { type Comparison, HORIZONS, type IndicatorId, type ModelInfo, type Run, type SeriesInfo } from "@/lib/forecasting";
 import type { IndicatorData } from "@/lib/indicator";
 import { CONFIGS } from "@/lib/indicators";
 
@@ -62,7 +62,9 @@ export async function loadIndicatorForecast(id: IndicatorId): Promise<IndicatorF
     const r = latest[i];
     if (r.ok && r.data.run && r.data.items.length) base.stored.push({ model: p.model, run: r.data.run, items: r.data.items });
   });
-  const horizons = [...new Set(base.stored.map((s) => s.run.horizon))];
+  // Evidence is needed for every horizon a view can offer (k <= stored horizon), e.g. 1, 3 and 6 from a 6-step run.
+  const maxH = Math.max(0, ...base.stored.map((s) => s.run.horizon));
+  const horizons = [...new Set([...HORIZONS.filter((h) => h <= maxH), ...base.stored.map((s) => s.run.horizon)])];
   const cmps = await Promise.all(horizons.map((h) => getComparison(id, h)));
   horizons.forEach((h, i) => {
     const c = cmps[i];

@@ -4,9 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { HelpTip } from "@/components/guide/help-tip";
-import { Tour, TourButton } from "@/components/guide/tour";
+import { ReliabilityMeter } from "@/components/forecasting/reliability-meter";
+import { ForecastTourButton, SpotlightTour } from "@/components/forecasting/spotlight-tour";
+import { parseView, withView } from "@/components/forecasting/view-mode";
 import { Panel } from "@/components/ui/primitives";
-import { COMPARISON_TOUR } from "@/lib/guide";
+import { BASELINE, monthsNeeded, primaryGroup, reliabilityOnGroup } from "@/lib/forecast-evidence";
+import { COMPARISON_STEPS } from "@/lib/forecast-tours";
 import {
   type Comparison,
   type ComparisonGroup,
@@ -19,57 +22,81 @@ import {
   loadErrorText,
   METRIC_LABELS,
   monthLabel,
+  type SeriesInfo,
 } from "@/lib/forecasting";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const selectClass = `rounded border border-rule bg-surface px-2 py-1.5 text-sm ${focusRing}`;
+const segBtn = (on: boolean) => `rounded px-3 py-1 text-sm ${focusRing} ${on ? "bg-accent font-medium text-accent-ink" : "text-ink-muted hover:text-ink"}`;
 const TABLE_METRICS = ["mae", "rmse", "mase", "smape", "coverage_80", "coverage_95"] as const;
 const BAR_METRICS = ["mae", "rmse", "mase", "smape"] as const;
+const DEFAULT_HORIZON = 6;
 
 export type ComparisonMap = Record<string, Comparison | null>; // key `${indicator}-${horizon}`
 
-function Bars({ group, metric }: { group: ComparisonGroup; metric: string }) {
-  const rows = group.models.filter((m) => m.metrics[metric] !== undefined);
-  const max = Math.max(...rows.map((m) => m.metrics[metric]), 1e-9);
+/** Horizontal error bars on one scale; the naive baseline is grey and marked with a reference line. */
+export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: string }) {
+  const rows = group.models.filter((m) => m.metrics[metric] !== undefined).sort((a, b) => a.metrics[metric] - b.metrics[metric]);
+  if (!rows.length) return <p className="text-sm text-ink-muted">No model has this metric on this test set.</p>;
+  const max = Math.max(...rows.map((m) => m.metrics[metric])) * 1.08 || 1;
+  const base = group.models.find((m) => m.model === BASELINE)?.metrics[metric];
   return (
-    <ul className="space-y-2" aria-label={`${METRIC_LABELS[metric]} by model (lower is better)`}>
-      {rows.map((m) => (
-        <li key={m.model} className="grid grid-cols-[8rem_1fr_4.5rem] items-center gap-3 text-sm">
-          <span className="truncate">{m.model_name}</span>
-          <span className="h-3 rounded-sm bg-bg" aria-hidden>
-            <span
-              className={`block h-3 rounded-sm ${m.is_baseline ? "bg-ink-muted" : "bg-accent"}`}
-              style={{ width: `${Math.max(2, (m.metrics[metric] / max) * 100)}%` }}
-            />
-          </span>
-          <span className="figure text-right">{fmtMetric(metric, m.metrics[metric])}</span>
-        </li>
-      ))}
-    </ul>
+    <div className="relative">
+      <ul className="space-y-2.5" aria-label={`${METRIC_LABELS[metric]} by model, lower is better`}>
+        {rows.map((m) => {
+          const isBase = m.model === BASELINE;
+          return (
+            <li key={m.model} className="grid grid-cols-[minmax(5.5rem,9rem)_1fr_4rem] items-center gap-3 text-sm">
+              <span className="truncate" title={m.model_name}>
+                {m.model_name}
+              </span>
+              <span className="relative h-4 rounded-sm bg-bg" aria-hidden>
+                <span className={`absolute inset-y-0 left-0 rounded-r-[4px] ${isBase ? "bg-ink-muted" : "bg-accent"}`} style={{ width: `${Math.max(1.5, (m.metrics[metric] / max) * 100)}%` }} />
+                {base !== undefined && <span className="absolute -inset-y-1 w-px border-l border-dashed border-ink" style={{ left: `${(base / max) * 100}%` }} />}
+              </span>
+              <span className="figure text-right">{fmtMetric(metric, m.metrics[metric])}</span>
+            </li>
+          );
+        })}
+      </ul>
+      {base !== undefined && (
+        <p className="mt-3 flex items-center gap-2 text-xs text-ink-muted">
+          <span aria-hidden className="inline-block h-3 border-l border-dashed border-ink" /> Naive baseline level. Bars left of this line had a smaller error than the baseline.
+        </p>
+      )}
+    </div>
   );
 }
 
-export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; apiError?: string }) {
-  // Indicator, horizon and evaluation set live in the URL (?indicator=&horizon=&set=) so the view can be shared.
+export function ComparisonView({ data, series = [], apiError = "" }: { data: ComparisonMap; series?: SeriesInfo[]; apiError?: string }) {
+  // Indicator, horizon and test set live in the URL (?indicator=&horizon=&set=&view=) so the view can be shared.
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const view = parseView(params?.get("view"));
+  const research = view === "research";
   const indParam = params?.get("indicator") ?? "";
   const indicator: IndicatorId = (INDICATOR_IDS as string[]).includes(indParam) ? (indParam as IndicatorId) : "wpi";
   const hParam = Number(params?.get("horizon"));
-  const horizon: number = (HORIZONS as readonly number[]).includes(hParam) ? hParam : 1;
-  const groupIdx = Math.max(0, Math.floor(Number(params?.get("set"))) || 0);
-  const setView = (patch: { indicator?: string; horizon?: number; set?: number }) => {
+  const horizon: number = (HORIZONS as readonly number[]).includes(hParam) ? hParam : DEFAULT_HORIZON;
+  const cmp = data[`${indicator}-${horizon}`] ?? null;
+  const ref = primaryGroup(cmp);
+  const setParam = params?.get("set");
+  const groupIdx =
+    setParam !== null && setParam !== undefined && /^\d+$/.test(setParam)
+      ? Math.min(Number(setParam), Math.max(0, (cmp?.groups.length ?? 1) - 1))
+      : Math.max(0, cmp?.groups.findIndex((g) => g.group_id === ref?.group_id) ?? 0);
+  const group = cmp?.groups[groupIdx];
+  const setView = (patch: { indicator?: string; horizon?: number; set?: number | null }) => {
     const p = new URLSearchParams();
     p.set("indicator", patch.indicator ?? indicator);
     p.set("horizon", String(patch.horizon ?? horizon));
-    if (patch.set) p.set("set", String(patch.set));
-    router.push(`${pathname}?${p.toString()}`, { scroll: false });
+    if (patch.set !== undefined && patch.set !== null) p.set("set", String(patch.set));
+    router.push(`${pathname}?${withView(p, view).toString()}`, { scroll: false });
   };
-  const isDefault = !params || [...params.keys()].length === 0;
   const [barMetric, setBarMetric] = useState<string>("mae");
-  const cmp = data[`${indicator}-${horizon}`] ?? null;
-  const group = cmp?.groups[Math.min(groupIdx, Math.max(0, (cmp?.groups.length ?? 1) - 1))];
+  const info = series.find((s) => s.indicator === indicator);
+  const best = group?.rankable ? group.best.mae : undefined;
 
   const download = () => {
     if (!group) return;
@@ -83,42 +110,44 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
 
   return (
     <div className="space-y-6">
-      <Tour steps={COMPARISON_TOUR} />
-      <div data-tour="fc-filters" className="flex flex-wrap items-end gap-4">
-        <label className="text-sm">
-          <span className="mb-1 block text-ink-muted">Indicator</span>
-          <select aria-label="Indicator" className={selectClass} value={indicator} onChange={(e) => setView({ indicator: e.target.value, set: 0 })}>
+      <SpotlightTour steps={COMPARISON_STEPS} label="Model comparison tour" />
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+        <div className="text-sm" data-tour="fc-indicator">
+          <span id="fc-ind-label" className="mb-1 block text-ink-muted">Indicator</span>
+          <div role="radiogroup" aria-labelledby="fc-ind-label" className="inline-flex rounded-md border border-rule bg-surface p-0.5">
             {INDICATOR_IDS.map((i) => (
-              <option key={i} value={i}>{INDICATOR_NAMES[i]}</option>
+              <button key={i} type="button" role="radio" aria-checked={i === indicator} title={INDICATOR_NAMES[i]} className={segBtn(i === indicator)} onClick={() => setView({ indicator: i, set: null })}>
+                {i.toUpperCase()}
+              </button>
             ))}
-          </select>
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-ink-muted">Forecast horizon</span>
-          <select aria-label="Forecast horizon" className={selectClass} value={horizon} onChange={(e) => setView({ horizon: Number(e.target.value), set: 0 })}>
+          </div>
+        </div>
+        <div className="text-sm" data-tour="fc-horizon">
+          <span id="fc-h-label" className="mb-1 block text-ink-muted">
+            Forecast horizon <HelpTip id="forecast-horizon" />
+          </span>
+          <div role="radiogroup" aria-labelledby="fc-h-label" className="inline-flex rounded-md border border-rule bg-surface p-0.5">
             {HORIZONS.map((h) => (
-              <option key={h} value={h}>{h} month{h > 1 ? "s" : ""} ahead</option>
+              <button key={h} type="button" role="radio" aria-checked={h === horizon} className={segBtn(h === horizon)} onClick={() => setView({ horizon: h, set: null })}>
+                {h} mo
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
         {cmp && cmp.groups.length > 1 && (
-          <label className="text-sm">
-            <span className="mb-1 block text-ink-muted">Evaluation set</span>
-            <select className={selectClass} value={groupIdx} onChange={(e) => setView({ set: Number(e.target.value) })}>
+          <label className="min-w-0 max-w-full text-sm">
+            <span className="mb-1 block text-ink-muted">Test set</span>
+            <select aria-label="Test set" className={`${selectClass} w-full max-w-full truncate sm:w-auto`} value={groupIdx} onChange={(e) => setView({ set: Number(e.target.value) })}>
               {cmp.groups.map((g, i) => (
                 <option key={g.group_id} value={i}>
-                  {g.models.length} models, {g.n_origins} origins{g.evaluation_start ? `, ${monthLabel(g.evaluation_start)} to ${monthLabel(g.evaluation_end ?? g.evaluation_start)}` : ""}
+                  {g.n_origins} months · {g.models.length} models{g.evaluation_start ? ` · ${monthLabel(g.evaluation_start)}–${monthLabel(g.evaluation_end ?? g.evaluation_start)}` : ""}
+                  {g.group_id === ref?.group_id ? " (largest)" : ""}
                 </option>
               ))}
             </select>
           </label>
         )}
-        <button type="button" onClick={() => router.push(pathname, { scroll: false })} disabled={isDefault} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-40 ${focusRing}`}>
-          Reset filters
-        </button>
-        <TourButton className={`rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a Tour</TourButton>
-        <Link href={`/forecasting/${indicator}`} className="pb-1.5 text-sm text-accent underline">{indicator.toUpperCase()} forecast explorer →</Link>
-        <Link href={`/forecasting/experiments?indicator=${indicator}&horizon=${horizon}`} className="pb-1.5 text-sm text-accent underline">Experiments →</Link>
+        <ForecastTourButton className={`ml-auto rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-surface ${focusRing}`}>Take a tour</ForecastTourButton>
       </div>
 
       {!cmp ? (
@@ -126,94 +155,173 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
           <p role="alert" className="text-sm text-up">{loadErrorText("the comparison", apiError)}</p>
         </Panel>
       ) : !group ? (
-        <Panel title="Comparison">
+        <Panel title="Nothing to compare yet">
           <p className="text-sm text-ink-muted">
-            No completed backtest exists for {INDICATOR_NAMES[indicator]} at a {horizon}-month horizon, so there is
-            nothing to compare. {indicator === "cpi" ? "The CPI Current series has only 12 monthly observations, which is too short to evaluate." : ""}
+            No model has been tested on {INDICATOR_NAMES[indicator]} at a {horizon}-month horizon.
+            {info && info.evaluable_horizons.length === 0
+              ? ` The current series has ${info.n_observations} monthly observations; a fair test at this horizon needs at least ${monthsNeeded(horizon)}.`
+              : ""}
           </p>
-          <Excluded cmp={cmp} />
+          {research && <Excluded cmp={cmp} />}
         </Panel>
       ) : (
         <>
-          <Panel
-            title={`${INDICATOR_NAMES[indicator]}: ${horizon}-month-ahead accuracy`}
-            footnote={<span data-tour="fc-baseline">Lower is better for MAE, RMSE, MASE and sMAPE. MASE is scaled by one-step changes in the training data, so longer horizons naturally score higher. Coverage should be near its nominal level (80% or 95%); a narrow interval is not a better one. Models are compared only on identical origins <HelpTip id="model-comparison" />, MAE <HelpTip id="mae" />, coverage <HelpTip id="coverage" />. The naive baseline repeats the latest value; a more complex model is useful only if it beats it.</span>}
-          >
-            <div className="-mt-1 mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-ink-muted">
-              <p>
-                {group.n_origins} backtest origins
-                {group.evaluation_start ? `, targets ${monthLabel(group.evaluation_start, true)} to ${monthLabel(group.evaluation_end ?? group.evaluation_start, true)}` : ""}. Baseline: Naive.
+          <section className="rounded-md border border-rule bg-surface" aria-labelledby="fc-title">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-5 py-3">
+              <h2 id="fc-title" className="text-sm font-semibold">
+                {indicator.toUpperCase()} · {horizon}-month-ahead accuracy
+              </h2>
+              <p className="text-xs text-ink-muted">
+                {group.n_origins} test months{group.evaluation_start ? `, ${monthLabel(group.evaluation_start)} to ${monthLabel(group.evaluation_end ?? group.evaluation_start)}` : ""} · same months for every model
               </p>
-              <button type="button" onClick={download} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg ${focusRing}`}>
-                Download CSV
-              </button>
             </div>
-            {group.warnings.length > 0 && (
-              <ul className="mb-3 space-y-1 rounded border border-warn px-3 py-2 text-xs text-warn" role="note">
-                {group.warnings.map((w) => <li key={w}>{w}</li>)}
-              </ul>
-            )}
-            <div data-tour="fc-table" className="overflow-x-auto">
-              <table className="w-full min-w-[40rem] text-sm">
+            <div className="overflow-x-auto px-5 py-3" data-tour="fc-table">
+              <table className="w-full min-w-[34rem] text-sm">
                 <caption className="sr-only">Backtest accuracy by model on identical forecast origins</caption>
                 <thead>
                   <tr className="border-b border-rule text-left text-xs">
                     <th scope="col" className="py-2 pr-4 font-semibold">Model</th>
-                    {TABLE_METRICS.map((k) => (
-                      <th key={k} scope="col" className="py-2 pr-4 text-right font-semibold">{METRIC_LABELS[k]}</th>
-                    ))}
-                    <th scope="col" className="py-2 pr-4 text-right font-semibold">MAE vs naive</th>
-                    <th scope="col" className="py-2 text-right font-semibold">Runtime</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">
+                      Average error <HelpTip id="mae" />
+                    </th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">vs baseline</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">
+                      Inside 80% range <HelpTip id="coverage" />
+                    </th>
+                    <th scope="col" className="py-2 font-semibold">Track record</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {group.models.map((m) => (
-                    <tr key={m.model} className="border-b border-rule last:border-b-0">
-                      <th scope="row" className="py-2 pr-4 text-left font-medium">
-                        {m.model_name}
-                        {m.is_baseline && <span className="ml-2 rounded border border-rule px-1.5 text-[10px] uppercase tracking-wide text-ink-muted">baseline</span>}
-                      </th>
-                      {TABLE_METRICS.map((k) => {
-                        const best = group.best[k] === m.model;
-                        return (
-                          <td key={k} className={`figure py-2 pr-4 text-right ${best ? "font-semibold text-ok" : ""}`}>
-                            {fmtMetric(k, m.metrics[k])}
-                            {best && <span className="sr-only"> (lowest error)</span>}
+                  {[...group.models]
+                    .sort((a, b) => (a.metrics.mae ?? Infinity) - (b.metrics.mae ?? Infinity))
+                    .map((m) => {
+                      const r = reliabilityOnGroup(group, m.model);
+                      return (
+                        <tr key={m.model} className={`border-b border-rule last:border-b-0 ${m.model === BASELINE ? "bg-bg/60" : ""}`}>
+                          <th scope="row" className="py-2 pr-4 text-left font-medium">
+                            {m.model_name}
+                            {m.model === BASELINE && <span className="ml-2 rounded border border-rule px-1.5 text-[10px] uppercase tracking-wide text-ink-muted">baseline</span>}
+                            {best === m.model && <span className="ml-2 rounded border border-ok px-1.5 text-[10px] uppercase tracking-wide text-ok">lowest error</span>}
+                          </th>
+                          <td className="figure py-2 pr-4 text-right">{fmtMetric("mae", m.metrics.mae)}</td>
+                          <td className="figure py-2 pr-4 text-right">
+                            {m.vs_baseline_mae_pct === null ? "—" : `${m.vs_baseline_mae_pct > 0 ? "+" : ""}${m.vs_baseline_mae_pct.toFixed(1)}%`}
                           </td>
-                        );
-                      })}
-                      <td className="figure py-2 pr-4 text-right">
-                        {m.vs_baseline_mae_pct === null ? "—" : `${m.vs_baseline_mae_pct > 0 ? "+" : ""}${m.vs_baseline_mae_pct.toFixed(1)}%`}
-                      </td>
-                      <td className="figure py-2 text-right">{m.runtime_seconds === null ? "—" : `${m.runtime_seconds.toFixed(1)} s`}</td>
-                    </tr>
-                  ))}
+                          <td className="figure py-2 pr-4 text-right">{fmtMetric("coverage_80", m.metrics.coverage_80)}</td>
+                          <td className="py-2">{r ? <ReliabilityMeter level={r.level} /> : "—"}</td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-xs text-ink-muted">
-              {group.rankable
-                ? "Green marks the lowest error among models on identical data and origins. This is not a significance test."
-                : "No model is highlighted: this evaluation set is too small (or has a single model) to rank fairly."}{" "}
-              “—” means unavailable (for example intervals that could not be calibrated).
-            </p>
-          </Panel>
+            <div className="space-y-1 border-t border-rule px-5 py-3 text-xs text-ink-muted" data-tour="fc-baseline">
+              <p>
+                <span className="font-medium text-ink">Lower error is generally better.</span> The naive baseline simply repeats the last official value; a model is useful only if it
+                beats it. A negative &quot;vs baseline&quot; means a smaller error than the baseline.
+              </p>
+              <p>
+                {group.rankable
+                  ? "“Lowest error” marks the smallest average error on these months. Differences are not tested for statistical significance."
+                  : `No model is marked as best: ${group.n_origins < 12 ? `only ${group.n_origins} test months (fewer than 12)` : "too few models"} is not enough to rank fairly.`}{" "}
+                “—” means not available, never zero.
+              </p>
+              {group.warnings
+                .filter((w) => !/not tested for statistical significance/.test(w))
+                .map((w) => (
+                  <p key={w} className="text-warn">
+                    {w}
+                  </p>
+                ))}
+            </div>
+          </section>
 
-          <Panel title="Error by model">
-            <label className="mb-3 block text-sm">
-              <span className="mr-2 text-ink-muted">Metric</span>
-              <select className={selectClass} value={barMetric} onChange={(e) => setBarMetric(e.target.value)}>
-                {BAR_METRICS.map((k) => <option key={k} value={k}>{METRIC_LABELS[k]}</option>)}
-              </select>
-            </label>
-            <Bars group={group} metric={barMetric} />
-          </Panel>
-          <Panel title="Models not compared">
-            <Excluded cmp={cmp} />
-            <p className="mt-2 text-xs text-ink-muted">{cmp.note}</p>
-          </Panel>
+          <section className="rounded-md border border-rule bg-surface" aria-labelledby="fc-chart-title" data-tour="fc-chart">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-5 py-3">
+              <h2 id="fc-chart-title" className="text-sm font-semibold">
+                Error by model <span className="font-normal text-ink-muted">(lower is better)</span>
+              </h2>
+              {research && (
+                <label className="text-xs">
+                  <span className="mr-2 text-ink-muted">Metric</span>
+                  <select className={selectClass} value={barMetric} onChange={(e) => setBarMetric(e.target.value)}>
+                    {BAR_METRICS.map((k) => (
+                      <option key={k} value={k}>
+                        {METRIC_LABELS[k]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+            <div className="px-5 py-4">
+              <ErrorBars group={group} metric={research ? barMetric : "mae"} />
+            </div>
+          </section>
+
+          {research && (
+            <div className="space-y-6" data-testid="research-view">
+              <Panel title="All metrics on this test set" footnote="MASE is scaled by one-month changes in the training data, so longer horizons naturally score higher. Coverage should be near its nominal level; a narrower interval is not a better one.">
+                <div className="-mt-1 mb-3 flex justify-end">
+                  <button type="button" onClick={download} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg ${focusRing}`}>
+                    Download CSV
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[44rem] text-sm">
+                    <caption className="sr-only">All backtest metrics by model on identical forecast origins</caption>
+                    <thead>
+                      <tr className="border-b border-rule text-left text-xs">
+                        <th scope="col" className="py-2 pr-4 font-semibold">Model</th>
+                        {TABLE_METRICS.map((k) => (
+                          <th key={k} scope="col" className="py-2 pr-4 text-right font-semibold">
+                            {METRIC_LABELS[k]}
+                          </th>
+                        ))}
+                        <th scope="col" className="py-2 pr-4 text-right font-semibold">Origins</th>
+                        <th scope="col" className="py-2 text-right font-semibold">Run</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.models.map((m) => (
+                        <tr key={m.model} className="border-b border-rule last:border-b-0">
+                          <th scope="row" className="py-2 pr-4 text-left font-medium">
+                            {m.model_name}
+                          </th>
+                          {TABLE_METRICS.map((k) => (
+                            <td key={k} className="figure py-2 pr-4 text-right">
+                              {fmtMetric(k, m.metrics[k])}
+                            </td>
+                          ))}
+                          <td className="figure py-2 pr-4 text-right">{m.n_origins}</td>
+                          <td className="figure py-2 text-right">
+                            <Link href={`/forecasting/experiments/${m.run_id}?view=research`} className="text-accent underline">
+                              #{m.run_id}
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Panel>
+              <Panel title="Models not compared">
+                <Excluded cmp={cmp} />
+                <p className="mt-2 text-xs text-ink-muted">{cmp.note}</p>
+              </Panel>
+            </div>
+          )}
         </>
       )}
+      <p className="text-sm">
+        <Link href={`/forecasting/${indicator}${research ? "?view=research" : ""}`} className="text-accent underline">
+          {indicator.toUpperCase()} forecast →
+        </Link>
+        <span className="mx-2 text-ink-muted">·</span>
+        <Link href={`/forecasting/experiments?indicator=${indicator}&horizon=${horizon}${research ? "&view=research" : ""}`} className="text-accent underline">
+          Experiments →
+        </Link>
+      </p>
     </div>
   );
 }
@@ -221,7 +329,7 @@ export function ComparisonView({ data, apiError = "" }: { data: ComparisonMap; a
 function Excluded({ cmp }: { cmp: Comparison }) {
   if (cmp.excluded.length === 0) return <p className="text-sm text-ink-muted">Every stored model was compared.</p>;
   return (
-    <ul className="space-y-1 text-sm">
+    <ul className="mt-2 space-y-1 text-sm">
       {cmp.excluded.map((e) => (
         <li key={e.model}>
           <span className="font-medium">{e.model_name}</span> <span className="text-ink-muted">excluded: {e.reason}</span>

@@ -12,3 +12,16 @@ WEB=http://127.0.0.1:3114 API=http://127.0.0.1:8765 node series-e2e.mjs
 `series-e2e.mjs` expects the local database described in docs/OFFICIAL-DATA-PLATFORM.md (all 11 series) and a Chrome at
 `C:/Program Files/Google/Chrome/Application/chrome.exe` (edit the path for other machines).
 `failure-state.mjs` expects the same build started with `ARTHASENSE_API_URL=http://127.0.0.1:9` on port 3115.
+
+## Forecasts V3
+
+`forecasts-e2e.mjs`: 58 checks covering cross-page latest values (Forecasts vs Indicators), forecast dates after
+cutoff, controls and Research View, CSV downloads, tooltips, spotlight tours at 360/390/768/1440 px (real geometry:
+the card never covers its target), deep links, dark mode and console/hydration errors. GET requests and UI clicks only.
+
+```
+WEB=http://127.0.0.1:3124 API=http://127.0.0.1:8775 OUT=report.json node forecasts-e2e.mjs
+```
+
+Note: `series-e2e.mjs` predates the Indicators redesign (`e01212d`, `841ef95`); some of its checks target controls
+that no longer exist. It produces identical results on `7fa0b92` and on `feature/forecasts-v3`.

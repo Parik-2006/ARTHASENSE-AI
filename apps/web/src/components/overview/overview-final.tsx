@@ -15,6 +15,7 @@ import { explainGdp, explainLevel, explainRate, monthlyWindow, pathFor, quarterW
 import { derive, type Derived, seedCustomRange } from "@/lib/overview";
 import type { IndicatorBundle } from "@/lib/overview-data";
 import { buildComparison, type CmpMode, parseCmpMode, parseCompareSel } from "@/lib/overview-v3";
+import { seriesIds } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
@@ -25,11 +26,42 @@ const ONE_LINE: Record<ViewKey, string> = {
   gdp: "Value of everything the economy produces, after removing price changes.",
 };
 
+/** One stored official series (base year) of an indicator, prepared for Section 2. */
+interface SegView {
+  id: string;
+  label: string;
+  baseYear: string;
+  series: string | null;
+  coverage: string;
+  rows: Derived[];
+  /** The series carries an official year-on-year rate (CPI, IIP); otherwise the change is calculated (WPI, archives). */
+  official: boolean;
+  /** "Jan 2013 – Dec 2025": months with an index value. */
+  span: string;
+  /** Months with an official rate, or null. */
+  rateSpan: string | null;
+}
+
 interface Prep {
   b: IndicatorBundle;
+  /** The CURRENT series (cards, comparison, defaults). */
   rows: Derived[];
   /** Official year-on-year rate for CPI and IIP; calculated for WPI (its source publishes the index only). */
   official: boolean;
+  /** Every stored series, current first; never merged. */
+  segs: SegView[];
+}
+
+function segView(b: IndicatorBundle, seg: IndicatorBundle["segments"][number]): SegView {
+  const rows = derive(seg.observations);
+  const idx = rows.filter((r) => r.index !== null);
+  const rt = rows.filter((r) => r.rate !== null);
+  return {
+    id: seg.id, label: seg.label, baseYear: seg.baseYear, series: seg.series ?? null, coverage: seg.coverage, rows,
+    official: b.rateKind !== null && rt.length > 0,
+    span: periodSpan(idx[0]?.period ?? null, idx[idx.length - 1]?.period ?? null),
+    rateSpan: rt.length ? periodSpan(rt[0].period, rt[rt.length - 1].period) : null,
+  }; // prettier-ignore
 }
 
 const rateOf = (p: Prep, r: Derived) => (p.official ? r.rate : r.yoyCalc);
@@ -41,7 +73,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     () =>
       bundles.map((b) => {
         const rows = b.segments[0] ? derive(b.segments[0].observations) : [];
-        return { b, rows, official: b.rateKind !== null && rows.some((r) => r.rate !== null) };
+        return { b, rows, official: b.rateKind !== null && rows.some((r) => r.rate !== null), segs: b.segments.map((g) => segView(b, g)) };
       }),
     [bundles],
   );
@@ -175,7 +207,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     const hasRate = (x: ViewKey) => (x === "gdp" ? gdpRows.some((r) => r.growthOfficial !== null) : !!byKey(x)?.rows.some((r) => rateOf(byKey(x)!, r) !== null));
     const def: ViewKey = VIEW_KEYS.find(hasRate) ?? "cpi";
     const k = (VIEW_KEYS as readonly string[]).includes(params.get("chg") ?? "") ? (params.get("chg") as ViewKey) : def;
-    const pick = (key: ViewKey) => go({ chg: key === def ? null : key });
+    const pick = (key: ViewKey) => go({ chg: key === def ? null : key, chgs: null }); // series ids are per indicator
     const m: ChangeMetric = params.get("chgm") === "level" ? "level" : "yoy";
     return (
       <SectionShell id="changes" tour="changes" title="How are things changing?" help="yoy" intro="Choose an indicator, what to show and a time range. Year-on-year change compares each period with the same period a year earlier.">
@@ -195,51 +227,111 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
 
   function MonthlyChange({ k, m }: { k: Exclude<ViewKey, "gdp">; m: ChangeMetric }) {
     const p = byKey(k);
-    if (!p || p.b.error) {
+    if (!p || p.b.error || !p.segs.length) {
       return (
         <div data-testid="change-panel">
           <Empty>{VIEW_NAME[k].short} data could not be loaded right now.</Empty>
         </div>
       );
     }
-    const w = monthlyWindow(p.rows, sel);
-    const points = w.rows.map((r) => ({ n: r.n, v: rateOf(p, r) }));
+    // Which official series (base year) to show: ?chgs=<series id>; default = the current series. Bases are never joined.
+    const wanted = params.get("chgs");
+    const s = p.segs.find((x) => x.id === wanted) ?? p.segs[0];
+    const isCurrent = s.id === p.segs[0].id;
+    const val = (x: SegView, r: Derived) => (m === "level" ? r.index : x.official ? r.rate : r.yoyCalc);
+    const w = monthlyWindow(s.rows, sel);
+    const have = w.rows.filter((r) => val(s, r) !== null).length;
     const label = k === "iip" ? "industrial production growth" : k === "cpi" ? "consumer inflation" : "wholesale inflation";
     const period = periodSpan(w.first?.period ?? null, w.last?.period ?? null);
-    const base = p.b.segments[0]?.baseYear ?? "";
+    const ids = seriesIds(k, s.baseYear, "general", s.series);
+    const src = { ...p.b.source, baseYear: s.baseYear, coverage: s.coverage, seriesIds: ids, dataset: `${p.b.source.dataset} (${s.label})` };
+    // Another stored series with MORE figures for the chosen range: say so and offer it, instead of a bare "no data".
+    // Only for fixed calendar windows (Custom / a year) or when this series shows nothing: presets and All are relative to
+    // each series' own history, so comparing month counts across series there would be misleading.
+    const fixedWindow = sel.key === "Custom";
+    const better = p.segs
+      .filter(() => fixedWindow || have === 0)
+      .filter((x) => x.id !== s.id)
+      .map((x) => ({ x, n: monthlyWindow(x.rows, sel).rows.filter((r) => val(x, r) !== null).length }))
+      .filter((a) => a.n > have)
+      .sort((a, b) => b.n - a.n)[0];
+    const choose = (id: string) => go({ chgs: id === p.segs[0].id ? null : id });
+
+    const selector = (
+      <div className="mb-3 space-y-1 text-sm">
+        {p.segs.length > 1 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <label htmlFor={`chg-base-${k}`} className="font-medium">
+              Series (base year)
+            </label>
+            <HelpTip id="base-year" />
+            <select id={`chg-base-${k}`} value={s.id} onChange={(e) => choose(e.target.value)} className={`min-w-0 max-w-full truncate rounded border border-rule bg-bg px-2 py-1 ${focusRing}`}>
+              {p.segs.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.label} ({x.span})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        <p data-testid="series-coverage" className="text-xs text-ink-muted">
+          {s.label}: index {s.span}
+          {s.official ? (s.rateSpan ? `; official ${k === "iip" ? "growth" : "inflation"} ${s.rateSpan}` : `; no official ${k === "iip" ? "growth" : "inflation"} stored`) : "; year-on-year change calculated from the index"}.
+          {!isCurrent && " A separate official series: its index levels are not comparable with other base years and are never joined to them."}
+        </p>
+      </div>
+    );
+    const hint = better && (
+      <p role="status" data-testid="series-hint" className="mt-2 rounded border border-warn px-3 py-2 text-sm">
+        {have === 0 ? `${s.label} has no ${m === "level" ? "index values" : `${label} figures`} in this range.` : `${s.label} has only ${have} month${have === 1 ? "" : "s"} in this range.`}{" "}
+        The {better.x.label} series has {better.n} month{better.n === 1 ? "" : "s"}.{" "}
+        <button type="button" onClick={() => choose(better.x.id)} className={`font-medium text-accent underline ${focusRing}`}>
+          Show {better.x.label}
+        </button>
+      </p>
+    );
+
     if (m === "level") {
       return (
         <div data-testid="change-panel">
+          {selector}
           <p className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">
-            {VIEW_NAME[k].short}: index level (base {base} = 100) <ClassBadge cls="official" />
+            {VIEW_NAME[k].short}: index level (base {s.baseYear} = 100) · {s.label} <ClassBadge cls="official" />
           </p>
           {w.stored >= 2 ? (
-            <TimeChart series={[{ key: k, label: `${VIEW_NAME[k].short} index`, stroke: VIEW_COLOR[k], points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${base} = 100)`} description={`${VIEW_NAME[k].short} index, ${period}.`} />
+            <TimeChart series={[{ key: k, label: `${VIEW_NAME[k].short} index (${s.label})`, stroke: VIEW_COLOR[k], points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${s.baseYear} = 100)`} description={`${VIEW_NAME[k].short} index, ${s.label}, ${period}.`} />
           ) : (
-            <Empty>{w.stored === 1 ? "Only one month falls in this range; a trend needs at least two." : "No stored months fall in this range."}</Empty>
+            <Empty>{w.stored === 1 ? "Only one month falls in this range; a trend needs at least two." : `No months of ${s.label} fall in this range.`}</Empty>
           )}
+          {hint}
           <p className="mt-2 text-sm">{explainLevel(k, w)}</p>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            <SourceAttribution cls="official" sources={[p.b.source]} period={period} units={`Index points, base ${base} = 100`} />
-            <Link href={pathFor(k)} className="text-sm font-medium text-accent underline">Explore {VIEW_NAME[k].short} in detail →</Link>
+            <SourceAttribution cls="official" sources={[src]} period={period} units={`Index points, base ${s.baseYear} = 100`} />
+            <Link href={`${pathFor(k)}${isCurrent ? "" : `?base=${encodeURIComponent(s.id)}`}`} className="text-sm font-medium text-accent underline">Explore {VIEW_NAME[k].short} in detail →</Link>
           </div>
         </div>
       );
     }
+    const points = w.rows.map((r) => ({ n: r.n, v: val(s, r) }));
     return (
       <div data-testid="change-panel">
+        {selector}
         <p className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">
-          {VIEW_NAME[k].short}: {label} (% year-on-year) <ClassBadge cls={p.official ? "official" : "calculated"} />
+          {VIEW_NAME[k].short}: {label} (% year-on-year) · {s.label} <ClassBadge cls={s.official ? "official" : "calculated"} />
         </p>
-        {points.some((x) => x.v !== null) ? (
-          <TimeChart kind="bars" barColor="series" signed unit="%" series={[{ key: k, label, stroke: VIEW_COLOR[k], points }]} yLabel="% change from a year earlier" description={`Bar chart of ${label}, ${period}.`} />
+        {have ? (
+          <TimeChart kind="bars" barColor="series" signed unit="%" series={[{ key: k, label: `${label} (${s.label})`, stroke: VIEW_COLOR[k], points }]} yLabel="% change from a year earlier" description={`Bar chart of ${label}, ${s.label}, ${period}.`} />
         ) : (
-          <Empty>No {label} figure exists in this range. A calculated change needs the same month a year earlier.</Empty>
+          <Empty>
+            No {label} figure for {s.label} in this range.{" "}
+            {s.official ? `This series publishes it for ${s.rateSpan ?? "no months"}.` : "A calculated change needs the same month a year earlier in this series."}
+          </Empty>
         )}
-        <p className="mt-2 text-sm">{explainRate(label, w.rows.map((r) => ({ period: r.period, v: rateOf(p, r) })), p.official)}</p>
+        {hint}
+        <p className="mt-2 text-sm">{explainRate(label, w.rows.map((r) => ({ period: r.period, v: val(s, r) })), s.official)}</p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <SourceAttribution cls={p.official ? "official" : "calculated"} sources={[p.b.source]} period={period} units="% year-on-year" method={p.official ? undefined : "Calculated by ArthaSense from the official index (same month a year earlier). Not an official rate."} />
-          <Link href={pathFor(k)} className="text-sm font-medium text-accent underline">Explore {VIEW_NAME[k].short} in detail →</Link>
+          <SourceAttribution cls={s.official ? "official" : "calculated"} sources={[src]} period={period} units="% year-on-year" method={s.official ? undefined : "Calculated by ArthaSense from the official index of this series (same month a year earlier). Not an official rate."} />
+          <Link href={`${pathFor(k)}${isCurrent ? "" : `?base=${encodeURIComponent(s.id)}`}`} className="text-sm font-medium text-accent underline">Explore {VIEW_NAME[k].short} in detail →</Link>
         </div>
       </div>
     );

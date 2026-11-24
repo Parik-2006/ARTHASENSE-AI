@@ -132,7 +132,9 @@ def check(
     bad = []
     for eid, r in new.items():
         for t, _o, _s, p, _a, l8, u8, l95, u95, _m in r["forecasts"]:
-            if l8 is not None and not (l95 <= l8 <= p <= u8 <= u95):
+            chain = [v for v in (l95, l8, p, u8, u95) if v is not None]
+            paired = (l8 is None) == (u8 is None) and (l95 is None) == (u95 is None)
+            if not paired or any(a > b for a, b in zip(chain, chain[1:], strict=False)):
                 bad.append((eid, t))
             if r["kind"] == "forecast" and t <= r["cutoff"]:
                 bad.append((eid, t, "target before cutoff"))

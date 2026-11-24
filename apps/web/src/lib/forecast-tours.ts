@@ -12,26 +12,30 @@ export interface SpotStep {
 
 export const FORECAST_OVERVIEW_STEPS: SpotStep[] = [
   { target: "fo-cards", title: "Forecast cards", body: "Each card is one indicator. Start here to see where it may head next." },
-  { target: "fo-official", title: "Official vs predicted", body: "The first figure is the latest official value. The second is the model's estimate, not official data." },
+  { target: "fo-official", title: "Official vs predicted", body: "The first figure is the latest official value. The second is the model's estimate, not official data, and the period it is for." },
+  { target: "fo-model", title: "Which model", body: "The method that produced this estimate, chosen from past test results. Hover for its exact setup." },
   { target: "fo-reliability", title: "Reliability", body: "How well this model did when tested on past data. More filled bars mean a stronger track record." },
   { target: "fo-chart", title: "Forecast chart", body: "The teal line is official history. The yellow line shows the model's estimate of what may happen next." },
   { target: "fo-explore", title: "Explore forecast", body: "Open the full chart, switch models and see the uncertainty range." },
+  { target: "fo-gdp", title: "Quarterly GDP", body: "GDP is quarterly. The model forecasts real GDP; growth compares it with the same quarter a year earlier." },
 ];
 
 export const FORECAST_EXPLORER_STEPS: SpotStep[] = [
   { target: "fx-official", title: "Official observation", body: "The latest value published by the government. Everything after it on the chart is a model estimate." },
-  { target: "fx-model", title: "Model", body: "Pick a forecasting method. Each one was tested on past data before being shown here." },
-  { target: "fx-horizon", title: "Forecast horizon", body: "Choose how many months ahead to look. Further ahead means more uncertainty." },
-  { target: "fx-chart", title: "Interactive chart", body: "Hover, tap or use the arrow keys to read any month. Teal is official; yellow is the estimate." },
+  { target: "fx-model", title: "Model", body: "Pick one of eight methods. Only tested ones can be chosen; greyed-out ones say why they are unavailable." },
+  { target: "fx-availability", title: "Unavailable models", body: "Some methods need more history than exists. They are listed here with the reason." },
+  { target: "fx-horizon", title: "Forecast horizon", body: "How far ahead to look: months for CPI, WPI, IIP; quarters for GDP. Further ahead is less certain." },
+  { target: "fx-chart", title: "Historical vs predicted", body: "Hover, tap or use arrow keys to read any period. Teal is official; yellow is the estimate." },
   { target: "fx-bands", title: "Uncertainty bands", body: "The shaded bands show likely ranges (80% and 95%). Actual values can still land outside them." },
-  { target: "fx-reliability", title: "Reliability", body: "How this model performed in past tests, in plain terms." },
+  { target: "fx-reliability", title: "Reliability", body: "How this model did in past tests. A weak track record means: treat the estimate with extra caution." },
   { target: "fx-view", title: "Research View", body: "Switch here for error metrics, backtest details, data fingerprints and CSV downloads." },
 ];
 
 export const COMPARISON_STEPS: SpotStep[] = [
   { target: "fc-indicator", title: "Indicator", body: "Choose which indicator's models to compare." },
   { target: "fc-horizon", title: "Forecast horizon", body: "Compare accuracy for forecasts made this many months ahead." },
-  { target: "fc-table", title: "Comparison table", body: "Average error per model, all tested on the same past months. Lower error is generally better." },
+  { target: "fc-table", title: "Comparison table", body: "All eight methods: errors (MAE, RMSE, sMAPE) on the same past periods, and the number of tests." },
+  { target: "fc-default", title: "Selected model", body: "The badge marks the method the forecast pages use by default, chosen from this evidence." },
   { target: "fc-chart", title: "Error chart", body: "The same errors as bars. The grey bar is the naive baseline." },
   { target: "fc-baseline", title: "Baseline", body: "The naive baseline just repeats the last value. A model is only useful if it beats it." },
 ];

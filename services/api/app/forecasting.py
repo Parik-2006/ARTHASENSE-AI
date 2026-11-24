@@ -20,43 +20,83 @@ from app.db import connect
 
 router = APIRouter(prefix="/api/v1/forecasting", tags=["forecasting"])
 
-Indicator = Literal["cpi", "wpi", "iip"]
-# Must match pipeline/forecasting/experiments.py (a test enforces this). Index LEVELS only.
+Indicator = Literal["cpi", "wpi", "iip", "gdp"]
+# Must match pipeline/forecasting/experiments.py (a test enforces this). Index LEVELS, and real GDP LEVELS.
 INDICATOR_SERIES: dict[str, str] = {
     "cpi": "mospi.cpi.2024.current.all_india.combined.general.index",
     "wpi": "mospi.wpi.2022-23.india.all_commodities.index",
     "iip": "mospi.iip.2022-23.india.general.index",
+    "gdp": "mospi.nas.2022-23.india.gdp.real.level",
 }
 SERIES_TO_INDICATOR = {v: k for k, v in INDICATOR_SERIES.items()}
-# Official linked training history (must match pipeline/forecasting/experiments.py LINKED_LOADERS): CPI is trained on
-# MoSPI's Back series on base 2024=100 (Jan 2013-Dec 2024, linking factor per FAQs on CPI 2024, Annexure V, Q36-38)
-# followed by the Current series. Index levels only; runs are stored against the Current series.
-LINKED_HISTORY: dict[str, tuple[str, ...]] = {
-    "cpi": ("mospi.cpi.2024.back.all_india.combined.general.index", INDICATOR_SERIES["cpi"]),
+FREQUENCY: dict[str, Literal["monthly", "quarterly"]] = {
+    "cpi": "monthly",
+    "wpi": "monthly",
+    "iip": "monthly",
+    "gdp": "quarterly",
 }
-LINKED_NOTE = {
-    "cpi": "MoSPI publishes the Back series on the same 2024 = 100 base, calculated with a documented linking factor, so it extends the Current series without overlap. Before 2025 it follows the 2012 basket's price movements."
+# Standard horizons (periods ahead) and the default initial training window of the V4 suites, per frequency.
+HORIZONS_BY_FREQ: dict[str, tuple[int, ...]] = {"monthly": (1, 3, 6, 12), "quarterly": (1, 2, 4)}
+INITIAL_TRAIN_BY_FREQ: dict[str, int] = {"monthly": 18, "quarterly": 8}
+
+
+class LinkedSpec(BaseModel):
+    """One documented official training history. `old_until_join`: the first component is used only for periods
+    before the first period of the current series (it overlaps the current series and is never mixed in after)."""
+
+    components: tuple[str, ...]
+    old_until_join: bool
+    kind: Literal["official_linked", "official_linking_factor"]
+    factor: float | None = None
+    note: str
+
+
+# Official linked training histories (must match pipeline/forecasting/experiments.py LINKED_LOADERS). Runs are stored
+# against the current series; the composite is recorded in each run's configuration (`training_data`).
+LINKED_HISTORY: dict[str, LinkedSpec] = {
+    "cpi": LinkedSpec(
+        components=("mospi.cpi.2024.back.all_india.combined.general.index", INDICATOR_SERIES["cpi"]),
+        old_until_join=False,
+        kind="official_linked",
+        note="MoSPI publishes the Back series on the same 2024 = 100 base, calculated with a documented linking factor, so it extends the Current series without overlap. Before 2025 it follows the 2012 basket's price movements.",
+    ),
+    "wpi": LinkedSpec(
+        components=("mospi.wpi.2011-12.india.all_commodities.index", INDICATOR_SERIES["wpi"]),
+        old_until_join=True,
+        kind="official_linking_factor",
+        factor=1.53,
+        note="Before April 2023 the 2011-12 series is carried onto the 2022-23 base by ArthaSense with the Office of the Economic Adviser's published linking factor (old index / 1.53, OEA FAQ Q20). Those months follow the old basket's price movements; the official observations are not changed.",
+    ),
+    "iip": LinkedSpec(
+        components=("mospi.iip.2011-12.india.general.index", INDICATOR_SERIES["iip"]),
+        old_until_join=True,
+        kind="official_linking_factor",
+        factor=1.3834,
+        note="Before April 2023 the 2011-12 General index is carried onto the 2022-23 base by ArthaSense with the NSO's published linking factor (old index / 1.3834). The new series also covers water supply and waste management, which the old one did not, so the link is approximate; the official observations are not changed.",
+    ),
 }
-HORIZONS = (1, 3, 6, 12)
+HORIZONS = HORIZONS_BY_FREQ["monthly"]
 MIN_ORIGINS_EVALUATE = 5
 MIN_ORIGINS_RANK = 12
 DEFAULT_INITIAL_TRAIN = 18
 BASELINE_MODEL = "naive"
 MAX_PAGE = 200
 
-# Must match pipeline/forecasting/registry.py (a test enforces this).
+# The eight algorithms evaluated for every indicator (must match pipeline/forecasting/registry.py CORE_MODELS).
+CORE_MODELS = ("naive", "snaive", "drift", "ets", "arima", "sarima", "rf", "xgboost")
+# Must match pipeline/forecasting/registry.py (a test enforces this). min_train is for monthly data.
 MODEL_CATALOGUE: dict[str, dict[str, Any]] = {
     "naive": {
         "name": "Naive",
         "family": "baseline",
         "min_train": 1,
-        "explanation": "Assumes every future month will equal the latest observed value.",
+        "explanation": "Assumes every future period will equal the latest observed value.",
     },
     "snaive": {
         "name": "Seasonal naive",
         "family": "baseline",
         "min_train": 12,
-        "explanation": "Uses the value from the same month one year earlier.",
+        "explanation": "Uses the value from the same month (or quarter) one year earlier.",
     },
     "drift": {
         "name": "Drift",
@@ -65,28 +105,34 @@ MODEL_CATALOGUE: dict[str, dict[str, Any]] = {
         "explanation": "Extends the straight line between the first and last observation.",
     },
     "ets": {
-        "name": "ETS (damped trend)",
+        "name": "ETS",
         "family": "statistical",
         "min_train": 12,
-        "explanation": "Exponential smoothing: recent months weigh more, with a trend that fades over time.",
+        "explanation": "Exponential smoothing: recent periods weigh more; trend and seasonal form chosen by AICc on the training data.",
     },
     "arima": {
-        "name": "ARIMA(1,1,0)",
+        "name": "ARIMA",
         "family": "statistical",
-        "min_train": 12,
-        "explanation": "Models month-to-month changes using the previous change (no yearly pattern).",
+        "min_train": 11,
+        "explanation": "Models period-to-period changes from their own recent past; order chosen by AICc on the training data.",
     },
     "sarima": {
-        "name": "SARIMA(1,1,0)(0,1,0)12",
+        "name": "SARIMA",
         "family": "statistical",
         "min_train": 36,
-        "explanation": "Studies trends and recurring yearly patterns in the past data.",
+        "explanation": "ARIMA with a yearly seasonal part; orders chosen by AICc on the training data.",
+    },
+    "rf": {
+        "name": "Random Forest",
+        "family": "machine_learning",
+        "min_train": 37,
+        "explanation": "Averages many decision trees trained on lagged period-to-period changes and the time of year.",
     },
     "xgboost": {
-        "name": "XGBoost (lagged changes)",
+        "name": "XGBoost",
         "family": "machine_learning",
-        "min_train": 31,
-        "explanation": "Learns patterns from previous month-to-month changes with gradient-boosted trees.",
+        "min_train": 37,
+        "explanation": "Gradient-boosted trees trained on lagged period-to-period changes and the time of year.",
     },
     "chronos2": {
         "name": "Chronos-2",
@@ -101,7 +147,9 @@ MODEL_CATALOGUE: dict[str, dict[str, Any]] = {
         "explanation": "A pretrained time-series foundation model (needs a large download; not enabled).",
     },
 }
-ModelId = Literal["naive", "snaive", "drift", "ets", "arima", "sarima", "xgboost", "chronos2", "timesfm25"]
+ModelId = Literal[
+    "naive", "snaive", "drift", "ets", "arima", "sarima", "rf", "xgboost", "chronos2", "timesfm25"
+]
 
 DISCLAIMER = (
     "Forecasts are statistical estimates of index levels, not official statistics and not guaranteed "
@@ -172,24 +220,31 @@ class TrainingComponent(BaseModel):
     first_period: date
     last_period: date
     n_observations: int
+    base_year: str | None = None
+    # The transformation ArthaSense applied to this component ("none" or the official linking factor used).
+    transformation: str = "none"
 
 
 class TrainingHistory(BaseModel):
-    """The series models are trained on when it is longer than the indicator's current series (CPI only)."""
+    """The series models are trained on when it is longer than the indicator's current series."""
 
-    kind: Literal["official_linked"] = "official_linked"
+    kind: Literal["official_linked", "official_linking_factor"] = "official_linked"
     n_observations: int
     first_period: date
     last_period: date
     join_period: date
     components: list[TrainingComponent]
     note: str
+    linking_factor: float | None = None
 
 
 class SeriesInfo(BaseModel):
     indicator: str
     series_code: str
     base_year: str | None
+    frequency: Literal["monthly", "quarterly"] = "monthly"
+    unit: str | None = None
+    horizons: list[int] = []
     n_observations: int
     first_period: date | None
     last_period: date | None
@@ -203,8 +258,10 @@ class SeriesInfo(BaseModel):
     training_history: TrainingHistory | None = None
 
 
-def _evaluable(n: int, initial_train: int = DEFAULT_INITIAL_TRAIN) -> list[int]:
-    return [h for h in HORIZONS if n - initial_train - h + 1 >= MIN_ORIGINS_EVALUATE]
+def _evaluable(
+    n: int, initial_train: int = DEFAULT_INITIAL_TRAIN, horizons: tuple[int, ...] = HORIZONS
+) -> list[int]:
+    return [h for h in horizons if n - initial_train - h + 1 >= MIN_ORIGINS_EVALUATE]
 
 
 def _months(a: date, b: date) -> int:
@@ -212,27 +269,39 @@ def _months(a: date, b: date) -> int:
 
 
 def _linked_history(conn: psycopg.Connection, indicator: str) -> TrainingHistory | None:
-    """The official linked history, only when every component is stored, gap-free and the parts join exactly."""
-    codes = LINKED_HISTORY.get(indicator)
-    if not codes:
+    """The official linked history, only when every component is stored, gap-free and the parts join exactly.
+
+    For a linking-factor history the old series is counted only BEFORE the first month of the current series."""
+    spec = LINKED_HISTORY.get(indicator)
+    if not spec:
         return None
     parts: list[TrainingComponent] = []
-    for code in codes:
-        n, first, last = conn.execute(
-            "SELECT count(DISTINCT o.period_date), min(o.period_date), max(o.period_date)"
-            " FROM observations o JOIN series s ON s.id=o.series_id WHERE s.code=%s",
-            (code,),
+    codes = spec.components
+    cur_first = conn.execute(
+        "SELECT min(o.period_date) FROM observations o JOIN series s ON s.id=o.series_id WHERE s.code=%s",
+        (codes[-1],),
+    ).fetchone()[0]
+    if cur_first is None:
+        return None
+    for i, code in enumerate(codes):
+        cut = cur_first if spec.old_until_join and i < len(codes) - 1 else None
+        n, first, last, base = conn.execute(
+            "SELECT count(DISTINCT o.period_date), min(o.period_date), max(o.period_date), max(s.base_year)"
+            " FROM observations o JOIN series s ON s.id=o.series_id WHERE s.code=%s"
+            " AND (%s::date IS NULL OR o.period_date < %s::date)",
+            (code, cut, cut),
         ).fetchone()
         if not n or _months(first, last) + 1 != n:
             return None  # missing component or a gap: no linked history is claimed
-        parts.append(
-            TrainingComponent(series_code=code, first_period=first, last_period=last, n_observations=n)
-        )
+        tr = f"divided by the official linking factor {spec.factor}" if cut and spec.factor else "none"
+        parts.append(TrainingComponent(series_code=code, first_period=first, last_period=last, n_observations=n,
+                                       base_year=base, transformation=tr))  # fmt: skip
     if any(_months(a.last_period, b.first_period) != 1 for a, b in zip(parts, parts[1:], strict=False)):
         return None  # overlap or hole at a join
-    return TrainingHistory(n_observations=sum(p.n_observations for p in parts), first_period=parts[0].first_period,
-                           last_period=parts[-1].last_period, join_period=parts[-1].first_period, components=parts,
-                           note=LINKED_NOTE[indicator])  # fmt: skip
+    return TrainingHistory(kind=spec.kind, n_observations=sum(p.n_observations for p in parts),
+                           first_period=parts[0].first_period, last_period=parts[-1].last_period,
+                           join_period=parts[-1].first_period, components=parts, note=spec.note,
+                           linking_factor=spec.factor)  # fmt: skip
 
 
 @router.get("/series", response_model=list[SeriesInfo])
@@ -240,7 +309,9 @@ def list_series() -> list[SeriesInfo]:
     out = []
     with _db() as conn:
         for ind, code in INDICATOR_SERIES.items():
-            meta = conn.execute("SELECT id, base_year FROM series WHERE code=%s", (code,)).fetchone()
+            freq = FREQUENCY[ind]
+            horizons = HORIZONS_BY_FREQ[freq]
+            meta = conn.execute("SELECT id, base_year, unit FROM series WHERE code=%s", (code,)).fetchone()
             n, first, last = 0, None, None
             latest = None
             if meta:
@@ -261,13 +332,14 @@ def list_series() -> list[SeriesInfo]:
                 (code,),
             ).fetchone()
             linked = _linked_history(conn, ind)
-            ev = _evaluable(linked.n_observations if linked else n)
+            ev = _evaluable(linked.n_observations if linked else n, INITIAL_TRAIN_BY_FREQ[freq], horizons)
+            unit = "monthly" if freq == "monthly" else "quarterly"
             if n == 0:
                 status, reason = "no_data", "No observations stored."
             elif not ev:
                 status = "insufficient_history"
-                reason = (f"{n} monthly observations: not enough to evaluate any horizon "
-                          f"(needs {DEFAULT_INITIAL_TRAIN} training months plus at least {MIN_ORIGINS_EVALUATE} backtest origins).")  # fmt: skip
+                reason = (f"{n} {unit} observations: not enough to evaluate any horizon "
+                          f"(needs {INITIAL_TRAIN_BY_FREQ[freq]} training periods plus at least {MIN_ORIGINS_EVALUATE} backtest origins).")  # fmt: skip
             elif bt or fc:
                 status, reason = "has_experiments", None
             elif linked:
@@ -277,6 +349,7 @@ def list_series() -> list[SeriesInfo]:
             else:
                 status, reason = "ready_not_run", "Data is sufficient but no experiment has been run yet."
             out.append(SeriesInfo(indicator=ind, series_code=code, base_year=meta[1] if meta else None,
+                                  frequency=freq, unit=meta[2] if meta else None, horizons=list(horizons),
                                   n_observations=n, first_period=first, last_period=last, latest_value=latest,
                                   evaluable_horizons=ev, forecast_status=status, reason=reason,
                                   completed_backtests=bt, future_forecasts=fc, last_experiment_at=last_at,
@@ -310,13 +383,57 @@ class Run(BaseModel):
     evaluation_start: date | None = None
     evaluation_end: date | None = None
     metrics: dict[str, float] = {}
+    # The exact configuration that produced this run, from its own stored configuration (never from the catalogue):
+    # e.g. "SARIMA(1,1,0)(0,1,1)12", "ETS(A,Ad,N)", "Random Forest (recursive)". For a backtest whose order was
+    # selected per origin it is the configuration chosen at the LAST origin.
+    model_label: str | None = None
+    model_config: dict[str, Any] = {}
+    frequency: Literal["monthly", "quarterly"] = "monthly"
+    training_history: Literal["current", "linked"] = "current"
 
 
 _RUN_COLS = (
     "fr.id, fr.experiment_id, s.code, fr.model_name, fr.kind, fr.status, fr.error, fr.horizon, fr.suite, fr.n_origins,"
     " fr.training_start, fr.training_cutoff, fr.dataset_fingerprint, fr.origins_fingerprint, fr.snapshot_policy,"
-    " fr.random_seed, fr.runtime_seconds, fr.created_at, fr.model_version"
+    " fr.random_seed, fr.runtime_seconds, fr.created_at, fr.model_version,"
+    " fr.configuration->'diagnostics', fr.configuration->'model', fr.configuration ? 'training_data'"
 )
+_CONFIG_KEYS = ("order", "seasonal_order", "trend", "damped", "seasonal", "seasonal_periods", "strategy", "lags",
+                "selection", "m")  # fmt: skip
+
+
+def _legacy_label(model: str, mcfg: dict[str, Any]) -> str | None:
+    """Label of a V1-V3 run, built from its stored fixed configuration."""
+    if model in ("arima", "sarima") and "order" in mcfg:
+        p, d, q = mcfg["order"]
+        so = mcfg.get("seasonal_order") or [0, 0, 0, 0]
+        if model == "sarima" and len(so) == 4 and so[3]:
+            return f"SARIMA({p},{d},{q})({so[0]},{so[1]},{so[2]}){so[3]}"
+        return f"ARIMA({p},{d},{q})"
+    if model == "ets" and "select" not in mcfg:
+        return "ETS(A,Ad,N)" if mcfg.get("damped", True) else "ETS(A,A,N)"
+    if model == "xgboost" and "strategy" not in mcfg:
+        return "XGBoost (recursive, V1 features)"
+    return None
+
+
+def _label_and_config(model: str, diag: Any, mcfg: Any) -> tuple[str | None, dict[str, Any]]:
+    diag = diag if isinstance(diag, dict) else {}
+    mcfg = mcfg if isinstance(mcfg, dict) else {}
+    label = diag.get("label") or diag.get("last_origin_label") or _legacy_label(model, mcfg)
+    if label is None and model in ("naive", "snaive", "drift"):
+        label = MODEL_CATALOGUE[model]["name"] + (
+            f" (m={mcfg['m']})" if model == "snaive" and "m" in mcfg else ""
+        )
+    cfg = {k: diag[k] for k in _CONFIG_KEYS if diag.get(k) is not None}
+    for k in ("order", "seasonal_order", "strategy", "m", "select"):
+        if k in mcfg and k not in cfg:
+            cfg[k] = mcfg[k]
+    if diag.get("selected_labels"):
+        cfg["selected_per_origin"] = diag["selected_labels"]
+    if diag.get("interval_calibration"):
+        cfg["interval_calibration"] = diag["interval_calibration"]
+    return label, cfg
 
 
 def _run(row: tuple[Any, ...], metrics: dict[str, float] | None = None, window: tuple | None = None) -> Run:
@@ -340,8 +457,14 @@ def _run(row: tuple[Any, ...], metrics: dict[str, float] | None = None, window: 
         rt,
         created,
         _ver,
+        diag,
+        mcfg,
+        linked,
     ) = row
-    return Run(id=rid, experiment_id=eid, indicator=SERIES_TO_INDICATOR.get(code), model=model,
+    label, cfg = _label_and_config(model, diag, mcfg)
+    ind = SERIES_TO_INDICATOR.get(code)
+    return Run(model_label=label, model_config=cfg, frequency=FREQUENCY.get(ind or "", "monthly"),
+               training_history="linked" if linked else "current",id=rid, experiment_id=eid, indicator=SERIES_TO_INDICATOR.get(code), model=model,
                model_name=MODEL_CATALOGUE.get(model, {}).get("name", model), kind=kind, status=status, error=error,
                horizon=horizon, suite=suite, n_origins=n_or, training_start=tstart, training_cutoff=tcut,
                dataset_fingerprint=dfp, origins_fingerprint=ofp, snapshot_policy=pol, random_seed=seed,
@@ -568,6 +691,89 @@ def get_scores(
         ).fetchall()
     return [ScoreRow(run_id=a, model=b, horizon=c, metric=d, value=float(e), n_samples=f, evaluation_start=g,
                      evaluation_end=h, note=i) for a, b, c, d, e, f, g, h, i in rows]  # fmt: skip
+
+
+# ---- per-indicator model status ----------------------------------------------------------------------------
+
+
+class ModelStatus(BaseModel):
+    model: str
+    model_name: str
+    family: str
+    is_baseline: bool
+    status: Literal["available", "insufficient_history", "training_failed", "not_trained", "unsupported"]
+    reason: str | None = None
+    forecast_horizons: list[
+        int
+    ] = []  # horizons of the newest stored future forecast (and every shorter view)
+    latest_forecast_run: int | None = None
+    model_label: str | None = None
+    completed_backtests: int = 0
+
+
+class ModelStatusPage(BaseModel):
+    indicator: str
+    frequency: Literal["monthly", "quarterly"]
+    models: list[ModelStatus]
+    note: str
+
+
+_INSUFFICIENT = (
+    "needs >=",
+    "usable forecast origin",
+    "initial training window",
+    "not enough",
+    "insufficient",
+)
+
+
+@router.get("/model-status", response_model=ModelStatusPage)
+def model_status(indicator: Indicator) -> ModelStatusPage:
+    """Status of each of the eight algorithms for one indicator, derived from the stored runs only:
+    available (a validated future forecast is stored), insufficient_history, training_failed, not_trained
+    (nothing stored, or backtested without a stored future forecast), unsupported (the model cannot run here)."""
+    code = INDICATOR_SERIES[indicator]
+    with _db() as conn:
+        rows = conn.execute(
+            f"SELECT {_RUN_COLS} FROM forecast_runs fr JOIN series s ON s.id=fr.series_id"
+            " WHERE s.code=%s AND fr.model_name = ANY(%s) ORDER BY fr.created_at DESC, fr.id DESC",
+            (code, list(CORE_MODELS)),
+        ).fetchall()
+    out = []
+    for mid in CORE_MODELS:
+        mine = [_run(r) for r in rows if r[3] == mid]
+        fc = next((r for r in mine if r.kind == "forecast" and r.status == "completed"), None)
+        n_bt = sum(1 for r in mine if r.kind == "backtest" and r.status == "completed")
+        cat = MODEL_CATALOGUE[mid]
+        base = {"model": mid, "model_name": cat["name"], "family": cat["family"], "is_baseline": mid == BASELINE_MODEL,
+                "completed_backtests": n_bt}  # fmt: skip
+        if fc:
+            out.append(ModelStatus(**base, status="available", forecast_horizons=list(range(1, fc.horizon + 1)),
+                                   latest_forecast_run=fc.id, model_label=fc.model_label))  # fmt: skip
+            continue
+        bad = next((r for r in mine if r.status != "completed"), None)
+        if bad and bad.status == "failed":
+            out.append(ModelStatus(**base, status="training_failed", reason=bad.error))
+        elif bad and (bad.error or "").startswith("unavailable"):
+            out.append(ModelStatus(**base, status="unsupported", reason=bad.error))
+        elif bad and any(k in (bad.error or "") for k in _INSUFFICIENT):
+            out.append(ModelStatus(**base, status="insufficient_history", reason=bad.error))
+        elif n_bt:
+            out.append(
+                ModelStatus(
+                    **base,
+                    status="not_trained",
+                    reason="Backtested, but no validated future forecast is stored.",
+                )
+            )
+        else:
+            out.append(
+                ModelStatus(
+                    **base, status="not_trained", reason="No run of this model is stored for this indicator."
+                )
+            )
+    return ModelStatusPage(indicator=indicator, frequency=FREQUENCY[indicator], models=out,
+                           note="Statuses come from stored runs only. A model is offered only when a validated future forecast is stored.")  # fmt: skip
 
 
 # ---- comparison ---------------------------------------------------------------------------------

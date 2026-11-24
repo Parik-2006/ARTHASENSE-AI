@@ -260,7 +260,10 @@ def test_xgboost_is_reproducible_and_uses_recursive_forecasts():
     a = registry.build("xgboost", seed=7).fit(y, ps).predict(6).point
     b = registry.build("xgboost", seed=7).fit(y, ps).predict(6).point
     assert np.array_equal(a, b)
-    assert not registry.build("xgboost").eligibility(30).ok and registry.build("xgboost").eligibility(31).ok
+    v3 = registry.build("xgboost", config_set="v3")  # V1 features: lags 1,2,3,6 -> 24 + 6 + 1
+    assert not v3.eligibility(30).ok and v3.eligibility(31).ok
+    v4 = registry.build("xgboost")  # V4 monthly features add lag 12 -> 24 + 12 + 1
+    assert not v4.eligibility(36).ok and v4.eligibility(37).ok
 
 
 def test_experiment_repeatability_and_ids():

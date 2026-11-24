@@ -70,21 +70,31 @@ def test_explosive_ar_fit_is_flagged():
     """After a sudden +4.3 shift, ARIMA(1,1,0) without enforced stationarity has an AR root inside the unit circle."""
     y = np.array(WPI_THROUGH_APR_2026)
     p = months(len(y))
-    m = registry.build("arima", 0)
+    m = registry.build("arima", 0, config_set="v3")  # the V1-V3 fixed ARIMA(1,1,0), stationarity not enforced
     m.fit(y, p)
     assert m.diagnostics["explosive_ar"] is True
     assert m.diagnostics["ar_min_root_modulus"] < 1.0
     pt = m.predict(6).point
     assert pt[-1] > 150  # the explosive extrapolation seen in the audit (actual in this period was ~113)
     # one month earlier (before the shift entered the fit) the same model is stable
-    m2 = registry.build("arima", 0)
+    m2 = registry.build("arima", 0, config_set="v3")
     m2.fit(y[:-1], p[:-1])
     assert m2.diagnostics["explosive_ar"] is False
     # a quiet random walk must not be flagged
     calm = 100 + np.cumsum(np.random.default_rng(1).normal(0.1, 0.3, 40))
-    m = registry.build("arima", 0)
+    m = registry.build("arima", 0, config_set="v3")
     m.fit(calm, months(40))
     assert m.diagnostics["explosive_ar"] is False
+
+
+def test_v4_arima_selection_never_picks_an_explosive_model():
+    """V4 selects ARIMA(p,1,q) by AICc with stationarity enforced, so the same shock cannot yield an explosive fit."""
+    y = np.array(WPI_THROUGH_APR_2026)
+    m = registry.build("arima", 0)
+    m.fit(y, months(len(y)))
+    assert m.diagnostics["explosive_ar"] is False
+    assert m.diagnostics["selection"] == "aicc" and m.diagnostics["label"].startswith("ARIMA(")
+    assert m.predict(6).point[-1] < 150
 
 
 def test_naive_baseline_has_no_ar_diagnostic_noise():

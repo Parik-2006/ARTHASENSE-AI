@@ -22,6 +22,7 @@ from pipeline.forecasting.interfaces import (
     ForecastModel,
     ModelUnavailable,
     future_periods,
+    infer_frequency,
 )
 from pipeline.forecasting.intervals import online_conformal
 
@@ -151,7 +152,7 @@ def evaluate_horizon(res: BacktestResult, y: np.ndarray, periods: list[date], h:
         ivs = [{lv: iv for lv, iv in row.items() if iv is not None} for row in conf]
     scales = [M.naive_scale(y[: o.origin_idx - 0][-o.n_train :]) for o in used]  # training window only
     rows = [
-        HorizonRow(o.origin_idx, o.origin_date, periods[o.origin_idx + h - 1] if o.origin_idx + h - 1 < len(periods) else future_periods(periods[-1], 1)[0],
+        HorizonRow(o.origin_idx, o.origin_date, periods[o.origin_idx + h - 1] if o.origin_idx + h - 1 < len(periods) else future_periods(periods[-1], 1, infer_frequency(periods))[0],
                    pts[k], acts[k], ivs[k], method if ivs[k] else None, scales[k])
         for k, o in enumerate(used)
     ]  # fmt: skip

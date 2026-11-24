@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/forecasting/cpi", label: "CPI" },
   { href: "/forecasting/wpi", label: "WPI" },
   { href: "/forecasting/iip", label: "IIP" },
+  { href: "/forecasting/gdp", label: "GDP" },
   { href: "/forecasting/comparison", label: "Model comparison" },
   { href: "/forecasting/experiments", label: "Experiments" },
 ];

@@ -26,7 +26,7 @@ describe("URL round trip", () => {
     expect(serializeExperimentFilters(F).toString()).toBe("");
   });
   it("drops invalid and unknown values safely", () => {
-    const f = parseExperimentFilters(get("indicator=gdp&model=chronos2&status=x&kind=y&horizon=-1&minOrigins=abc&sort=drop%20table&dir=up&page=0"), ["ets"]);
+    const f = parseExperimentFilters(get("indicator=gva&model=chronos2&status=x&kind=y&horizon=-1&minOrigins=abc&sort=drop%20table&dir=up&page=0"), ["ets"]);
     expect(f).toEqual(F);
   });
 });

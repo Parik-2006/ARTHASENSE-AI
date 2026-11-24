@@ -24,7 +24,26 @@ import {
   type Reliability,
   serializeForecastFilters,
 } from "@/lib/forecast-v2";
-import { type Comparison, fmt, fmtMetric, type ForecastRow, type IndicatorId, methodLabel, type ModelInfo, monthLabel, type Run, type TrainingHistory, trainingLine } from "@/lib/forecasting";
+import { forecastMeta, forecastsToCsvV4, impliedYoy } from "@/lib/forecast-meta";
+import {
+  type Comparison,
+  CORE_MODELS,
+  fmt,
+  fmtMetric,
+  type ForecastId,
+  type ForecastRow,
+  methodLabel,
+  type ModelInfo,
+  modelDetail,
+  type ModelStatus,
+  monthLabel,
+  periodAdj,
+  periodsText,
+  type Run,
+  STATUS_TEXT,
+  type TrainingHistory,
+  trainingLine,
+} from "@/lib/forecasting";
 import type { Observation } from "@/lib/indicator";
 import { seriesIds, type SourceInfo } from "@/lib/source";
 
@@ -57,6 +76,22 @@ export function ReliabilityBanner({ r, className = "" }: { r: Reliability; class
 }
 
 const HISTORY_RANGES: RangeKey[] = ["1Y", "2Y", "3Y", "5Y", "All"];
+const order = (m: string) => {
+  const i = (CORE_MODELS as readonly string[]).indexOf(m);
+  return i < 0 ? 99 : i;
+};
+
+/** Compact, readable model parameters from the run's stored configuration (Research View). */
+export function configText(c: Record<string, unknown>): string {
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(c)) {
+    if (k === "selected_per_origin") continue;
+    parts.push(`${k.replace(/_/g, " ")}: ${Array.isArray(v) ? `(${v.join(",")})` : String(v)}`);
+  }
+  const sel = c.selected_per_origin;
+  if (Array.isArray(sel) && sel.length > 1) parts.push(`configurations chosen across backtest origins: ${sel.join("; ")}`);
+  return parts.join(" · ");
+}
 const pctText = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 
 /** Plain-English "What this means": three short sentences from stored numbers only. */
@@ -66,25 +101,37 @@ export function plainMeaning(o: {
   latest: { period: string; value: number } | null;
   rows: ForecastRow[];
   evidence: Evidence;
+  /** Quarterly GDP: level formatting, quarter labels and the year-on-year growth implied by the forecast level. */
+  value?: (v: number) => string;
+  period?: (iso: string, long?: boolean) => string;
+  what?: string;
+  yoy?: number | null;
 }): string[] {
   const last = o.rows[o.rows.length - 1];
   if (!last) return [];
+  const v = o.value ?? ((x: number) => fmt(x));
+  const pl = o.period ?? ((iso: string, long?: boolean) => monthLabel(iso, long));
+  const what = o.what ?? `the ${o.short} index`;
   const out: string[] = [];
   const c = o.latest ? changeFrom(o.latest.value, last.forecast) : null;
-  const when = monthLabel(last.target_date, true);
-  if (o.latest && c && c.pct !== null) {
+  const when = pl(last.target_date, true);
+  if (o.yoy !== undefined) {
+    out.push(
+      `${o.modelName} estimates ${what} at ${v(last.forecast)} in ${when}${o.yoy === null ? "" : `, ${o.yoy >= 0 ? "up" : "down"} ${Math.abs(o.yoy).toFixed(1)}% on the same quarter a year earlier (calculated by ArthaSense from official and forecast levels)`}.`,
+    );
+  } else if (o.latest && c && c.pct !== null) {
     const rel =
       Math.abs(c.pct) <= FLAT_THRESHOLD_PCT
         ? "roughly level with"
         : `about ${Math.abs(c.pct).toFixed(1)}% ${c.pct > 0 ? "above" : "below"}`;
-    out.push(`${o.modelName} estimates the ${o.short} index at ${fmt(last.forecast)} in ${when}, ${rel} the official ${fmt(o.latest.value)} for ${monthLabel(o.latest.period, true)}.`);
-  } else out.push(`${o.modelName} estimates the ${o.short} index at ${fmt(last.forecast)} in ${when}.`);
+    out.push(`${o.modelName} estimates ${what} at ${v(last.forecast)} in ${when}, ${rel} the official ${v(o.latest.value)} for ${pl(o.latest.period, true)}.`);
+  } else out.push(`${o.modelName} estimates ${what} at ${v(last.forecast)} in ${when}.`);
   if (last.lower_80 !== null && last.upper_80 !== null) {
     const cov = o.evidence.set?.model.metrics.coverage_80;
     out.push(
-      `Its 80% range for ${when} is ${fmt(last.lower_80)} to ${fmt(last.upper_80)}.${cov !== undefined ? ` In past tests, ${Math.round(cov * 100)}% of actual values fell inside its 80% ranges.` : ""} Values outside the range are possible.`,
+      `Its 80% range for ${when} is ${v(last.lower_80)} to ${v(last.upper_80)}.${cov !== undefined ? ` In past tests, ${Math.round(cov * 100)}% of actual values fell inside its 80% ranges.` : ""} Values outside the range are possible.`,
     );
-  } else out.push("This model gives no uncertainty range, so the spread of possible outcomes is not quantified.");
+  } else out.push("Uncertainty interval unavailable: this model has no validated range here, so the spread of possible outcomes is not quantified.");
   out.push(plainReliability(o.evidence));
   return out;
 }
@@ -104,8 +151,9 @@ export function ForecastExplorer({
   models,
   comparisons,
   trainingHistory = null,
+  status = [],
 }: {
-  indicator: IndicatorId;
+  indicator: ForecastId;
   shortName: string;
   indexName: string;
   axisLabel: string;
@@ -116,9 +164,15 @@ export function ForecastExplorer({
   runs: Run[];
   models: ModelInfo[];
   comparisons: Record<number, Comparison | null>;
-  /** Official linked training history (CPI); null when models train on the current series alone. */
+  /** Official linked training history (CPI, WPI, IIP); null when models train on the current series alone. */
   trainingHistory?: TrainingHistory | null;
+  /** V4: status of each of the eight algorithms, so unavailable ones are explained rather than hidden. */
+  status?: ModelStatus[];
 }) {
+  const M = useMemo(() => forecastMeta(indicator), [indicator]);
+  const quarterly = M.frequency === "quarterly";
+  const pl = M.period;
+  const fv = (v: number | null | undefined) => (quarterly ? M.value(v) : fmt(v));
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -128,7 +182,7 @@ export function ForecastExplorer({
   const obs = useMemo(() => observations.filter((o) => o.index !== null), [observations]);
   const derived = useMemo(() => withDerived(obs), [obs]);
   const latest = obs.length ? { period: obs[obs.length - 1].period, value: obs[obs.length - 1].index as number } : null;
-  const views = useMemo(() => forecastViews(stored), [stored]);
+  const views = useMemo(() => forecastViews(stored, M.horizons), [stored, M]);
   const avail = useMemo(() => {
     const byModel: Record<string, number[]> = {};
     for (const v of views) byModel[v.model] = [...(byModel[v.model] ?? []), v.horizon].sort((a, b) => a - b);
@@ -136,8 +190,8 @@ export function ForecastExplorer({
   }, [views]);
   const { filters, notices } = useMemo(() => parseForecastFilters((k) => params?.get(k) ?? null, avail), [params, avail]);
   const chosen = useMemo(
-    () => chooseView(views, comparisons, latest?.period ?? null, { model: filters.model, horizon: filters.horizon }),
-    [views, comparisons, latest?.period, filters.model, filters.horizon],
+    () => chooseView(views, comparisons, latest?.period ?? null, { model: filters.model, horizon: filters.horizon }, M.preferH, M.frequency),
+    [views, comparisons, latest?.period, filters.model, filters.horizon, M],
   );
 
   const push = (patch: Partial<ForecastFilters>) => {
@@ -166,15 +220,19 @@ export function ForecastExplorer({
   const win = resolveWindow(obs, filters.range, filters.custom);
   const history = inWindow(derived, win).map((o) => ({ period: o.period, index: o.index as number }));
   const historyHref = indicatorHref(indicator, filters.range);
-  const meaning = plainMeaning({ short: shortName, modelName, latest, rows, evidence: ev });
+  const detail = modelDetail(modelName, cur.run);
+  const yoy = quarterly ? impliedYoy(last.target_date, last.forecast, obs) : undefined;
+  const meaning = plainMeaning({ short: shortName, modelName, latest, rows, evidence: ev, ...(quarterly ? { value: (v: number) => M.value(v), period: pl, what: "real GDP", yoy } : {}) });
+  const unavailable = CORE_MODELS.map((id) => status.find((x) => x.model === id)).filter((x): x is ModelStatus => !!x && x.status !== "available" && !avail.models.includes(x.model));
   const bt = ev.set ? runs.find((r) => r.id === ev.set!.model.run_id) : undefined;
   const officialLabel = source.short;
 
   const download = () => {
-    const csv = forecastsToCsvV2(rows, {
-      indicator: shortName, baseYear, seriesId: seriesIds(indicator, baseYear)[0], publisher: source.publisher,
+    const meta = {
+      indicator: shortName, baseYear, seriesId: quarterly ? source.seriesIds[0] : seriesIds(indicator as "cpi" | "wpi" | "iip", baseYear)[0], publisher: source.publisher,
       modelId: cur.model, modelName, run: cur.run, latest, reliability: ev.label,
-    }); // prettier-ignore
+    }; // prettier-ignore
+    const csv = quarterly ? forecastsToCsvV4(rows, { ...meta, unit: M.unit(baseYear), history: obs }) : forecastsToCsvV2(rows, meta);
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
@@ -192,17 +250,29 @@ export function ForecastExplorer({
         <div className="bg-surface p-4" data-tour="fx-official">
           <dt className="text-sm text-ink-muted">Latest official</dt>
           <dd className="figure mt-1 text-2xl font-medium tracking-tight">{latest ? fmt(latest.value) : "—"}</dd>
-          <dd className="mt-1 text-xs text-ink-muted">{latest ? `${monthLabel(latest.period, true)} · base ${baseYear} = 100` : "No data"}</dd>
+          <dd className="mt-1 text-xs text-ink-muted">{latest ? `${pl(latest.period, true)} · ${quarterly ? M.unit(baseYear) : `base ${baseYear} = 100`}` : "No data"}</dd>
         </div>
         <div className="bg-surface p-4">
-          <dt className="text-sm text-ink-muted">Forecast · {monthLabel(last.target_date, true)}</dt>
-          <dd className="figure mt-1 text-2xl font-medium tracking-tight text-target">{fmt(last.forecast)}</dd>
-          <dd className="mt-1 text-xs text-ink-muted">Model estimate · {modelName}</dd>
+          <dt className="text-sm text-ink-muted">Forecast · {pl(last.target_date, true)}</dt>
+          <dd className="figure mt-1 text-2xl font-medium tracking-tight text-target">{fv(last.forecast)}</dd>
+          <dd className="mt-1 text-xs text-ink-muted" data-testid="kpi-model">
+            Model: <span className="font-medium text-ink">{modelName}</span>
+            {detail && research ? <span className="figure"> · {detail}</span> : null}
+          </dd>
         </div>
         <div className="bg-surface p-4">
-          <dt className="text-sm text-ink-muted">Expected change</dt>
-          <dd className="figure mt-1 text-2xl font-medium tracking-tight">{change?.pct != null ? pctText(change.pct) : "—"}</dd>
-          <dd className="mt-1 text-xs text-ink-muted">{change ? `${change.abs > 0 ? "+" : ""}${change.abs.toFixed(2)} points vs ${latest ? monthLabel(latest.period) : "latest"} · model-derived` : "Not available"}</dd>
+          <dt className="text-sm text-ink-muted">{quarterly ? "Implied year-on-year growth" : "Expected change"}</dt>
+          {quarterly ? (
+            <>
+              <dd className="figure mt-1 text-2xl font-medium tracking-tight">{yoy == null ? "—" : pctText(yoy)}</dd>
+              <dd className="mt-1 text-xs text-ink-muted">{yoy == null ? "Not available" : "Forecast level vs the same quarter a year earlier · calculated by ArthaSense"}</dd>
+            </>
+          ) : (
+            <>
+              <dd className="figure mt-1 text-2xl font-medium tracking-tight">{change?.pct != null ? pctText(change.pct) : "—"}</dd>
+              <dd className="mt-1 text-xs text-ink-muted">{change ? `${change.abs > 0 ? "+" : ""}${change.abs.toFixed(2)} points vs ${latest ? monthLabel(latest.period) : "latest"} · model-derived` : "Not available"}</dd>
+            </>
+          )}
         </div>
         <div className="bg-surface p-4" data-tour="fx-reliability">
           <dt className="text-sm text-ink-muted">
@@ -228,10 +298,15 @@ export function ForecastExplorer({
               push({ model: e.target.value, horizon: hs.includes(horizon) ? horizon : (hs[hs.length - 1] ?? null) });
             }}
           >
-            {avail.models.map((m) => (
+            {[...avail.models].sort((a, b) => order(a) - order(b)).map((m) => (
               <option key={m} value={m}>
                 {nameOf(m)}
                 {m === "naive" ? " (baseline)" : ""}
+              </option>
+            ))}
+            {unavailable.map((u) => (
+              <option key={u.model} value={u.model} disabled>
+                {u.model_name} — {STATUS_TEXT[u.status].toLowerCase()}
               </option>
             ))}
           </select>
@@ -244,11 +319,26 @@ export function ForecastExplorer({
             labelledBy="fx-horizon-label"
             value={horizon}
             onChange={(h) => push({ model: cur.model, horizon: h })}
-            options={(avail.byModel[cur.model] ?? []).map((h) => ({ value: h, label: `${h} ${h === 1 ? "month" : "months"}` }))}
+            options={(avail.byModel[cur.model] ?? []).map((h) => ({ value: h, label: periodsText(h, M.frequency) }))}
           />
         </div>
         <ForecastTourButton className={`ml-auto rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a tour</ForecastTourButton>
       </div>
+      {unavailable.length > 0 && (
+        <details className="-mt-3 text-xs text-ink-muted" data-testid="model-availability" data-tour="fx-availability">
+          <summary className={`cursor-pointer ${focusRing}`}>
+            {avail.models.length} of {CORE_MODELS.length} models have a tested forecast here · why not the other {unavailable.length}?
+          </summary>
+          <ul className="mt-1 space-y-0.5 pl-4">
+            {unavailable.map((u) => (
+              <li key={u.model}>
+                <span className="font-medium text-ink">{u.model_name}</span>: {STATUS_TEXT[u.status]}
+                {u.reason ? <span> ({u.reason})</span> : null}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       {notices.map((n) => (
         <p key={n} role="status" className="-mt-3 text-xs text-warn">
           {n}
@@ -256,7 +346,7 @@ export function ForecastExplorer({
       ))}
       {stale && (
         <p role="status" className="-mt-3 text-xs text-warn">
-          This forecast was made before the latest official month, so newer data is not reflected in it.
+          This forecast was made before the latest official {quarterly ? "quarter" : "month"}, so newer data is not reflected in it.
         </p>
       )}
 
@@ -264,7 +354,7 @@ export function ForecastExplorer({
       <section className="rounded-md border border-rule bg-surface" aria-labelledby="fx-chart-title">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-3">
           <h2 id="fx-chart-title" className="text-sm font-semibold tracking-tight">
-            {indexName}: official history and {horizon}-month forecast
+            {indexName}: official history and {periodAdj(horizon, M.frequency)} forecast
           </h2>
           <div className="flex items-center gap-2 text-xs">
             <span className="text-ink-muted">History</span>
@@ -279,15 +369,26 @@ export function ForecastExplorer({
         </div>
         <div className="px-3 py-4 sm:px-5" data-tour="fx-chart">
           {history.length < 2 ? (
-            <p className="rounded border border-dashed border-rule px-4 py-10 text-center text-sm text-ink-muted">Not enough official months in this window to draw the history. Choose a longer window.</p>
+            <p className="rounded border border-dashed border-rule px-4 py-10 text-center text-sm text-ink-muted">Not enough official {quarterly ? "quarters" : "months"} in this window to draw the history. Choose a longer window.</p>
           ) : (
-            <OutlookChart history={history} forecast={rows} name={indexName} axisLabel={axisLabel} officialSource={officialLabel} modelName={modelName} bandsTourId="fx-bands" />
+            <OutlookChart
+              history={history}
+              forecast={rows}
+              name={indexName}
+              axisLabel={axisLabel}
+              officialSource={officialLabel}
+              modelName={modelName}
+              bandsTourId="fx-bands"
+              frequency={M.frequency}
+              formatValue={(v) => fv(v)}
+              formatAxis={quarterly ? M.axis : undefined}
+            />
           )}
-          {!hasInterval && <p className="mt-2 text-xs text-warn">This model provides no uncertainty range, so no band is drawn.</p>}
+          {!hasInterval && <p className="mt-2 text-xs text-warn">Uncertainty interval unavailable: this model provides no uncertainty range, so no band is drawn.</p>}
         </div>
         <p className="border-t border-rule px-5 py-2 text-xs text-ink-muted">
           Official data: {officialLabel}, base {baseYear}. Forecast: {modelName}, run #{cur.run.id}
-          {cur.partial ? ` (first ${horizon} of ${cur.run.horizon} stored months)` : ""}, made from {origin ? monthLabel(origin, true) : "an unrecorded month"} data.
+          {cur.partial ? ` (first ${horizon} of ${cur.run.horizon} stored ${quarterly ? "quarters" : "months"})` : ""}, made from {origin ? pl(origin, true) : "an unrecorded period"} data.
           {trainingHistory && <span data-testid="training-history"> {trainingLine(trainingHistory)}</span>}
         </p>
       </section>
@@ -320,12 +421,12 @@ export function ForecastExplorer({
       {research ? (
         <div className="space-y-6" data-testid="research-view">
           <div className="grid gap-6 lg:grid-cols-[1fr_1fr] [&>*]:min-w-0">
-            <Panel title={`Backtest evidence · ${horizon}-month horizon`}>
+            <Panel title={`Backtest evidence · ${periodAdj(horizon, M.frequency)} horizon`}>
               {ev.set ? (
                 <>
                   <p className="mb-3 text-xs text-ink-muted">
                     All figures below, including the naive baseline&apos;s, come from one test set: {ev.set.group.n_origins} forecast origins
-                    {ev.set.group.evaluation_start ? `, targets ${monthLabel(ev.set.group.evaluation_start)} to ${monthLabel(ev.set.group.evaluation_end ?? ev.set.group.evaluation_start)}` : ""}.
+                    {ev.set.group.evaluation_start ? `, targets ${pl(ev.set.group.evaluation_start)} to ${pl(ev.set.group.evaluation_end ?? ev.set.group.evaluation_start)}` : ""}.
                   </p>
                   <table className="w-full text-sm">
                     <caption className="sr-only">Backtest metrics for {modelName} and the naive baseline on identical origins</caption>
@@ -385,17 +486,21 @@ export function ForecastExplorer({
                 {(
                   [
                     ["Model", `${modelName} (${cur.model})`],
+                    ["Configuration", detail ?? cur.run.model_label ?? "As in the model description"],
+                    ...(cur.run.model_config && Object.keys(cur.run.model_config).length
+                      ? ([["Parameters", configText(cur.run.model_config)]] as [string, string][])
+                      : []),
                     ["Method", models.find((m) => m.id === cur.model)?.explanation ?? "—"],
-                    ["Forecast run", `#${cur.run.id}, ${cur.run.horizon}-month, stored ${cur.run.created_at.slice(0, 10)}`],
-                    ["Horizon shown", cur.partial ? `${horizon} months (steps 1–${horizon} of run #${cur.run.id})` : `${horizon} months`],
-                    ["Forecast origin", origin ? monthLabel(origin, true) : "Not recorded"],
-                    ["Training window", `${cur.run.training_start ? monthLabel(cur.run.training_start) : "?"} – ${monthLabel(cur.run.training_cutoff)}`],
+                    ["Forecast run", `#${cur.run.id}, ${periodsText(cur.run.horizon, M.frequency)}, stored ${cur.run.created_at.slice(0, 10)}`],
+                    ["Horizon shown", cur.partial ? `${periodsText(horizon, M.frequency)} (steps 1–${horizon} of run #${cur.run.id})` : periodsText(horizon, M.frequency)],
+                    ["Forecast origin", origin ? pl(origin, true) : "Not recorded"],
+                    ["Training window", `${cur.run.training_start ? pl(cur.run.training_start) : "?"} – ${pl(cur.run.training_cutoff)}`],
                     ...(trainingHistory
                       ? ([["Training data", `${trainingHistory.components.map((c) => `${c.series_code} (${monthLabel(c.first_period)} – ${monthLabel(c.last_period)}, ${c.n_observations} mo)`).join(" + ")}. ${trainingHistory.note}`]] as [string, string][])
                       : []),
                     ["Intervals", methodLabel(rows.find((r) => r.interval_method)?.interval_method)],
                     ["Data fingerprint", cur.run.dataset_fingerprint ?? "Not recorded"],
-                    ["Backtest training", bt?.training_start ? `${monthLabel(bt.training_start)} – ${monthLabel(bt.training_cutoff)} (expanding)` : "—"],
+                    ["Backtest training", bt?.training_start ? `${pl(bt.training_start)} – ${pl(bt.training_cutoff)} (expanding)` : "—"],
                     ["Selection", chosen.reason],
                   ] as [string, string][]
                 ).map(([k, v]) => (
@@ -415,7 +520,7 @@ export function ForecastExplorer({
 
           <Panel title="Forecast table">
             <div className="-mt-1 mb-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-ink-muted">{rows.length} forecast months · model-generated, not official</p>
+              <p className="text-sm text-ink-muted">{periodsText(rows.length, M.frequency)} of forecasts · model-generated, not official</p>
               <button type="button" onClick={download} className={`rounded border border-rule px-3 py-1.5 text-sm hover:bg-bg ${focusRing}`}>
                 Download CSV
               </button>
@@ -425,9 +530,9 @@ export function ForecastExplorer({
                 <caption className="sr-only">Stored forecasts for {indexName} using {modelName}</caption>
                 <thead>
                   <tr className="border-b border-rule text-left text-xs">
-                    <th scope="col" className="py-2 pr-4 font-semibold">Target month</th>
-                    <th scope="col" className="py-2 pr-4 text-right font-semibold">Forecast index</th>
-                    <th scope="col" className="py-2 pr-4 text-right font-semibold">Change from latest</th>
+                    <th scope="col" className="py-2 pr-4 font-semibold">Target {quarterly ? "quarter" : "month"}</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">{quarterly ? "Forecast real GDP" : "Forecast index"}</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">{quarterly ? "Implied YoY growth" : "Change from latest"}</th>
                     <th scope="col" className="py-2 pr-4 text-right font-semibold">80% interval</th>
                     <th scope="col" className="py-2 text-right font-semibold">95% interval</th>
                   </tr>
@@ -435,39 +540,50 @@ export function ForecastExplorer({
                 <tbody>
                   {rows.map((r) => {
                     const c = latest ? changeFrom(latest.value, r.forecast) : null;
+                    const y = quarterly ? impliedYoy(r.target_date, r.forecast, obs) : null;
                     return (
                       <tr key={r.target_date} className="border-b border-rule last:border-b-0">
-                        <th scope="row" className="py-2 pr-4 text-left font-medium">{monthLabel(r.target_date, true)}</th>
-                        <td className="figure py-2 pr-4 text-right">{fmt(r.forecast)}</td>
-                        <td className="figure py-2 pr-4 text-right">{c ? `${c.abs > 0 ? "+" : ""}${c.abs.toFixed(2)}${c.pct === null ? "" : ` (${pctText(c.pct)})`}` : "—"}</td>
-                        <td className="figure py-2 pr-4 text-right">{r.lower_80 === null ? "—" : `${fmt(r.lower_80)} to ${fmt(r.upper_80)}`}</td>
-                        <td className="figure py-2 text-right">{r.lower_95 === null ? "—" : `${fmt(r.lower_95)} to ${fmt(r.upper_95)}`}</td>
+                        <th scope="row" className="py-2 pr-4 text-left font-medium">{pl(r.target_date, true)}</th>
+                        <td className="figure py-2 pr-4 text-right">{fv(r.forecast)}</td>
+                        <td className="figure py-2 pr-4 text-right">
+                          {quarterly ? (y === null ? "—" : pctText(y)) : c ? `${c.abs > 0 ? "+" : ""}${c.abs.toFixed(2)}${c.pct === null ? "" : ` (${pctText(c.pct)})`}` : "—"}
+                        </td>
+                        <td className="figure py-2 pr-4 text-right">{r.lower_80 === null ? "—" : `${fv(r.lower_80)} to ${fv(r.upper_80)}`}</td>
+                        <td className="figure py-2 text-right">{r.lower_95 === null ? "—" : `${fv(r.lower_95)} to ${fv(r.upper_95)}`}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-ink-muted">
-              {interpretForecast({ indicator: shortName, modelName, horizon, latest, rows, reliability: ev }).map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ul>
+            {!quarterly && (
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-ink-muted">
+                {interpretForecast({ indicator: shortName, modelName, horizon, latest, rows, reliability: ev }).map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            )}
+            {quarterly && (
+              <p className="mt-3 text-xs text-ink-muted">
+                Growth is never forecast directly: the model forecasts the real GDP level, and year-on-year growth is the forecast level divided by the official level of the
+                same quarter one year earlier, minus one. It is not quarter-on-quarter growth, which for this unadjusted series mostly reflects the season.
+              </p>
+            )}
           </Panel>
 
           <div className="space-y-2">
             <SourceAttribution
               cls="official"
               sources={[source]}
-              period={history.length ? `${monthLabel(history[0].period)} – ${monthLabel(history[history.length - 1].period)}` : "no observations in this window"}
-              units={`Index, base ${baseYear} = 100`}
+              period={history.length ? `${pl(history[0].period)} – ${pl(history[history.length - 1].period)}` : "no observations in this window"}
+              units={M.unit(baseYear)}
             />
             <SourceAttribution
               cls="forecast"
               sources={[source]}
-              period={`${monthLabel(rows[0].target_date)} – ${monthLabel(last.target_date)} (forecast months)`}
-              units="Index level"
-              method={`${modelName} (${cur.model}) · run #${cur.run.id} · origin ${origin ? monthLabel(origin) : "not recorded"} · horizon ${horizon} mo · intervals: ${methodLabel(rows.find((r) => r.interval_method)?.interval_method)} · training cutoff ${monthLabel(cur.run.training_cutoff)}`}
+              period={`${pl(rows[0].target_date)} – ${pl(last.target_date)} (forecast ${quarterly ? "quarters" : "months"})`}
+              units={quarterly ? M.unit(baseYear) : "Index level"}
+              method={`${modelName}${detail ? ` [${detail}]` : ""} (${cur.model}) · run #${cur.run.id} · origin ${origin ? pl(origin) : "not recorded"} · horizon ${periodsText(horizon, M.frequency)} · intervals: ${methodLabel(rows.find((r) => r.interval_method)?.interval_method)} · training cutoff ${pl(cur.run.training_cutoff)}`}
               retrievedAt={cur.run.created_at}
             />
           </div>

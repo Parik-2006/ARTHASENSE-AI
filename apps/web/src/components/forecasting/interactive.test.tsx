@@ -259,7 +259,7 @@ describe("OutlookChart", () => {
     expect(document.body.textContent).toContain("Forecast ▸");
     expect(document.body.textContent).not.toContain("Forecast →");
     fireEvent.keyDown(screen.getByTestId("outlook-chart"), { key: "End" });
-    expect(screen.getByTestId("chart-tooltip").textContent).toContain("No uncertainty range from this model");
+    expect(screen.getByTestId("chart-tooltip").textContent).toContain("Uncertainty interval unavailable for this model");
     expect(screen.getByLabelText("Chart legend").textContent).not.toContain("80% range");
   });
   it("helpers: tooltip text, nice ticks, collision-free month ticks", () => {

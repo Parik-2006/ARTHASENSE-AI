@@ -1,10 +1,11 @@
 import { type GdpResult, type GvaResult, parseGdpResponse, parseGvaResponse } from "@/lib/gdp";
 import {
   type Comparison,
+  type ForecastId,
   type ForecastRow,
-  type IndicatorId,
   type LatestForecast,
   type ModelInfo,
+  type ModelStatusPage,
   type Result,
   type Run,
   type RunDetail,
@@ -13,6 +14,7 @@ import {
   parseForecastPage,
   parseLatest,
   parseModels,
+  parseModelStatus,
   parseRunDetail,
   parseRunPage,
   parseSeries,
@@ -183,7 +185,10 @@ export const getRuns = (query = "?limit=200"): Promise<Result<{ total: number; i
 export const getRunDetail = (id: number): Promise<Result<RunDetail>> => getJson(`/runs/${id}`, parseRunDetail);
 export const getRunForecasts = (id: number): Promise<Result<{ total: number; items: ForecastRow[]; kind: string }>> =>
   getJson(`/forecasts?run_id=${id}&limit=200`, parseForecastPage);
-export const getLatestForecast = (indicator: IndicatorId, model: string, horizon: number): Promise<Result<LatestForecast>> =>
+export const getLatestForecast = (indicator: ForecastId, model: string, horizon: number): Promise<Result<LatestForecast>> =>
   getJson(`/forecasts/latest?indicator=${indicator}&model=${model}&horizon=${horizon}`, parseLatest);
-export const getComparison = (indicator: IndicatorId, horizon: number): Promise<Result<Comparison>> =>
+export const getComparison = (indicator: ForecastId, horizon: number): Promise<Result<Comparison>> =>
   getJson(`/comparison?indicator=${indicator}&horizon=${horizon}`, parseComparison);
+/** V4: status of each of the eight algorithms for one indicator (an older API answers 404/422 -> not ok). */
+export const getModelStatus = (indicator: ForecastId): Promise<Result<ModelStatusPage>> =>
+  getJson(`/model-status?indicator=${indicator}`, parseModelStatus);

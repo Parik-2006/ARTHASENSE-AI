@@ -23,7 +23,7 @@ export const DEFAULT_EXPERIMENT_FILTERS: ExperimentFilters = {
   indicator: null, model: null, status: null, kind: null, horizon: null, minOrigins: null, q: "", sort: "created_at", dir: "desc", page: 1,
 }; // prettier-ignore
 
-const INDICATORS = ["cpi", "wpi", "iip"];
+const INDICATORS = ["cpi", "wpi", "iip", "gdp"];
 const STATUSES = ["completed", "skipped", "failed"];
 const KINDS = ["backtest", "forecast"];
 const SORTS: SortKey[] = ["created_at", "mae", "mase", "n_origins"];

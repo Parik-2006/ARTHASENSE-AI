@@ -56,7 +56,7 @@ const group: ComparisonGroup = { group_id: "g", indicator: "cpi", horizon: 6, ev
 const cmps: Record<number, Comparison> = Object.fromEntries([1, 3, 6].map((h) => [h, { indicator: "cpi", horizon: h, baseline: "naive", groups: [{ ...group, horizon: h }], excluded: [], note: "" }]));
 
 const data = (over: Partial<IndicatorForecastData> = {}): IndicatorForecastData => ({
-  id: "cpi", hist, histError: null, info: info(), models, runs: [fRun], stored: [{ model: "drift", run: fRun, items }], comparisons: cmps, error: null, ...over,
+  id: "cpi", hist: { baseYear: hist.baseYear, observations: hist.observations, source: sourceFor(CPI_CONFIG, hist) }, histError: null, status: [], info: info(), models, runs: [fRun], stored: [{ model: "drift", run: fRun, items }], comparisons: cmps, error: null, ...over,
 }); // prettier-ignore
 
 describe("CPI forecast on the official linked history", () => {

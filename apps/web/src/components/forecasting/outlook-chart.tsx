@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useId, useState } from "react";
-import { type ForecastRow, fmt, monthLabel } from "@/lib/forecasting";
+import { type ForecastRow, fmt, type Frequency, monthLabel, periodLabel } from "@/lib/forecasting";
 import { monthNumber } from "@/lib/indicator";
 
 /** Forecasts V3 chart: official history (solid teal) and the model estimate (dashed gold) on one time axis, a
@@ -38,27 +38,38 @@ export function niceTicks(lo: number, hi: number, count = 5): number[] {
   return out;
 }
 
-/** Month numbers to label so labels never collide: a step of 1/2/3/6/12/24 months aligned to calendar months. */
-export function monthTicks(n0: number, n1: number, plotWidth: number, minGap = 76): number[] {
+/** Month numbers to label so labels never collide: a step of 1/2/3/6/12/24 months aligned to calendar months.
+ *  Quarterly data (`quarterly`) label quarter starts only, so ticks sit on observations: steps of 3/6/12/24 months. */
+export function monthTicks(n0: number, n1: number, plotWidth: number, minGap = 76, quarterly = false): number[] {
   const room = Math.max(1, Math.floor(plotWidth / minGap));
-  const step = [1, 2, 3, 6, 12, 24, 48].find((s) => Math.floor((n1 - n0) / s) + 1 <= room) ?? 48;
+  const steps = quarterly ? [3, 6, 12, 24, 48] : [1, 2, 3, 6, 12, 24, 48];
+  const step = steps.find((s) => Math.floor((n1 - n0) / s) + 1 <= room) ?? 48;
   const out: number[] = [];
-  for (let n = Math.ceil(n0 / step) * step; n <= n1; n += step) out.push(n);
+  const start = quarterly ? n0 : Math.ceil(n0 / step) * step; // quarterly: every tick is an observed quarter
+  for (let n = start; n <= n1; n += step) out.push(n);
   return out;
 }
 
+const DEFAULT_FMT = (v: number) => fmt(v);
+
 /** Tooltip text for one point. Forecast lines always say they are model estimates. */
-export function tooltipLines(p: ChartPoint, officialSource: string, modelName: string): { title: string; value: string; source: string; ranges: string[] } {
+export function tooltipLines(
+  p: ChartPoint,
+  officialSource: string,
+  modelName: string,
+  label: (iso: string, long?: boolean) => string = (iso, long) => monthLabel(iso, long),
+  value: (v: number) => string = DEFAULT_FMT,
+): { title: string; value: string; source: string; ranges: string[] } {
   const ranges: string[] = [];
   if (p.forecast) {
     const r = p.row;
-    if (r?.lower_80 != null && r.upper_80 != null) ranges.push(`80% range ${fmt(r.lower_80)} – ${fmt(r.upper_80)}`);
-    if (r?.lower_95 != null && r.upper_95 != null) ranges.push(`95% range ${fmt(r.lower_95)} – ${fmt(r.upper_95)}`);
-    if (!ranges.length) ranges.push("No uncertainty range from this model");
+    if (r?.lower_80 != null && r.upper_80 != null) ranges.push(`80% range ${value(r.lower_80)} – ${value(r.upper_80)}`);
+    if (r?.lower_95 != null && r.upper_95 != null) ranges.push(`95% range ${value(r.lower_95)} – ${value(r.upper_95)}`);
+    if (!ranges.length) ranges.push("Uncertainty interval unavailable for this model");
   }
   return {
-    title: monthLabel(p.period, true),
-    value: fmt(p.value),
+    title: label(p.period, true),
+    value: value(p.value),
     source: p.forecast ? `Model estimate · ${modelName}` : `Official · ${officialSource}`,
     ranges,
   };
@@ -73,6 +84,9 @@ export function OutlookChart({
   modelName,
   compact = false,
   bandsTourId,
+  frequency = "monthly",
+  formatValue = DEFAULT_FMT,
+  formatAxis,
 }: {
   history: HistoryPoint[];
   forecast: ForecastRow[];
@@ -83,7 +97,14 @@ export function OutlookChart({
   /** Card sparkline: shorter, no axes/legend, not interactive (the card links to the explorer). */
   compact?: boolean;
   bandsTourId?: string;
+  /** Quarterly data: quarter labels ("Q1 FY2026-27") and quarter-aligned ticks. */
+  frequency?: Frequency;
+  formatValue?: (v: number) => string;
+  formatAxis?: (v: number) => string;
 }) {
+  const quarterly = frequency === "quarterly";
+  const label = (iso: string, long = false) => periodLabel(iso, frequency, long);
+  const word = quarterly ? ["quarter", "quarters"] : ["month", "months"];
   const H = compact ? 120 : 340;
   const M = compact ? { l: 4, r: 4, t: 8, b: 8 } : { l: 48, r: 14, t: 26, b: 30 };
   const [width, setWidth] = useState(compact ? 320 : 720);
@@ -127,9 +148,9 @@ export function OutlookChart({
   };
   const b95 = band("lower_95", "upper_95");
   const b80 = band("lower_80", "upper_80");
-  const xt = monthTicks(n0, n1, plotW);
-  const fcSpan = fc.length ? `${monthLabel(fc[0].period)} to ${monthLabel(fc[fc.length - 1].period)}` : "";
-  const summary = `${name}: official values from ${monthLabel(hist[0].period)} to ${monthLabel(last.period)}${fc.length ? `, then ${fc.length} ${fc.length === 1 ? "month" : "months"} of model estimates (${fcSpan})` : ""}.`;
+  const xt = monthTicks(n0, n1, plotW, quarterly ? 84 : 76, quarterly);
+  const fcSpan = fc.length ? `${label(fc[0].period)} to ${label(fc[fc.length - 1].period)}` : "";
+  const summary = `${name}: official values from ${label(hist[0].period)} to ${label(last.period)}${fc.length ? `, then ${fc.length} ${fc.length === 1 ? word[0] : word[1]} of model estimates (${fcSpan})` : ""}.`;
 
   const svg = (
     <svg width={width} height={H} aria-hidden className="block overflow-visible">
@@ -138,14 +159,14 @@ export function OutlookChart({
           <g key={v}>
             <line x1={M.l} x2={width - M.r} y1={sy(v)} y2={sy(v)} className="stroke-rule" strokeWidth={1} />
             <text x={M.l - 8} y={sy(v)} textAnchor="end" dominantBaseline="middle" className="figure fill-ink-muted text-[11px]">
-              {v.toFixed(v % 1 === 0 ? 0 : 1)}
+              {formatAxis ? formatAxis(v) : v.toFixed(v % 1 === 0 ? 0 : 1)}
             </text>
           </g>
         ))}
       {!compact &&
         xt.map((n) => (
           <text key={n} x={sx(n)} y={H - M.b + 18} textAnchor="middle" className="figure fill-ink-muted text-[11px]">
-            {monthLabel(`${Math.floor(n / 12)}-${String((n % 12) + 1).padStart(2, "0")}-01`)}
+            {label(`${Math.floor(n / 12)}-${String((n % 12) + 1).padStart(2, "0")}-01`)}
           </text>
         ))}
       {!compact && (
@@ -198,7 +219,7 @@ export function OutlookChart({
   }
 
   const a = active === null ? null : pts[active];
-  const tip = a ? tooltipLines(a, officialSource, modelName) : null;
+  const tip = a ? tooltipLines(a, officialSource, modelName, label, formatValue) : null;
   const TIP_W = 210;
   const ax = a ? sx(a.n) : 0;
   const tipLeft = a ? (ax + 14 + TIP_W > width ? Math.max(0, ax - 14 - TIP_W) : ax + 14) : 0;
@@ -219,7 +240,7 @@ export function OutlookChart({
         ref={measure}
         role="group"
         tabIndex={0}
-        aria-label={`${summary} Use the left and right arrow keys to read each month.`}
+        aria-label={`${summary} Use the left and right arrow keys to read each ${word[0]}.`}
         aria-describedby={tip ? tipId : undefined}
         data-testid="outlook-chart"
         className="relative w-full min-w-0 touch-pan-y overflow-hidden rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

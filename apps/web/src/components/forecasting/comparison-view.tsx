@@ -15,24 +15,34 @@ import {
   type Comparison,
   type ComparisonGroup,
   comparisonToCsv,
+  CORE_MODELS,
   fmtMetric,
-  HORIZONS,
-  INDICATOR_IDS,
-  INDICATOR_NAMES,
-  type IndicatorId,
+  FORECAST_IDS,
+  FORECAST_NAMES,
+  type ForecastId,
+  FREQUENCY,
+  HORIZONS_BY_FREQ,
+  isForecastId,
   loadErrorText,
   METRIC_LABELS,
-  monthLabel,
+  type ModelStatus,
+  periodAdj,
+  periodLabel,
+  periodsText,
   type SeriesInfo,
+  STATUS_TEXT,
 } from "@/lib/forecasting";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const selectClass = `rounded border border-rule bg-surface px-2 py-1.5 text-sm ${focusRing}`;
 const TABLE_METRICS = ["mae", "rmse", "mase", "smape", "coverage_80", "coverage_95"] as const;
 const BAR_METRICS = ["mae", "rmse", "mase", "smape"] as const;
-const DEFAULT_HORIZON = 6;
+const DEFAULT_HORIZON = { monthly: 6, quarterly: 4 } as const;
 
 export type ComparisonMap = Record<string, Comparison | null>; // key `${indicator}-${horizon}`
+/** The model (and horizon) the Forecasts pages use by default, from the same rule (chooseView). */
+export type DefaultMap = Partial<Record<ForecastId, { model: string; horizon: number } | null>>;
+export type StatusMap = Partial<Record<ForecastId, ModelStatus[]>>;
 
 /** Horizontal error bars on one scale; the naive baseline is grey and marked with a reference line. */
 export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: string }) {
@@ -68,7 +78,19 @@ export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: s
   );
 }
 
-export function ComparisonView({ data, series = [], apiError = "" }: { data: ComparisonMap; series?: SeriesInfo[]; apiError?: string }) {
+export function ComparisonView({
+  data,
+  series = [],
+  apiError = "",
+  defaults = {},
+  status = {},
+}: {
+  data: ComparisonMap;
+  series?: SeriesInfo[];
+  apiError?: string;
+  defaults?: DefaultMap;
+  status?: StatusMap;
+}) {
   // Indicator, horizon and test set live in the URL (?indicator=&horizon=&set=&view=) so the view can be shared.
   const router = useRouter();
   const pathname = usePathname();
@@ -76,9 +98,12 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
   const view = parseView(params?.get("view"));
   const research = view === "research";
   const indParam = params?.get("indicator") ?? "";
-  const indicator: IndicatorId = (INDICATOR_IDS as string[]).includes(indParam) ? (indParam as IndicatorId) : "wpi";
+  const indicator: ForecastId = isForecastId(indParam) ? indParam : "wpi";
+  const freq = FREQUENCY[indicator];
+  const horizons = HORIZONS_BY_FREQ[freq];
+  const pl = (iso: string) => periodLabel(iso, freq);
   const hParam = Number(params?.get("horizon"));
-  const horizon: number = (HORIZONS as readonly number[]).includes(hParam) ? hParam : DEFAULT_HORIZON;
+  const horizon: number = horizons.includes(hParam) ? hParam : DEFAULT_HORIZON[freq];
   const cmp = data[`${indicator}-${horizon}`] ?? null;
   const ref = primaryGroup(cmp);
   const setParam = params?.get("set");
@@ -97,6 +122,14 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
   const [barMetric, setBarMetric] = useState<string>("mae");
   const info = series.find((s) => s.indicator === indicator);
   const best = group?.rankable ? group.best.mae : undefined;
+  const def = defaults[indicator];
+  const defaultModel = def && def.horizon === horizon ? def.model : null;
+  const st = status[indicator] ?? [];
+  const missing = CORE_MODELS.filter((m) => !group?.models.some((x) => x.model === m)).map((m) => ({
+    model: m,
+    s: st.find((x) => x.model === m),
+    excluded: cmp?.excluded.find((e) => e.model === m)?.reason,
+  }));
 
   const download = () => {
     if (!group) return;
@@ -114,13 +147,13 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
       <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
         <div className="text-sm" data-tour="fc-indicator">
           <span id="fc-ind-label" className="mb-1 block text-ink-muted">Indicator</span>
-          <Segmented labelledBy="fc-ind-label" value={indicator} onChange={(i) => setView({ indicator: i, set: null })} options={INDICATOR_IDS.map((i) => ({ value: i, label: i.toUpperCase(), title: INDICATOR_NAMES[i] }))} />
+          <Segmented labelledBy="fc-ind-label" value={indicator} onChange={(i) => setView({ indicator: i, set: null })} options={FORECAST_IDS.map((i) => ({ value: i, label: i.toUpperCase(), title: FORECAST_NAMES[i] }))} />
         </div>
         <div className="text-sm" data-tour="fc-horizon">
           <span id="fc-h-label" className="mb-1 block text-ink-muted">
             Forecast horizon <HelpTip id="forecast-horizon" />
           </span>
-          <Segmented labelledBy="fc-h-label" value={horizon} onChange={(h) => setView({ horizon: h, set: null })} options={HORIZONS.map((h) => ({ value: h, label: `${h} mo` }))} />
+          <Segmented labelledBy="fc-h-label" value={horizon} onChange={(h) => setView({ horizon: h, set: null })} options={horizons.map((h) => ({ value: h, label: freq === "quarterly" ? `${h} qtr` : `${h} mo` }))} />
         </div>
         {cmp && cmp.groups.length > 1 && (
           <label className="min-w-0 max-w-full text-sm">
@@ -128,7 +161,7 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
             <select aria-label="Test set" className={`${selectClass} w-full max-w-full truncate sm:w-auto`} value={groupIdx} onChange={(e) => setView({ set: Number(e.target.value) })}>
               {cmp.groups.map((g, i) => (
                 <option key={g.group_id} value={i}>
-                  {g.n_origins} months · {g.models.length} models{g.evaluation_start ? ` · ${monthLabel(g.evaluation_start)}–${monthLabel(g.evaluation_end ?? g.evaluation_start)}` : ""}
+                  {g.n_origins} {freq === "quarterly" ? "quarters" : "months"} · {g.models.length} models{g.evaluation_start ? ` · ${pl(g.evaluation_start)}–${pl(g.evaluation_end ?? g.evaluation_start)}` : ""}
                   {g.group_id === ref?.group_id ? " (largest)" : ""}
                 </option>
               ))}
@@ -145,11 +178,12 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
       ) : !group ? (
         <Panel title="Nothing to compare yet">
           <p className="text-sm text-ink-muted">
-            No model has been tested on {INDICATOR_NAMES[indicator]} at a {horizon}-month horizon.
-            {info && info.evaluable_horizons.length === 0
+            No model has been tested on {FORECAST_NAMES[indicator]} at a {periodAdj(horizon, freq)} horizon.
+            {info && info.evaluable_horizons.length === 0 && freq === "monthly"
               ? ` The current series has ${info.n_observations} monthly observations; a fair test at this horizon needs at least ${monthsNeeded(horizon)}.`
               : ""}
           </p>
+          <Missing rows={missing} />
           {research && <Excluded cmp={cmp} />}
         </Panel>
       ) : (
@@ -157,24 +191,28 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
           <section className="rounded-md border border-rule bg-surface" aria-labelledby="fc-title">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-5 py-3">
               <h2 id="fc-title" className="text-sm font-semibold">
-                {indicator.toUpperCase()} · {horizon}-month-ahead accuracy
+                {indicator.toUpperCase()} · {periodAdj(horizon, freq)}-ahead accuracy
               </h2>
               <p className="text-xs text-ink-muted">
-                {group.n_origins} test months{group.evaluation_start ? `, ${monthLabel(group.evaluation_start)} to ${monthLabel(group.evaluation_end ?? group.evaluation_start)}` : ""} · same months for every model
+                {group.n_origins} test {freq === "quarterly" ? "quarters" : "months"}
+                {group.evaluation_start ? `, ${pl(group.evaluation_start)} to ${pl(group.evaluation_end ?? group.evaluation_start)}` : ""} · same periods for every model
               </p>
             </div>
             <div className="overflow-x-auto px-5 py-3 focus-visible:outline-2 focus-visible:outline-accent" data-tour="fc-table" role="region" aria-label="Accuracy table (scrollable)" tabIndex={0}>
-              <table className="w-full min-w-[34rem] text-sm">
+              <table className="w-full min-w-[46rem] text-sm">
                 <caption className="sr-only">Backtest accuracy by model on identical forecast origins</caption>
                 <thead>
                   <tr className="border-b border-rule text-left text-xs">
                     <th scope="col" className="py-2 pr-4 font-semibold">Model</th>
                     <th scope="col" className="py-2 pr-4 text-right font-semibold">
-                      Average error <HelpTip id="mae" />
+                      MAE <HelpTip id="mae" />
                     </th>
-                    <th scope="col" className="py-2 pr-4 text-right font-semibold">vs baseline</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">RMSE</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">sMAPE</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">Tests</th>
+                    <th scope="col" className="py-2 pr-4 text-right font-semibold">vs Naive</th>
                     <th scope="col" className="py-2 pr-4 text-right font-semibold">
-                      Inside 80% range <HelpTip id="coverage" />
+                      Inside 80% <HelpTip id="coverage" />
                     </th>
                     <th scope="col" className="py-2 font-semibold">Track record</th>
                   </tr>
@@ -188,8 +226,16 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
                             {m.model_name}
                             {m.model === BASELINE && <span className="ml-2 rounded border border-rule px-1.5 text-[10px] uppercase tracking-wide text-ink-muted">baseline</span>}
                             {best === m.model && <span className="ml-2 rounded border border-ok px-1.5 text-[10px] uppercase tracking-wide text-ok">lowest error</span>}
+                            {defaultModel === m.model && (
+                              <span data-tour="fc-default" data-testid="default-badge" className="ml-2 rounded border border-accent bg-accent px-1.5 text-[10px] uppercase tracking-wide text-accent-ink">
+                                selected default
+                              </span>
+                            )}
                           </th>
                           <td className="figure py-2 pr-4 text-right">{fmtMetric("mae", m.metrics.mae)}</td>
+                          <td className="figure py-2 pr-4 text-right">{fmtMetric("rmse", m.metrics.rmse)}</td>
+                          <td className="figure py-2 pr-4 text-right">{m.metrics.smape === undefined ? "—" : `${m.metrics.smape.toFixed(2)}%`}</td>
+                          <td className="figure py-2 pr-4 text-right">{m.n_origins}</td>
                           <td className="figure py-2 pr-4 text-right">
                             {m.vs_baseline_mae_pct === null ? "—" : `${m.vs_baseline_mae_pct > 0 ? "+" : ""}${m.vs_baseline_mae_pct.toFixed(1)}%`}
                           </td>
@@ -212,6 +258,9 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
                   : `No model is marked as best: ${group.n_origins < 12 ? `only ${group.n_origins} test months (fewer than 12)` : "too few models"} is not enough to rank fairly, so models are listed baseline first, then alphabetically.`}{" "}
                 “—” means not available, never zero.
               </p>
+              {defaultModel === null && def && (
+                <p>The selected default for {indicator.toUpperCase()} is {def.model} at {periodsText(def.horizon, freq)}; switch to that horizon to see it marked.</p>
+              )}
               {group.warnings
                 .filter((w) => !/not tested for statistical significance/.test(w))
                 .map((w) => (
@@ -221,6 +270,12 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
                 ))}
             </div>
           </section>
+
+          {missing.length > 0 && (
+            <section className="rounded-md border border-rule bg-surface px-5 py-3" aria-label="Models not in this comparison">
+              <Missing rows={missing} />
+            </section>
+          )}
 
           <section className="rounded-md border border-rule bg-surface" aria-labelledby="fc-chart-title" data-tour="fc-chart">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-5 py-3">
@@ -308,6 +363,27 @@ export function ComparisonView({ data, series = [], apiError = "" }: { data: Com
           Experiments →
         </Link>
       </p>
+    </div>
+  );
+}
+
+/** The eight-model contract: every algorithm missing from this test set is listed with its status and reason. */
+function Missing({ rows }: { rows: { model: string; s?: ModelStatus; excluded?: string }[] }) {
+  if (!rows.length) return null;
+  return (
+    <div data-testid="missing-models">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Not in this comparison</p>
+      <ul className="mt-1 space-y-1 text-sm">
+        {rows.map(({ model, s, excluded }) => (
+          <li key={model}>
+            <span className="font-medium">{s?.model_name ?? model}</span>{" "}
+            <span className="text-ink-muted">
+              · {s ? (s.status === "available" ? "not evaluated at this horizon" : STATUS_TEXT[s.status]) : "status unknown"}
+              {excluded ? `: ${excluded}` : s?.reason && s.status !== "available" ? `: ${s.reason}` : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

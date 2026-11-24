@@ -5,6 +5,8 @@
     python -m pipeline.forecasting.cli forecast --indicator iip --model ets --horizon 3
     python -m pipeline.forecasting.cli backtest ... --save        # also store in PostgreSQL
     python -m pipeline.forecasting.cli suite --name all --indicator cpi --history linked   # CPI on the official linked history
+    python -m pipeline.forecasting.cli suite --name v4 --indicator all --history linked     # V4: eight models, linked
+    python -m pipeline.forecasting.cli suite --name v4 --indicator gdp                      # V4: quarterly GDP
 
 Reads the stored index series (read-only). Nothing is written unless --save is given, and --save
 needs migration 0002. Results printed here are real backtest outputs, never samples.
@@ -31,8 +33,10 @@ from pipeline.forecasting.experiments import (
     backtest_records,
     forecast_record,
     load_training,
+    suite_applies,
     suite_initial_train,
     suite_records,
+    v4_future_records,
 )
 from pipeline.forecasting.persistence import store_run
 from pipeline.ingest.config import database_url
@@ -59,18 +63,24 @@ def print_table(records: list[RunRecord]) -> None:
               f" {_fmt(m.get('mase'), 2)} {_fmt(m.get('smape'), 2)} {_fmt(m.get('coverage_80'), 2)} {_fmt(m.get('coverage_95'), 2)}  {note}")  # fmt: skip
 
 
+def _suite_names(name: str, linked: bool) -> list[str]:
+    """'all' = the V1-V3 suites + V3 futures (unchanged behaviour); 'v4' = the V4 suites + V4 futures."""
+    if name == "all":
+        return [n for n in ([*LINKED_SUITES] if linked else [*SUITES]) if not n.startswith("v4")] + ["future"]
+    if name == "v4":
+        return [n for n in ([*LINKED_SUITES] if linked else [*SUITES]) if n.startswith("v4")] + ["future_v4"]
+    return [name]
+
+
 def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
     linked = args.history == "linked"
-    if linked and args.indicator == "all":
-        print("Error: --history linked needs one --indicator (cpi)", file=sys.stderr)
-        return 2
-    if (args.name in LINKED_SUITES) != linked and args.name not in ("all", "future"):
+    if (args.name in LINKED_SUITES) != linked and args.name not in ("all", "future", "future_v4", "v4"):
         print(
             f"Error: suite {args.name!r} is for {'a linked' if args.name in LINKED_SUITES else 'the current'} history",
             file=sys.stderr,
         )
         return 2
-    names = (([*LINKED_SUITES] if linked else [*SUITES]) + ["future"]) if args.name == "all" else [args.name]
+    names = _suite_names(args.name, linked)
     inds = sorted(INDICATORS) if args.indicator == "all" else [args.indicator]
     totals = {"stored": 0, "exists": 0, "records": 0, "skipped": 0}
     for ind in inds:
@@ -79,13 +89,16 @@ def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
         except (LoaderError, ValueError) as exc:
             print(f"{ind.upper()}: not available ({exc})")
             continue
+        unit = "months" if ts.freq == "M" else "quarters"
         span = f"{ts.periods[0]:%Y-%m}..{ts.periods[-1]:%Y-%m}"
         print(
-            f"\n== {ind.upper()}: {len(ts)} months {span}, base {ts.base_year}"
+            f"\n== {ind.upper()}: {len(ts)} {unit} {span}, base {ts.base_year}"
             + (f", linked at {ts.join_period:%Y-%m} ({' + '.join(ts.components)})" if ts.join_period else "")
         )
         for name in names:
             if name == "future":
+                if ts.freq != "M":
+                    continue
                 recs = []
                 for mid in FUTURE_MODELS:
                     try:
@@ -93,16 +106,25 @@ def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
                     except ValueError as exc:
                         print(f"  future {mid}: refused ({exc})")
                 print(f"-- future forecasts (h={FUTURE_HORIZON}): {len(recs)} run(s)")
+            elif name == "future_v4":
+                recs, notes = v4_future_records(ts, ind, args.history, args.seed)
+                print(
+                    f"-- V4 future forecasts: {', '.join(f'{r.model_id} h={r.horizon}' for r in recs) or 'none'}"
+                )
+                for n in notes:
+                    print(f"  {n}")
             else:
+                if not suite_applies(ts, name):
+                    continue
                 recs = suite_records(ts, ind, name, args.seed)
                 print(f"-- suite {name} (initial train {suite_initial_train(ts, name)})")
                 print_table([r for r in recs if r.status == "completed"])
                 for r in recs:
                     if r.status != "completed":
                         totals["skipped"] += 1
-                skipped = sorted({(r.model_id, r.error) for r in recs if r.status != "completed"})
-                for mid, why in skipped[:8]:
-                    print(f"  skipped {mid}: {why}")
+                skipped = sorted({(r.model_id, r.status, r.error) for r in recs if r.status != "completed"})
+                for mid, st, why in skipped[:12]:
+                    print(f"  {st} {mid}: {why}")
             totals["records"] += len(recs)
             if args.save:
                 for r in recs:
@@ -110,7 +132,7 @@ def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
                     totals[state] += 1
     print(
         f"\nrecords: {totals['records']}  stored: {totals['stored']}  "
-        f"already stored: {totals['exists']}  skipped runs: {totals['skipped']}"
+        f"already stored: {totals['exists']}  skipped/failed runs: {totals['skipped']}"
     )
     if not args.save:
         print("(not saved: add --save to store in PostgreSQL)")
@@ -135,7 +157,9 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--history", default="current", choices=HISTORIES)
     b.add_argument("--save", action="store_true", help="store runs in PostgreSQL (idempotent)")
     su = sub.add_parser("suite", help="run a predefined research suite (reproducible)")
-    su.add_argument("--name", required=True, choices=[*SUITES, *LINKED_SUITES, "future", "all"])
+    su.add_argument(
+        "--name", required=True, choices=[*SUITES, *LINKED_SUITES, "future", "future_v4", "all", "v4"]
+    )
     su.add_argument("--indicator", default="all", choices=[*sorted(INDICATORS), "all"])
     su.add_argument(
         "--history",

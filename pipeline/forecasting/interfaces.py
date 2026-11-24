@@ -56,8 +56,31 @@ def month_index(d: date) -> int:
     return d.year * 12 + d.month - 1
 
 
-def validate_history(y: np.ndarray, periods: list[date]) -> None:
-    """Strict input validation: finite values, first-of-month dates, consecutive months, no gaps."""
+STEP_MONTHS = {"M": 1, "Q": 3}  # months between consecutive observations
+SEASON_LENGTH = {"M": 12, "Q": 4}  # observations per seasonal cycle (one year)
+
+
+def infer_frequency(periods: list[date]) -> str:
+    """'M' (consecutive months) or 'Q' (quarters: first month of each quarter, 3 months apart).
+
+    A single observation is treated as monthly. Anything else (mixed or irregular steps) is an error:
+    frequencies are never guessed from partial evidence."""
+    if len(periods) < 2:
+        return "M"
+    steps = set(np.diff([month_index(p) for p in periods]).tolist())
+    if steps == {1}:
+        return "M"
+    if steps == {3}:
+        return "Q"
+    raise ValueError(
+        "periods must be strictly consecutive months or quarters (gap, duplicate or mixed step found)"
+    )
+
+
+def validate_history(y: np.ndarray, periods: list[date], freq: str | None = None) -> str:
+    """Strict input validation: finite values, first-of-month dates, consecutive periods, no gaps.
+
+    Returns the frequency ('M' or 'Q'). With `freq` given, the periods must have exactly that step."""
     if y.ndim != 1 or len(y) != len(periods):
         raise ValueError("values and periods must be 1-D and the same length")
     if len(y) == 0:
@@ -66,14 +89,21 @@ def validate_history(y: np.ndarray, periods: list[date]) -> None:
         raise ValueError("history contains NaN/inf: missing values are never filled silently")
     if any(p.day != 1 for p in periods):
         raise ValueError("periods must be first-of-month dates")
-    steps = np.diff([month_index(p) for p in periods])
-    if len(steps) and not np.all(steps == 1):
-        raise ValueError("periods must be strictly consecutive months (gap or duplicate found)")
+    found = infer_frequency(periods)
+    if freq is not None and len(periods) >= 2 and found != freq:
+        step = "months" if freq == "M" else "quarters"
+        raise ValueError(f"periods must be strictly consecutive {step} (gap or duplicate found)")
+    return freq or found
 
 
-def future_periods(last: date, h: int) -> list[date]:
-    n = month_index(last)
-    return [date((n + k) // 12, (n + k) % 12 + 1, 1) for k in range(1, h + 1)]
+def future_periods(last: date, h: int, freq: str = "M") -> list[date]:
+    n, s = month_index(last), STEP_MONTHS[freq]
+    return [date((n + s * k) // 12, (n + s * k) % 12 + 1, 1) for k in range(1, h + 1)]
+
+
+def season_position(d: date, freq: str) -> int:
+    """0-based position within the year: month 0..11, or quarter 0..3 (calendar quarters)."""
+    return d.month - 1 if freq == "M" else (d.month - 1) // 3
 
 
 class ForecastModel(ABC):

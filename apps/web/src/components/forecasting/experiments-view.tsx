@@ -172,7 +172,7 @@ export function ExperimentsView({ runs, total }: { runs: Run[]; total: number })
               <span className="mb-1 block text-ink-muted">Search</span>
               <input aria-label="Search runs" type="search" className={`${selectClass} w-48`} value={f.q} placeholder="Run #12 or ARIMA" onChange={(e) => push({ q: e.target.value })} />
             </label>
-            {select("Indicator", f.indicator, "indicator", [["cpi", "CPI"], ["wpi", "WPI"], ["iip", "IIP"]])}
+            {select("Indicator", f.indicator, "indicator", [["cpi", "CPI"], ["wpi", "WPI"], ["iip", "IIP"], ["gdp", "GDP"]])}
             {select("Model", f.model, "model", [...names.entries()].sort((a, b) => a[1].localeCompare(b[1])))}
             {select("Status", f.status, "status", [["completed", "Completed"], ["skipped", "Skipped"], ["failed", "Failed"]])}
             <ForecastTourButton className={`ml-auto rounded border border-accent px-3 py-1.5 text-sm text-accent hover:bg-bg ${focusRing}`}>Take a tour</ForecastTourButton>
@@ -181,7 +181,7 @@ export function ExperimentsView({ runs, total }: { runs: Run[]; total: number })
             <summary className={`cursor-pointer text-ink-muted hover:text-ink ${focusRing}`}>More filters{advancedActive ? " (active)" : ""}</summary>
             <div className="mt-2 flex flex-wrap items-end gap-3">
               {select("Run type", f.kind, "kind", [["backtest", "Backtest"], ["forecast", "Forecast"]])}
-              {select("Horizon", f.horizon === null ? null : String(f.horizon), "horizon", horizons.map((h) => [String(h), `${h} month${h > 1 ? "s" : ""}`]))}
+              {select("Horizon", f.horizon === null ? null : String(f.horizon), "horizon", horizons.map((h) => [String(h), f.indicator === "gdp" ? `${h} quarter${h > 1 ? "s" : ""}` : `${h} month${h > 1 ? "s" : ""}`]))}
               <label className="text-sm">
                 <span className="mb-1 block text-ink-muted">Min. test origins</span>
                 <input

@@ -12,7 +12,7 @@ import numpy as np
 from pipeline.forecasting.interfaces import ForecastModel, ForecastResult, validate_history
 from pipeline.forecasting.intervals import gaussian_intervals
 
-M = 12  # monthly seasonality
+M = 12  # default season length (monthly data); quarterly data pass m=4 through the model config
 
 
 class Naive(ForecastModel):
@@ -30,6 +30,7 @@ class Naive(ForecastModel):
         self._y = np.asarray(y, dtype=float)
         d = np.diff(self._y)
         self._sigma = float(np.std(d, ddof=1)) if len(d) >= 3 else None  # one-step residuals
+        self.diagnostics = {"label": "Naive"}
         return self
 
     def predict(self, h: int) -> ForecastResult:
@@ -41,29 +42,32 @@ class Naive(ForecastModel):
 
 
 class SeasonalNaive(ForecastModel):
-    """Same month of the previous year: f(T+h) = y(T+h-12*ceil(h/12)). Needs 12 observations."""
+    """Same period of the previous year: f(T+h) = y(T+h-m*ceil(h/m)), m = 12 (monthly) or 4 (quarterly).
+    Needs one full seasonal cycle (m observations)."""
 
     id = "snaive"
     family = "baseline"
 
     @classmethod
     def min_train(cls, **config: Any) -> int:
-        return M
+        return int(config.get("m", M))
 
     def fit(self, y: np.ndarray, periods: list[date]) -> SeasonalNaive:
         validate_history(y, periods)
+        m = self._m = int(self._config.get("m", M))
         self._y = np.asarray(y, dtype=float)
-        d = self._y[M:] - self._y[:-M]  # seasonal differences = in-sample residuals
+        d = self._y[m:] - self._y[:-m]  # seasonal differences = in-sample residuals
         self._sigma = float(np.std(d, ddof=1)) if len(d) >= 3 else None
+        self.diagnostics = {"label": f"Seasonal naive (m={m})"}
         return self
 
     def predict(self, h: int) -> ForecastResult:
-        n = len(self._y)
+        n, m = len(self._y), self._m
         steps = np.arange(1, h + 1)
-        point = self._y[n - M + ((steps - 1) % M)]
+        point = self._y[n - m + ((steps - 1) % m)]
         if self._sigma is None:
             return ForecastResult(point)
-        sig = self._sigma * np.sqrt(np.floor((steps - 1) / M) + 1)
+        sig = self._sigma * np.sqrt(np.floor((steps - 1) / m) + 1)
         return ForecastResult(point, gaussian_intervals(point, sig), "seasonal_random_walk_gaussian")
 
 
@@ -84,6 +88,7 @@ class Drift(ForecastModel):
         self._slope = float((self._y[-1] - self._y[0]) / (n - 1))
         resid = np.diff(self._y) - self._slope
         self._sigma = float(np.sqrt(np.sum(resid**2) / (n - 2))) if n > 3 else None
+        self.diagnostics = {"label": "Drift", "slope_per_period": self._slope}
         return self
 
     def predict(self, h: int) -> ForecastResult:

@@ -48,7 +48,7 @@ def test_api_registry_matches_the_pipeline():
 @pytest.mark.parametrize(
     "path",
     [
-        "/runs?indicator=gdp", "/runs?model=prophet", "/runs?horizon=0", "/runs?horizon=99", "/runs?limit=0",
+        "/runs?indicator=gva", "/model-status?indicator=gva", "/model-status", "/runs?model=prophet", "/runs?horizon=0", "/runs?horizon=99", "/runs?limit=0",
         "/runs?limit=100000", "/runs?offset=-1", "/runs?kind=other", "/forecasts", "/forecasts?run_id=0",
         "/comparison", "/comparison?indicator=wpi", "/comparison?indicator=wpi&horizon=0",
         "/scores?metric=DROP%20TABLE",

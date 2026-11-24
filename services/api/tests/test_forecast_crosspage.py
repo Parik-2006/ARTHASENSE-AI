@@ -12,6 +12,8 @@ def test_forecasting_trains_on_the_indicators_default_series():
         "cpi": indicators.cpi_codes("current")[0],
         "wpi": indicators.wpi_code(indicators.DEFAULT_WPI_BASE),
         "iip": indicators.iip_codes(indicators.DEFAULT_IIP_BASE, "general")[0],
+        # Forecasts V4: quarterly real GDP LEVEL, the same series the GDP Indicators page serves
+        "gdp": indicators.GDP_LEVEL_SERIES,
     }
     assert expected == forecasting.INDICATOR_SERIES
 

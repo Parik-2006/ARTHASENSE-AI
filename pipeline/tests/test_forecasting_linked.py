@@ -138,7 +138,7 @@ def test_suite_needs_a_linked_history_and_load_training_refuses_other_indicators
     with pytest.raises(ValueError, match="linked history"):
         suite_initial_train(cur, "linked_current")
     with pytest.raises(ValueError, match="no official linked history"):
-        load_training(None, "wpi", "linked")  # type: ignore[arg-type]
+        load_training(None, "gdp", "linked")  # type: ignore[arg-type]  # no official GDP back series (2022-23 base)
     with pytest.raises(ValueError, match="unknown history"):
         load_training(None, "cpi", "spliced")  # type: ignore[arg-type]
 

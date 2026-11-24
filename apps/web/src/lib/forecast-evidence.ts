@@ -8,8 +8,8 @@
  *
  *  `lib/forecast-v2.ts` is left unchanged (Indicators imports it); its rule-based `assessReliability` is reused. */
 
-import { assessReliability, pickDefault, type Reliability, type ReliabilityLevel, RELIABILITY_RULES } from "@/lib/forecast-v2";
-import { type ComparedModel, type Comparison, type ComparisonGroup, type ForecastRow, HORIZONS, monthLabel, type Run } from "@/lib/forecasting";
+import { assessReliability, type Reliability, RELIABILITY_LABEL, type ReliabilityLevel, RELIABILITY_RULES } from "@/lib/forecast-v2";
+import { type ComparedModel, type Comparison, type ComparisonGroup, CORE_MODELS, type ForecastRow, HORIZONS, monthLabel, periodsText, type Run } from "@/lib/forecasting";
 
 export const BASELINE = "naive";
 
@@ -198,13 +198,14 @@ export interface ForecastView {
 }
 
 /** Each stored future run of horizon H offers the standard horizons k <= H. For these one-shot fits, steps 1..k of
- *  the H-step forecast ARE the k-step forecast (the API's /forecasts/latest serves them the same way). */
-export function forecastViews(stored: StoredForecastLike[]): ForecastView[] {
+ *  the H-step forecast ARE the k-step forecast (the API's /forecasts/latest serves them the same way).
+ *  `horizons` = the frequency's standard horizons (monthly 1/3/6/12, quarterly 1/2/4). */
+export function forecastViews(stored: StoredForecastLike[], horizons: readonly number[] = HORIZONS): ForecastView[] {
   const out: ForecastView[] = [];
   const seen = new Set<string>();
   for (const s of stored) {
     const H = s.run.horizon;
-    for (const k of [...new Set([...HORIZONS.filter((h) => h <= H), H])].sort((a, b) => a - b)) {
+    for (const k of [...new Set([...horizons.filter((h) => h <= H), H])].sort((a, b) => a - b)) {
       const key = `${s.model}|${k}`;
       if (seen.has(key)) continue;
       const rows = s.items.filter((r) => (r.step ?? 0) >= 1 && (r.step ?? 0) <= k).sort((a, b) => a.target_date.localeCompare(b.target_date));
@@ -219,24 +220,82 @@ export function forecastViews(stored: StoredForecastLike[]): ForecastView[] {
 export const isStale = (rows: ForecastRow[], latestPeriod: string | null) =>
   !!latestPeriod && !!rows[0]?.origin_date && rows[0].origin_date.slice(0, 7) < latestPeriod.slice(0, 7);
 
-/** Default view: user choice from the URL, else the V2 policy (strongest evidence at the longest horizon <= 6,
- *  then lowest MAE) where MAE now comes from the SAME evaluation set for every candidate. */
+// ---------- default selection (V4) ----------
+
+/** Documented selection rule (docs/FORECASTS-V4-MODELS.md):
+ *  1. The reader's explicit choice in the URL, when that model/horizon is stored.
+ *  2. Otherwise the longest stored horizon up to `preferH` (6 months / 4 quarters).
+ *  3. Within it: the strongest evidence level (supported > limited > insufficient > concerning), judged for every
+ *     candidate on the SAME evaluation set (identical origins).
+ *  4. Then the lowest backtest MAE, but a model counts as tied with the best when its MAE is within
+ *     MAE_TIE_TOLERANCE (2%) of it; ties go to the SIMPLER model (CORE_MODELS order: naive, seasonal naive, drift,
+ *     ETS, ARIMA, SARIMA, Random Forest, XGBoost). A complex model therefore never wins on a negligible difference.
+ *  Differences are not tested for statistical significance, and the UI says so. */
+export const MAE_TIE_TOLERANCE = 0.02;
+const RANK: Record<ReliabilityLevel, number> = { supported: 3, limited: 2, insufficient: 1, concerning: 0 };
+const complexity = (m: string) => {
+  const i = (CORE_MODELS as readonly string[]).indexOf(m);
+  return i < 0 ? CORE_MODELS.length : i;
+};
+
+export interface V4Candidate {
+  model: string;
+  horizon: number;
+  level: ReliabilityLevel;
+  mae: number | null;
+}
+
+export function pickDefaultV4(
+  c: V4Candidate[],
+  want: { model?: string | null; horizon?: number | null } = {},
+  preferH = 6,
+  unit: "monthly" | "quarterly" = "monthly",
+): { model: string; horizon: number; reason: string } | null {
+  if (!c.length) return null;
+  if (want.model) {
+    const exact = c.filter((x) => x.model === want.model && (want.horizon ? x.horizon === want.horizon : true));
+    const pick = exact[0] ?? c.filter((x) => x.model === want.model).sort((a, b) => b.horizon - a.horizon)[0];
+    if (pick) return { model: pick.model, horizon: pick.horizon, reason: "Chosen in the page link." };
+  }
+  const horizons = [...new Set(c.map((x) => x.horizon))].sort((a, b) => a - b);
+  const h = want.horizon && horizons.includes(want.horizon) ? want.horizon : (horizons.filter((x) => x <= preferH).pop() ?? horizons[0]);
+  const pool = c.filter((x) => x.horizon === h);
+  const top = Math.max(...pool.map((x) => RANK[x.level]));
+  const level = pool.filter((x) => RANK[x.level] === top);
+  const maes = level.map((x) => x.mae).filter((x): x is number => x !== null);
+  const best = maes.length ? Math.min(...maes) : null;
+  const tied = best === null ? level : level.filter((x) => x.mae !== null && x.mae <= best * (1 + MAE_TIE_TOLERANCE));
+  const pick = [...tied].sort((a, b) => complexity(a.model) - complexity(b.model) || (a.mae ?? Infinity) - (b.mae ?? Infinity))[0];
+  const close = tied.length > 1 ? ` ${tied.length} models were within ${MAE_TIE_TOLERANCE * 100}% of the lowest error, so the simplest of them is used.` : "";
+  return {
+    model: pick.model,
+    horizon: h,
+    reason: `Strongest backtest evidence (${RELIABILITY_LABEL[pick.level].toLowerCase()}), then lowest average error at the ${periodsText(h, unit).replace(/^1 /, "1-")}-ahead horizon.${close}`,
+  };
+}
+
+/** Default view: the reader's choice from the URL, else `pickDefaultV4`, with every candidate scored on the SAME
+ *  evaluation set. `preferH` = 6 for monthly indicators, 4 for quarterly GDP. */
 export function chooseView(
   views: ForecastView[],
   comparisons: Record<number, Comparison | null | undefined>,
   latestPeriod: string | null,
   want: { model?: string | null; horizon?: number | null } = {},
+  preferH = 6,
+  unit: "monthly" | "quarterly" = "monthly",
 ): { view: ForecastView; evidence: Evidence; reason: string } | null {
   const scored = views.map((v) => ({ v, e: evidenceReliability(comparisons[v.horizon], v.model, isStale(v.rows, latestPeriod)) }));
-  const pick = pickDefault(
-    scored.map(({ v, e }) => ({ model: v.model, horizon: v.horizon, level: e.level, mae: e.set?.model.metrics.mae ?? null, createdAt: v.run.created_at })),
+  const pick = pickDefaultV4(
+    scored.map(({ v, e }) => ({ model: v.model, horizon: v.horizon, level: e.level, mae: e.set?.model.metrics.mae ?? null })),
     want,
+    preferH,
+    unit,
   );
   if (!pick) return null;
   const hit = scored.find(({ v }) => v.model === pick.model && v.horizon === pick.horizon);
   if (!hit) return null;
   const reason = pick.reason.startsWith("Strongest")
-    ? `Strongest evidence level, then lowest average error, with every model scored on the same ${hit.e.set?.group.n_origins ?? 0} test origins at the ${pick.horizon}-month horizon. It is not a claim that it is best at every horizon.`
+    ? `${pick.reason} Every model was scored on the same ${hit.e.set?.group.n_origins ?? 0} test origins. It is not a claim that it is best at every horizon, and differences are not tested for statistical significance.`
     : pick.reason;
   return { view: hit.v, evidence: hit.e, reason };
 }

@@ -159,12 +159,12 @@ async function tour(url, w, h, expectSteps, label) {
   ok(`${label}: keyboard + Escape close and return focus`, (await p.getByRole("dialog").count()) === 0 && /Take a tour/.test(focused ?? ""), focused);
   await p.context().close();
 }
-await tour("/forecasting", 1440, 900, 5, "Outlook 1440");
-await tour("/forecasting", 390, 844, 5, "Outlook 390");
+await tour("/forecasting", 1440, 900, 7, "Outlook 1440"); // V4: + model, GDP
+await tour("/forecasting", 390, 844, 7, "Outlook 390");
 await tour("/forecasting/wpi", 1440, 900, 7, "WPI explorer 1440");
 await tour("/forecasting/iip", 360, 740, 7, "IIP explorer 360");
 await tour("/forecasting/wpi", 768, 1024, 7, "WPI explorer 768");
-await tour("/forecasting/comparison?indicator=wpi&horizon=6", 1440, 900, 5, "Comparison 1440");
+await tour("/forecasting/comparison?indicator=wpi&horizon=6", 1440, 900, 6, "Comparison 1440"); // V4: + default badge
 await tour("/forecasting/experiments", 1440, 900, 4, "Experiments 1440 (reveals details)");
 await tour("/forecasting/experiments", 390, 844, 4, "Experiments 390");
 

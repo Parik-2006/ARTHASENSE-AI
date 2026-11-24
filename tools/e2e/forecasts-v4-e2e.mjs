@@ -210,6 +210,22 @@ if (OLD) {
   }
 }
 
+// ---------- 8. API down (DEAD = the same build started with ARTHASENSE_API_URL pointing at a closed port) ----------
+if (process.env.DEAD) {
+  const DEAD = process.env.DEAD;
+  for (const url of ["/forecasting", "/forecasting/gdp", "/forecasting/wpi?view=research", "/forecasting/comparison?indicator=gdp&horizon=4"]) {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
+    const p = await ctx.newPage();
+    const perr = [];
+    p.on("pageerror", (e) => perr.push(e.message));
+    const r = await p.goto(DEAD + url, { waitUntil: "networkidle", timeout: 90000 });
+    const t = await p.locator("main").innerText().catch(() => "");
+    ok(`API down ${url}: honest error state`, r.status() === 200 && /Unable to load|unavailable|check the API connection/i.test(t), t.slice(0, 120));
+    ok(`API down ${url}: no invented numbers, no crash, no overflow`, !/\d{2,3}\.\d{2}|lakh cr/.test(t) && !perr.length && (await overflowX(p)) <= 1, perr.join(" | ").slice(0, 120));
+    await ctx.close();
+  }
+}
+
 ok("no console or page errors on the new build", errors.length === 0, errors.slice(0, 5).join(" | "));
 await browser.close();
 const pass = results.filter((r) => r.pass).length;

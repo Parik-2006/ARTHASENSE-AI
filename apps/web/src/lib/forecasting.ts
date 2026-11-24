@@ -167,7 +167,7 @@ export interface Run {
   /** V4: the exact configuration that produced the run (e.g. "SARIMA(1,1,0)(0,1,1)12"), from the run's own stored
    *  configuration. Older APIs omit it. */
   model_label?: string | null;
-  model_config?: Record<string, unknown>;
+  model_parameters?: Record<string, unknown>;
   frequency?: Frequency;
   training_history?: "current" | "linked";
 }

@@ -44,8 +44,14 @@ export type ComparisonMap = Record<string, Comparison | null>; // key `${indicat
 export type DefaultMap = Partial<Record<ForecastId, { model: string; horizon: number } | null>>;
 export type StatusMap = Partial<Record<ForecastId, ModelStatus[]>>;
 
+/** Error metrics in the series' own unit: GDP errors are ₹ crore with Indian digit grouping; index errors as before. */
+export function metricText(metric: string, v: number | undefined, quarterly: boolean): string {
+  if (quarterly && v !== undefined && (metric === "mae" || metric === "rmse" || metric === "bias")) return `₹${Math.round(v).toLocaleString("en-IN")}`;
+  return fmtMetric(metric, v);
+}
+
 /** Horizontal error bars on one scale; the naive baseline is grey and marked with a reference line. */
-export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: string }) {
+export function ErrorBars({ group, metric, quarterly = false }: { group: ComparisonGroup; metric: string; quarterly?: boolean }) {
   const rows = displayOrder(group.models.filter((m) => m.metrics[metric] !== undefined), group.rankable, metric);
   if (!rows.length) return <p className="text-sm text-ink-muted">No model has this metric on this test set.</p>;
   const max = Math.max(...rows.map((m) => m.metrics[metric])) * 1.08 || 1;
@@ -56,7 +62,7 @@ export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: s
         {rows.map((m) => {
           const isBase = m.model === BASELINE;
           return (
-            <li key={m.model} className="grid grid-cols-[minmax(5.5rem,9rem)_1fr_4rem] items-center gap-3 text-sm">
+            <li key={m.model} className={`grid items-center gap-3 text-sm ${quarterly ? "grid-cols-[minmax(5.5rem,9rem)_1fr_6.5rem]" : "grid-cols-[minmax(5.5rem,9rem)_1fr_4rem]"}`}>
               <span className="truncate" title={m.model_name}>
                 {m.model_name}
               </span>
@@ -64,7 +70,7 @@ export function ErrorBars({ group, metric }: { group: ComparisonGroup; metric: s
                 <span className={`absolute inset-y-0 left-0 rounded-r-[4px] ${isBase ? "bg-ink-muted" : "bg-accent"}`} style={{ width: `${Math.max(1.5, (m.metrics[metric] / max) * 100)}%` }} />
                 {base !== undefined && <span className="absolute -inset-y-1 w-px border-l border-dashed border-ink" style={{ left: `${(base / max) * 100}%` }} />}
               </span>
-              <span className="figure text-right">{fmtMetric(metric, m.metrics[metric])}</span>
+              <span className="figure text-right">{metricText(metric, m.metrics[metric], quarterly)}</span>
             </li>
           );
         })}
@@ -125,11 +131,18 @@ export function ComparisonView({
   const def = defaults[indicator];
   const defaultModel = def && def.horizon === horizon ? def.model : null;
   const st = status[indicator] ?? [];
-  const missing = CORE_MODELS.filter((m) => !group?.models.some((x) => x.model === m)).map((m) => ({
-    model: m,
-    s: st.find((x) => x.model === m),
-    excluded: cmp?.excluded.find((e) => e.model === m)?.reason,
-  }));
+  const quarterly = freq === "quarterly";
+  const unitWord = quarterly ? "quarters" : "months";
+  const missing = CORE_MODELS.filter((m) => !group?.models.some((x) => x.model === m)).map((m) => {
+    // evaluated at this horizon, but on another (smaller) test set: say so instead of "not evaluated"
+    const other = cmp?.groups.find((g) => g.group_id !== group?.group_id && g.models.some((x) => x.model === m));
+    return {
+      model: m,
+      s: st.find((x) => x.model === m),
+      excluded: cmp?.excluded.find((e) => e.model === m)?.reason,
+      otherSet: other ? `${other.n_origins} test ${unitWord}` : undefined,
+    };
+  });
 
   const download = () => {
     if (!group) return;
@@ -232,8 +245,8 @@ export function ComparisonView({
                               </span>
                             )}
                           </th>
-                          <td className="figure py-2 pr-4 text-right">{fmtMetric("mae", m.metrics.mae)}</td>
-                          <td className="figure py-2 pr-4 text-right">{fmtMetric("rmse", m.metrics.rmse)}</td>
+                          <td className="figure py-2 pr-4 text-right">{metricText("mae", m.metrics.mae, quarterly)}</td>
+                          <td className="figure py-2 pr-4 text-right">{metricText("rmse", m.metrics.rmse, quarterly)}</td>
                           <td className="figure py-2 pr-4 text-right">{m.metrics.smape === undefined ? "—" : `${m.metrics.smape.toFixed(2)}%`}</td>
                           <td className="figure py-2 pr-4 text-right">{m.n_origins}</td>
                           <td className="figure py-2 pr-4 text-right">
@@ -255,7 +268,7 @@ export function ComparisonView({
               <p>
                 {group.rankable
                   ? "“Lowest error” marks the smallest average error on these months. Differences are not tested for statistical significance."
-                  : `No model is marked as best: ${group.n_origins < 12 ? `only ${group.n_origins} test months (fewer than 12)` : "too few models"} is not enough to rank fairly, so models are listed baseline first, then alphabetically.`}{" "}
+                  : `No model is marked as best: ${group.n_origins < 12 ? `only ${group.n_origins} test ${unitWord} (fewer than 12)` : "too few models"} is not enough to rank fairly, so models are listed baseline first, then alphabetically.`}{" "}
                 “—” means not available, never zero.
               </p>
               {defaultModel === null && def && (
@@ -296,7 +309,7 @@ export function ComparisonView({
               )}
             </div>
             <div className="px-5 py-4">
-              <ErrorBars group={group} metric={research ? barMetric : "mae"} />
+              <ErrorBars group={group} metric={research ? barMetric : "mae"} quarterly={quarterly} />
             </div>
           </section>
 
@@ -368,18 +381,24 @@ export function ComparisonView({
 }
 
 /** The eight-model contract: every algorithm missing from this test set is listed with its status and reason. */
-function Missing({ rows }: { rows: { model: string; s?: ModelStatus; excluded?: string }[] }) {
+function Missing({ rows }: { rows: { model: string; s?: ModelStatus; excluded?: string; otherSet?: string }[] }) {
   if (!rows.length) return null;
   return (
     <div data-testid="missing-models">
       <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Not in this comparison</p>
       <ul className="mt-1 space-y-1 text-sm">
-        {rows.map(({ model, s, excluded }) => (
+        {rows.map(({ model, s, excluded, otherSet }) => (
           <li key={model}>
             <span className="font-medium">{s?.model_name ?? model}</span>{" "}
             <span className="text-ink-muted">
-              · {s ? (s.status === "available" ? "not evaluated at this horizon" : STATUS_TEXT[s.status]) : "status unknown"}
-              {excluded ? `: ${excluded}` : s?.reason && s.status !== "available" ? `: ${s.reason}` : ""}
+              {otherSet ? (
+                <>· compared on a different test set ({otherSet}): choose it under “Test set”</>
+              ) : (
+                <>
+                  · {s ? (s.status === "available" ? "not evaluated at this horizon" : STATUS_TEXT[s.status]) : "status unknown"}
+                  {excluded ? `: ${excluded}` : s?.reason && s.status !== "available" ? `: ${s.reason}` : ""}
+                </>
+              )}
             </span>
           </li>
         ))}

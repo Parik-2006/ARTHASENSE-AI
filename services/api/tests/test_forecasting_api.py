@@ -48,7 +48,8 @@ def test_api_registry_matches_the_pipeline():
 @pytest.mark.parametrize(
     "path",
     [
-        "/runs?indicator=gva", "/model-status?indicator=gva", "/model-status", "/runs?model=prophet", "/runs?horizon=0", "/runs?horizon=99", "/runs?limit=0",
+        "/runs?indicator=gva", "/model-status?indicator=gva", "/model-status",
+        "/runs?model=prophet", "/runs?horizon=0", "/runs?horizon=99", "/runs?limit=0",
         "/runs?limit=100000", "/runs?offset=-1", "/runs?kind=other", "/forecasts", "/forecasts?run_id=0",
         "/comparison", "/comparison?indicator=wpi", "/comparison?indicator=wpi&horizon=0",
         "/scores?metric=DROP%20TABLE",
@@ -204,3 +205,47 @@ def test_unmigrated_database_gives_a_clear_503_not_a_generic_error(migrated_db_u
         assert r.status_code == 503, path
         assert "not migrated" in r.json()["detail"] and "db.migrate" in r.json()["detail"]
     get_settings.cache_clear()
+
+
+@pytest.mark.integration
+def test_v4_model_status_and_labels_over_real_stored_runs(migrated_db_url, monkeypatch):
+    """/model-status explains all eight models from stored runs; each run carries its exact configuration."""
+    import psycopg
+
+    from pipeline.forecasting.experiments import backtest_records, forecast_record, load_indicator
+    from pipeline.forecasting.persistence import store_run
+
+    seed_all(migrated_db_url)
+    with psycopg.connect(migrated_db_url) as conn:
+        ts = load_indicator(conn, "wpi")
+        for r in backtest_records(ts, "wpi", "arima", (1,), initial_train=18, config_set="v4"):
+            store_run(conn, r)
+        store_run(conn, forecast_record(ts, "wpi", "arima", 3, initial_train=18, config_set="v4"))
+        for r in backtest_records(
+            ts, "wpi", "rf", (1,), initial_train=18, config_set="v4"
+        ):  # needs 37: skipped
+            store_run(conn, r)
+    monkeypatch.setenv("ARTHASENSE_DATABASE_URL", migrated_db_url)
+    monkeypatch.chdir(os.path.dirname(__file__))
+    get_settings.cache_clear()
+    c = TestClient(app)
+    base = "/api/v1/forecasting"
+
+    st = c.get(base + "/model-status?indicator=wpi").json()
+    by = {m["model"]: m for m in st["models"]}
+    assert list(by) == ["naive", "snaive", "drift", "ets", "arima", "sarima", "rf", "xgboost"]
+    assert by["ets"]["status"] == "available" and by["ets"]["model_label"] == "ETS(A,Ad,N)"  # legacy V3 run
+    assert by["arima"]["status"] == "available" and by["arima"]["model_label"].startswith("ARIMA(")
+    assert by["arima"]["forecast_horizons"] == [1, 2, 3]
+    assert by["rf"]["status"] == "insufficient_history" and "needs >= 37" in by["rf"]["reason"]
+    assert by["naive"]["status"] == "not_trained" and "Backtested" in by["naive"]["reason"]
+    assert by["xgboost"]["status"] == "not_trained" and "No run" in by["xgboost"]["reason"]
+    assert st["frequency"] == "monthly"
+    gdp = c.get(base + "/model-status?indicator=gdp").json()
+    assert gdp["frequency"] == "quarterly" and all(m["status"] == "not_trained" for m in gdp["models"])
+
+    latest = c.get(base + "/forecasts/latest?indicator=wpi&model=arima&horizon=3").json()
+    assert latest["run"]["model_label"] == by["arima"]["model_label"]
+    assert latest["run"]["model_parameters"]["selection"] == "aicc"
+    series = {s["indicator"]: s for s in c.get(base + "/series").json()}
+    assert series["gdp"]["frequency"] == "quarterly" and series["gdp"]["horizons"] == [1, 2, 4]

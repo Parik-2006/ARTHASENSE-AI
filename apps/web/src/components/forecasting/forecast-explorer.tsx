@@ -173,6 +173,16 @@ export function ForecastExplorer({
   const quarterly = M.frequency === "quarterly";
   const pl = M.period;
   const fv = (v: number | null | undefined) => (quarterly ? M.value(v) : fmt(v));
+  /** KPI figure: GDP shows "₹81.36" with "lakh cr" in small type so the figure never wraps. */
+  const big = (v: number) =>
+    quarterly ? (
+      <>
+        ₹{(v / 100_000).toFixed(2)}
+        <span className="ml-1 text-sm font-normal text-ink-muted">lakh cr</span>
+      </>
+    ) : (
+      fmt(v)
+    );
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -249,12 +259,12 @@ export function ForecastExplorer({
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-rule bg-rule lg:grid-cols-4" data-testid="kpis">
         <div className="bg-surface p-4" data-tour="fx-official">
           <dt className="text-sm text-ink-muted">Latest official</dt>
-          <dd className="figure mt-1 text-2xl font-medium tracking-tight">{latest ? fmt(latest.value) : "—"}</dd>
+          <dd className="figure mt-1 text-2xl font-medium tracking-tight">{latest ? big(latest.value) : "—"}</dd>
           <dd className="mt-1 text-xs text-ink-muted">{latest ? `${pl(latest.period, true)} · ${quarterly ? M.unit(baseYear) : `base ${baseYear} = 100`}` : "No data"}</dd>
         </div>
         <div className="bg-surface p-4">
           <dt className="text-sm text-ink-muted">Forecast · {pl(last.target_date, true)}</dt>
-          <dd className="figure mt-1 text-2xl font-medium tracking-tight text-target">{fv(last.forecast)}</dd>
+          <dd className="figure mt-1 text-2xl font-medium tracking-tight text-target">{big(last.forecast)}</dd>
           <dd className="mt-1 text-xs text-ink-muted" data-testid="kpi-model">
             Model: <span className="font-medium text-ink">{modelName}</span>
             {detail && research ? <span className="figure"> · {detail}</span> : null}
@@ -380,8 +390,7 @@ export function ForecastExplorer({
               modelName={modelName}
               bandsTourId="fx-bands"
               frequency={M.frequency}
-              formatValue={(v) => fv(v)}
-              formatAxis={quarterly ? M.axis : undefined}
+              valueKind={quarterly ? "gdp" : "index"}
             />
           )}
           {!hasInterval && <p className="mt-2 text-xs text-warn">Uncertainty interval unavailable: this model provides no uncertainty range, so no band is drawn.</p>}
@@ -487,8 +496,8 @@ export function ForecastExplorer({
                   [
                     ["Model", `${modelName} (${cur.model})`],
                     ["Configuration", detail ?? cur.run.model_label ?? "As in the model description"],
-                    ...(cur.run.model_config && Object.keys(cur.run.model_config).length
-                      ? ([["Parameters", configText(cur.run.model_config)]] as [string, string][])
+                    ...(cur.run.model_parameters && Object.keys(cur.run.model_parameters).length
+                      ? ([["Parameters", configText(cur.run.model_parameters)]] as [string, string][])
                       : []),
                     ["Method", models.find((m) => m.id === cur.model)?.explanation ?? "—"],
                     ["Forecast run", `#${cur.run.id}, ${periodsText(cur.run.horizon, M.frequency)}, stored ${cur.run.created_at.slice(0, 10)}`],

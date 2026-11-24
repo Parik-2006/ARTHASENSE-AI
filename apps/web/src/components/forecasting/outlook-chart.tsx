@@ -85,8 +85,7 @@ export function OutlookChart({
   compact = false,
   bandsTourId,
   frequency = "monthly",
-  formatValue = DEFAULT_FMT,
-  formatAxis,
+  valueKind = "index",
 }: {
   history: HistoryPoint[];
   forecast: ForecastRow[];
@@ -99,9 +98,11 @@ export function OutlookChart({
   bandsTourId?: string;
   /** Quarterly data: quarter labels ("Q1 FY2026-27") and quarter-aligned ticks. */
   frequency?: Frequency;
-  formatValue?: (v: number) => string;
-  formatAxis?: (v: number) => string;
+  /** "gdp": values are ₹ crore, shown in ₹ lakh crore. A string, not a function, so a Server Component can pass it. */
+  valueKind?: "index" | "gdp";
 }) {
+  const formatValue = valueKind === "gdp" ? (v: number) => `₹${(v / 100_000).toFixed(2)} lakh cr` : DEFAULT_FMT;
+  const formatAxis = valueKind === "gdp" ? (v: number) => (v / 100_000).toFixed(0) : undefined;
   const quarterly = frequency === "quarterly";
   const label = (iso: string, long = false) => periodLabel(iso, frequency, long);
   const word = quarterly ? ["quarter", "quarters"] : ["month", "months"];

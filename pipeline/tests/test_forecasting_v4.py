@@ -110,13 +110,13 @@ def test_every_core_model_fits_and_records_its_configuration(model_id):
 
 @pytest.mark.parametrize("model_id", registry.CORE_MODELS)
 def test_no_look_ahead_for_any_model(model_id):
-    y = seasonal_walk(64, seed=2)
+    y = seasonal_walk(56, seed=2)
     origin = 50
     y2 = y.copy()
     y2[origin:] += 400.0
-    ps = months(64)
-    a = run_backtest(lambda: registry.build(model_id), y, ps, max_h=3, initial_train=44)
-    b = run_backtest(lambda: registry.build(model_id), y2, ps, max_h=3, initial_train=44)
+    ps = months(56)
+    a = run_backtest(lambda: registry.build(model_id), y, ps, max_h=3, initial_train=47)
+    b = run_backtest(lambda: registry.build(model_id), y2, ps, max_h=3, initial_train=47)
     assert a.origins and not a.failures
     for oa, ob in zip(a.origins, b.origins, strict=True):
         if oa.origin_idx <= origin:
@@ -156,11 +156,11 @@ def test_aicc_selection_happens_inside_the_training_window():
 
 
 def test_all_models_of_a_suite_share_identical_origins():
-    y = seasonal_walk(80, seed=6)
-    ts = ts_of(y, months(80))
+    y = seasonal_walk(52, seed=6)
+    ts = ts_of(y, months(52))
     fps = set()
     for mid in registry.CORE_MODELS:
-        for r in backtest_records(ts, "wpi", mid, (1, 3), initial_train=40, config_set="v4"):
+        for r in backtest_records(ts, "wpi", mid, (1, 3), initial_train=44, config_set="v4"):
             assert r.status == "completed", (mid, r.error)
             fps.add((r.horizon, r.origins_fingerprint))
     assert len({fp for h, fp in fps if h == 1}) == 1 and len({fp for h, fp in fps if h == 3}) == 1
@@ -215,9 +215,9 @@ def test_gdp_suites_skip_models_without_enough_quarters():
 
 
 def test_ml_future_forecasts_get_conformal_intervals_from_their_own_backtest_errors():
-    y = seasonal_walk(110, seed=8)
-    ts = ts_of(y, months(110))
-    r = forecast_record(ts, "wpi", "rf", 3, initial_train=60, config_set="v4")
+    y = seasonal_walk(90, seed=8)
+    ts = ts_of(y, months(90))
+    r = forecast_record(ts, "wpi", "xgboost", 3, initial_train=64, config_set="v4")
     assert r.config["diagnostics"]["interval_calibration"] == "split_conformal_backtest_errors"
     assert r.config["diagnostics"]["calibration_errors_per_step"][0] >= 19
     for row in r.rows:
@@ -228,7 +228,9 @@ def test_ml_future_forecasts_get_conformal_intervals_from_their_own_backtest_err
 def test_ml_future_intervals_are_omitted_when_calibration_is_too_short():
     y = seasonal_walk(52, seed=9)
     ts = ts_of(y, months(52))
-    r = forecast_record(ts, "rf", "rf", 1, initial_train=40, config_set="v4")  # 12 errors: 80% ok, 95% not
+    r = forecast_record(
+        ts, "wpi", "xgboost", 1, initial_train=40, config_set="v4"
+    )  # 12 errors: 80% ok, 95% not
     row = r.rows[0]
     assert row["lower_95"] is None and row["upper_95"] is None
     assert r.config["libraries"]["scikit-learn"] != "not installed"

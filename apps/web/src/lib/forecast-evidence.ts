@@ -9,7 +9,7 @@
  *  `lib/forecast-v2.ts` is left unchanged (Indicators imports it); its rule-based `assessReliability` is reused. */
 
 import { assessReliability, type Reliability, RELIABILITY_LABEL, type ReliabilityLevel, RELIABILITY_RULES } from "@/lib/forecast-v2";
-import { type ComparedModel, type Comparison, type ComparisonGroup, CORE_MODELS, type ForecastRow, HORIZONS, monthLabel, periodsText, type Run } from "@/lib/forecasting";
+import { type ComparedModel, type Comparison, type ComparisonGroup, CORE_MODELS, type ForecastRow, HORIZONS, monthLabel, periodAdj, type Run } from "@/lib/forecasting";
 
 export const BASELINE = "naive";
 
@@ -270,7 +270,7 @@ export function pickDefaultV4(
   return {
     model: pick.model,
     horizon: h,
-    reason: `Strongest backtest evidence (${RELIABILITY_LABEL[pick.level].toLowerCase()}), then lowest average error at the ${periodsText(h, unit).replace(/^1 /, "1-")}-ahead horizon.${close}`,
+    reason: `Strongest backtest evidence (${RELIABILITY_LABEL[pick.level].toLowerCase()}), then lowest average error at the ${periodAdj(h, unit)} horizon.${close}`,
   };
 }
 

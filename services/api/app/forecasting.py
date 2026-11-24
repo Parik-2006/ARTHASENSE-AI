@@ -387,7 +387,7 @@ class Run(BaseModel):
     # e.g. "SARIMA(1,1,0)(0,1,1)12", "ETS(A,Ad,N)", "Random Forest (recursive)". For a backtest whose order was
     # selected per origin it is the configuration chosen at the LAST origin.
     model_label: str | None = None
-    model_config: dict[str, Any] = {}
+    model_parameters: dict[str, Any] = {}
     frequency: Literal["monthly", "quarterly"] = "monthly"
     training_history: Literal["current", "linked"] = "current"
 
@@ -463,7 +463,7 @@ def _run(row: tuple[Any, ...], metrics: dict[str, float] | None = None, window: 
     ) = row
     label, cfg = _label_and_config(model, diag, mcfg)
     ind = SERIES_TO_INDICATOR.get(code)
-    return Run(model_label=label, model_config=cfg, frequency=FREQUENCY.get(ind or "", "monthly"),
+    return Run(model_label=label, model_parameters=cfg, frequency=FREQUENCY.get(ind or "", "monthly"),
                training_history="linked" if linked else "current",id=rid, experiment_id=eid, indicator=SERIES_TO_INDICATOR.get(code), model=model,
                model_name=MODEL_CATALOGUE.get(model, {}).get("name", model), kind=kind, status=status, error=error,
                horizon=horizon, suite=suite, n_origins=n_or, training_start=tstart, training_cutoff=tcut,

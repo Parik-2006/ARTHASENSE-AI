@@ -32,6 +32,7 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 "db/tests/*.py" = ["E501"]
 "pipeline/research/loader.py" = ["E501"]
 "tools/forecasts_v4_eval.py" = ["E501"]
+"tools/prod/forecasts_v4_*.py" = ["E501"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app", "pipeline", "db"]

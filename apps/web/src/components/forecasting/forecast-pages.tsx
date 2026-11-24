@@ -16,7 +16,7 @@ import { fmt, FORECAST_IDS, FORECAST_NAMES, type ForecastId, loadErrorText, mode
 import { DEFINITION } from "@/lib/indicator-view";
 
 export const DISCLAIMER =
-  "Forecasts are statistical estimates of index levels, not official statistics and not guaranteed outcomes. " +
+  "Forecasts are statistical estimates of index levels and real GDP, not official statistics and not guaranteed outcomes. " +
   "Accuracy figures come from rolling-origin backtests on a short history, so they are indicative.";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
@@ -106,6 +106,16 @@ export function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
   const yoy = quarterly && last ? impliedYoy(last.target_date, last.forecast, obs) : null;
   const detail = sel ? modelDetail(sel.modelName, sel.view.run) : null;
   const fv = (v: number) => (quarterly ? M.value(v) : fmt(v));
+  /** Big card figure: GDP shows "₹81.36" with the unit in small type so it never wraps. */
+  const big = (v: number) =>
+    quarterly ? (
+      <>
+        ₹{(v / 100_000).toFixed(2)}
+        <span className="ml-1 text-xs font-normal text-ink-muted">lakh cr</span>
+      </>
+    ) : (
+      fmt(v)
+    );
   const tour = (name: string) => (anchor ? { "data-tour": name } : {});
   return (
     <article aria-labelledby={`card-${s.id}`} data-testid={`card-${s.id}`} {...(s.id === "gdp" ? { "data-tour": "fo-gdp" } : {})} className="flex min-w-0 flex-col rounded-md border border-rule bg-surface">
@@ -131,12 +141,12 @@ export function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
           <div className="grid grid-cols-2 gap-3 px-5 pt-4" {...tour("fo-official")}>
             <div>
               <p className="text-xs text-ink-muted">Latest official</p>
-              <p className="figure text-xl font-medium">{fv(s.latest.value)}</p>
+              <p className="figure text-xl font-medium">{big(s.latest.value)}</p>
               <p className="text-xs text-ink-muted">{M.period(s.latest.period, true)}</p>
             </div>
             <div>
               <p className="text-xs text-ink-muted">Model estimate</p>
-              <p className="figure text-xl font-medium text-target">{fv(last.forecast)}</p>
+              <p className="figure text-xl font-medium text-target">{big(last.forecast)}</p>
               <p className="text-xs text-ink-muted">Forecast: {M.period(last.target_date, true)}</p>
             </div>
           </div>
@@ -183,7 +193,7 @@ export function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
                 officialSource={s.data.hist?.source.short ?? "MoSPI"}
                 modelName={sel.modelName}
                 frequency={M.frequency}
-                formatValue={fv}
+                valueKind={quarterly ? "gdp" : "index"}
               />
             )}
           </div>

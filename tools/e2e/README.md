@@ -37,3 +37,18 @@ Research view, light and dark, at 1440 and 390 px; Forecasts-owned and shared-ch
 
 Note: `series-e2e.mjs` predates the Indicators redesign (`e01212d`, `841ef95`); some of its checks target controls
 that no longer exist. It produces identical results on `7fa0b92` and on `feature/forecasts-v3`.
+
+## Forecasts V4
+
+`forecasts-v4-e2e.mjs`: the eight-model API contract (`/model-status`), interval order and future-only targets of every
+V4 forecast row, four Outlook cards that name their model (and match the explorer's default), the GDP card (fiscal
+quarters, lakh crore, implied YoY), eight-model selectors with disabled-and-explained options, quarterly horizons and
+axis labels, Research view and CSVs (quarterly CSV for GDP), the comparison table (compared + explained = 8, default
+badge), spotlight tours (step through, Escape, focus return) at 360–1440 px, no horizontal overflow at 360–1920 px in
+light and dark, console errors, and, with `OLD=`, a pixel comparison of Overview and Indicators against a build of the
+previous `main` (needs `pngjs` and `pixelmatch` next to `playwright-core`).
+
+```
+WEB=http://127.0.0.1:3114 API=http://127.0.0.1:8765 OLD=http://127.0.0.1:3115 OUT=report.json SHOTS=shots node forecasts-v4-e2e.mjs
+WEB=http://127.0.0.1:3114 API=http://127.0.0.1:8765 OUT=results.json node forecasts-v4-results.mjs   # numbers for the docs
+```

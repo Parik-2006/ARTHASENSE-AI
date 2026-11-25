@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Callable
 
 import psycopg
 
@@ -72,7 +73,11 @@ def _suite_names(name: str, linked: bool) -> list[str]:
     return [name]
 
 
-def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
+def run_suites(connect: Callable[[], psycopg.Connection], args: argparse.Namespace) -> int:
+    """`connect` opens a SHORT-LIVED autocommit connection. Training can take tens of minutes, so no connection is
+    held open across it: data are read on one connection, and each batch of runs is stored on a fresh one in which
+    every run commits on its own (a hosted pooler drops long idle-in-transaction sessions, which would roll back a
+    whole batch)."""
     linked = args.history == "linked"
     if (args.name in LINKED_SUITES) != linked and args.name not in ("all", "future", "future_v4", "v4"):
         print(
@@ -85,7 +90,8 @@ def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
     totals = {"stored": 0, "exists": 0, "records": 0, "skipped": 0}
     for ind in inds:
         try:
-            ts = load_training(conn, ind, args.history)
+            with connect() as conn:
+                ts = load_training(conn, ind, args.history)
         except (LoaderError, ValueError) as exc:
             print(f"{ind.upper()}: not available ({exc})")
             continue
@@ -126,10 +132,11 @@ def run_suites(conn: psycopg.Connection, args: argparse.Namespace) -> int:
                 for mid, st, why in skipped[:12]:
                     print(f"  {st} {mid}: {why}")
             totals["records"] += len(recs)
-            if args.save:
-                for r in recs:
-                    state, _ = store_run(conn, r)
-                    totals[state] += 1
+            if args.save and recs:
+                with connect() as conn:
+                    for r in recs:
+                        state, _ = store_run(conn, r)
+                        totals[state] += 1
     print(
         f"\nrecords: {totals['records']}  stored: {totals['stored']}  "
         f"already stored: {totals['exists']}  skipped/failed runs: {totals['skipped']}"
@@ -204,9 +211,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Error: {exc}", file=sys.stderr)
             return 2
     try:
+        if args.cmd == "suite":  # no connection is held open across training (see run_suites)
+            return run_suites(lambda: psycopg.connect(url, connect_timeout=10, autocommit=True), args)
         with psycopg.connect(url, connect_timeout=5) as conn:
-            if args.cmd == "suite":
-                return run_suites(conn, args)
             ts = load_training(conn, args.indicator, args.history)
             n = len(ts)
             print(

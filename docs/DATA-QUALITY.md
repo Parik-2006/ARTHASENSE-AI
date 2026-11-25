@@ -76,7 +76,10 @@ Small differences are expected because the published index is rounded to one dec
 | `mospi.wpi.2004-05.india.all_commodities.index` | `mospi.wpi.2011-12.india.all_commodities.index` | 2012-04 to 2017-03 (60 mo) | 1.5565 | 1.6484 | 5.75 | no |
 | `mospi.wpi.2011-12.india.all_commodities.index` | `mospi.wpi.2022-23.india.all_commodities.index` | 2023-04 to 2026-04 (37 mo) | 1.5148 | 1.5427 | 1.82 | no |
 
-A ratio that drifts between months is not a linking factor. ArthaSense never converts or joins series across base years.
+A ratio that drifts between months is not a linking factor. Stored data, charts and the Indicators pages never convert or
+join series across base years. Since Forecasts V4 the only exception is the forecasting **training history**, which
+applies the publishers' own linking factors (OEA for WPI, NSO for IIP) in memory, before the first new-base month only;
+see `docs/FORECASTS-V4-WPI-HISTORY.md`.
 
 ## 4. Source flags stored per observation
 

@@ -25,8 +25,11 @@ quarterly 1–4), mean and standard deviation of the last three changes, and the
 Every run stores the exact configuration it used (`configuration.diagnostics.label`, e.g. `SARIMA(1,1,1)(0,1,1)12`, the
 AICc candidate table and, for backtests, the configuration chosen at each origin), the model config, the training data
 provenance and the library versions (Python 3.12.4, numpy 2.5.5, pandas 3.1.1, scipy 1.18.1, statsmodels 0.15.0,
-xgboost 3.4.1, scikit-learn 1.8.0). The V1–V3 fixed configurations are kept as config set `v3`, so the 204 stored runs still
-reproduce bit for bit and keep their experiment ids.
+xgboost 3.4.1, scikit-learn 1.8.0). The V1–V3 fixed configurations are kept as config set `v3` and keep their experiment
+ids. `tools/forecast_reproduce.py` (scoped to the v3 suites) retrained them through the V4 code on the restored snapshot:
+WPI 60/60, IIP 60/60 and CPI-linked 28/28 matched by experiment id, with identical metrics and forecasts within 5e-13. The
+other 56 legacy runs are skipped CPI runs on the superseded 12-month CPI vintage (2026-11-20; no forecasts), which cannot
+be regenerated from today's longer series by design.
 
 ## 2. Recursive vs direct multi-step (Random Forest, XGBoost)
 
@@ -84,6 +87,8 @@ WPI's label moves from "Weak" (V3: Drift on the 43-month current series, coverag
 SARIMA on the linked history. This comes from the stored evidence under the unchanged rules, not from an override. It
 must be read with caution: the 38 six-month-ahead origins overlap, so they contain only about six independent six-month
 errors; RF has a slightly lower MAE but badly under-covers; at h = 12 SARIMA is no better than Naive and is rated weak.
+Selection is also optimistic: the default is the best of eight models on the same origins its reliability is then judged
+on, so the "Stronger" labels (WPI SARIMA, IIP ARIMA) overstate how a pre-committed choice would have fared.
 
 ### IIP, h = 6 (37 origins, Sep 2023 – Sep 2026; NSO-linked history)
 

@@ -42,7 +42,9 @@ suite, and after the full test run. Publication dates are unknown (the API gives
 
 ## D. Forecasting
 
-* **Implemented and evaluated:** naive, seasonal naive, drift, ETS (damped trend), ARIMA(1,1,0), SARIMA, XGBoost.
+* **Implemented and evaluated (Forecasts V4, 2026-11-24):** naive, seasonal naive, drift, ETS, ARIMA, SARIMA (orders by
+  AICc inside each training window), Random Forest and XGBoost (direct multi-step), for CPI, WPI, IIP (monthly) and real
+  GDP (quarterly). See `docs/FORECASTS-V4-MODELS.md`.
 * **Unavailable (never run, never produce numbers):** Chronos-2 and TimesFM 2.5 (need PyTorch plus a 0.5-1 GB
   approved download). Their inference code is untested.
 * **Future forecasts stored (6 months, WPI and IIP):** naive, drift, ETS, ARIMA.

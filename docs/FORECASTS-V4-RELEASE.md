@@ -69,6 +69,12 @@ back-cast (factor, direction, join, provenance) and reproduction of the V1–V3 
   final indices replace provisional ones).
 * Multi-step origins overlap: 38 six-month WPI origins hold only about six independent six-month errors. Reliability
   labels are rule-based summaries, not significance tests.
+* Selection bias: the default model is the best of eight on the same backtest origins its reliability is judged on, so
+  "Stronger" labels (WPI SARIMA, IIP ARIMA) are optimistic relative to a model chosen in advance.
+* Legacy reproducibility: 148/148 regenerable V1–V3 runs reproduce through the V4 code (within 5e-13); the other 56 are
+  skipped CPI runs on the superseded 12-month vintage.
+* `linking_factors` (table) is still empty: the WPI/IIP factors and their provenance live in code
+  (`pipeline/research/loader.py`, `pipeline/ingest/linking.py`) and in every run's `configuration.training_data`.
 * WPI/IIP training before April 2023 uses back-cast values that follow the old baskets' price movements (OEA, NSO caution).
   IIP's new General index also covers water supply, absent from the old one.
 * IIP intervals over-cover (the 2020 collapse inflates variance): they are conservative, not tight.

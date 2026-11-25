@@ -16,13 +16,16 @@ import {
   type SortKey,
 } from "@/lib/experiments-filter";
 import { EXPERIMENTS_STEPS } from "@/lib/forecast-tours";
-import { fmtMetric, METRIC_LABELS, monthLabel, type Run, runsToCsv } from "@/lib/forecasting";
+import { fmtMetric, METRIC_LABELS, periodLabel, type Run, runsToCsv } from "@/lib/forecasting";
+
+const freqOf = (r: Run) => r.frequency ?? (r.indicator === "gdp" ? "quarterly" : "monthly");
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const selectClass = `rounded border border-rule bg-surface px-2 py-1.5 text-sm ${focusRing}`;
 const STATUS_TONE: Record<string, string> = { completed: "text-ok", skipped: "text-warn", failed: "text-up" };
 
 function RunDetails({ r, tour }: { r: Run; tour: boolean }) {
+  const monthLabel = (iso: string) => periodLabel(iso, freqOf(r));
   const facts: [string, string][] = [
     ["Training window", r.training_start ? `${monthLabel(r.training_start)} – ${monthLabel(r.training_cutoff)}` : `up to ${monthLabel(r.training_cutoff)}`],
     ["Test window", r.evaluation_start && r.evaluation_end ? `${monthLabel(r.evaluation_start)} – ${monthLabel(r.evaluation_end)}` : "—"],
@@ -252,7 +255,7 @@ export function ExperimentsView({ runs, total }: { runs: Run[]; total: number })
                       <td className="py-2 pr-4 uppercase">{r.indicator ?? "—"}</td>
                       <td className="py-2 pr-4">{r.model_name}</td>
                       <td className="py-2 pr-4 text-ink-muted">
-                        {r.kind === "backtest" ? "Backtest" : "Forecast"} · {r.horizon} mo
+                        {r.kind === "backtest" ? "Backtest" : "Forecast"} · {r.horizon} {freqOf(r) === "quarterly" ? "qtr" : "mo"}
                       </td>
                       {research && <td className="figure py-2 pr-4 text-right">{r.n_origins ?? "—"}</td>}
                       {research && <td className="figure py-2 pr-4 text-right">{fmtMetric("mae", r.metrics.mae)}</td>}

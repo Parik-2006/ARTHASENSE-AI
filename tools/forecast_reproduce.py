@@ -24,6 +24,7 @@ from pipeline.forecasting.experiments import (  # noqa: E402
     dataset_fingerprint,
     forecast_record,
     load_training,
+    suite_config,
     suite_records,
     target_code,
 )
@@ -70,6 +71,10 @@ with psycopg.connect(url, options="-c default_transaction_read_only=on") as conn
         rep["stored_runs"] = len(stored)
         recs = []
         for name in suites:
+            # Reproduces the STORED V1-V3 runs (config set v3). V4 runs are reproduced by
+            # tools/prod/forecasts_v4_verify.py (independent retraining compared value for value).
+            if suite_config(name).get("config_set", "v3") != "v3":
+                continue
             recs += suite_records(ts, ind, name)
         for mid in FUTURE_MODELS:
             try:

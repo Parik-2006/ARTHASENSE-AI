@@ -270,7 +270,8 @@ def render_markdown(rep: dict[str, Any]) -> str:
         )
     L += [
         "",
-        "A ratio that drifts between months is not a linking factor. ArthaSense never converts or joins series across base years.",
+        "A ratio that drifts between months is not a linking factor. Stored data and charts never convert or join series across "
+        "base years; only the Forecasts training history applies the publishers' own linking factors, in memory.",
         "",
     ]
     L += ["## 4. Source flags stored per observation", ""]

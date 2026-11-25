@@ -1,13 +1,17 @@
 import { Panel } from "@/components/ui/primitives";
-import { type ForecastRow, fmt, fmtMetric, METRIC_LABELS, monthLabel, type RunDetail } from "@/lib/forecasting";
+import { type ForecastRow, fmt, fmtMetric, METRIC_LABELS, periodLabel, periodsText, type RunDetail } from "@/lib/forecasting";
 
 export function RunDetailView({ run, rows, totalRows }: { run: RunDetail; rows: ForecastRow[]; totalRows: number }) {
+  // Quarterly runs (GDP) are labelled in fiscal quarters; older APIs omit `frequency` (monthly).
+  const freq = run.frequency ?? (run.indicator === "gdp" ? "quarterly" : "monthly");
+  const monthLabel = (iso: string, long = false) => periodLabel(iso, freq, long);
   const facts: [string, string][] = [
     ["Indicator", run.indicator?.toUpperCase() ?? "—"],
     ["Model", `${run.model_name} (${run.model})`],
     ["Type", run.kind === "backtest" ? "Historical backtest" : "Genuine future forecast"],
     ["Status", run.status],
-    ["Horizon", `${run.horizon} month${run.horizon > 1 ? "s" : ""}`],
+    ["Model configuration", run.model_label ?? "—"],
+    ["Horizon", periodsText(run.horizon, freq)],
     ["Suite", run.suite ?? "—"],
     ["Forecast origins", String(run.n_origins ?? "—")],
     [

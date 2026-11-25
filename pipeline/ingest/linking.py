@@ -2,13 +2,14 @@
 """Official base-year linking factors, with the evidence behind each one.
 
 A linked value is an ArthaSense CALCULATION that applies an official factor. It is never stored as an
-observation and never labelled as an index published by the government. Nothing here is applied
-automatically: charts keep base years apart, and forecasting uses one stored series.
+observation and never labelled as an index published by the government. Charts and the Indicators pages keep base
+years apart. Forecasts V4 trains WPI and IIP on a back-cast that applies the WPI All Commodities and IIP General factors
+below, in memory only, before the first new-base month (pipeline/research/loader.py, docs/FORECASTS-V4-WPI-HISTORY.md).
 
 Evidence levels (same letters as docs/m1-data-verification.md):
   L  read from the primary publisher document in this audit, AND reproduced from stored data
   D  documented in the repository's earlier verification record; reproduced from stored data, but the
-     primary table could not be read here (OEA site fails TLS verification; the NSO page has no numbers)
+     primary table could not be read (none left: WPI and IIP were read in primary form on 2026-11-24)
 
 Directions differ and are part of the record:
   CPI : linked(new base) = old * factor      (factor = GM(new, 2025) / GM(old, 2025))
@@ -68,8 +69,8 @@ FACTORS: tuple[LinkingFactor, ...] = (
             "divide",
             "Geometric mean method: factor = geometric mean of the 2011-12 index over FY2022-23 / 100",
             "FY 2022-23 (Apr 2022 - Mar 2023)",
-            "D",
-            "docs/m1-data-verification.md citing NSO IIP 2022-23 metadata (microdata.gov.in catalog 299; page states the method, not the numbers)",
+            "L",
+            "NSO/MoSPI 'Linking Factor for IIP' (microdata.gov.in catalog 299, document 6676, read 2026-11-24): sector table; 'the linked series is obtained by dividing the indices of old series'",
             f"{f:.4f} reproduced exactly from stored 2011-12 index",
         )
         for name, f in (
@@ -88,8 +89,8 @@ FACTORS: tuple[LinkingFactor, ...] = (
         "divide",
         "Ratio of geometric means of the monthly indices, FY 2024-25 (old / new)",
         "FY 2024-25 (Apr 2024 - Mar 2025)",
-        "D",
-        "docs/m1-data-verification.md citing OEA linking_factor2223.asp (OEA page not readable here: TLS chain fails)",
+        "L",
+        "OEA 'Linking Factor For WPI Series (Base Year: 2022-23)', eaindustry.nic.in/linking_factor2223.asp (read 2026-11-24 over verified TLS), and OEA WPI 2022-23 FAQ Q20: back-cast = old index / 1.53",
         "1.5327 from 12 stored overlapping months (published to 2 d.p.: 1.53)",
     ),
 )

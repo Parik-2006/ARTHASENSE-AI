@@ -30,10 +30,11 @@ def test_directions_and_round_trip_for_each_indicator():
     assert find("IIP", "General").direction == "divide" and find("WPI", "All").direction == "divide"
 
 
-def test_every_factor_names_its_evidence_and_primary_ones_are_only_cpi():
+def test_every_factor_names_its_evidence_and_all_are_primary_verified():
     assert all(f.source and f.method and f.reproduced for f in FACTORS)
-    assert {f.indicator for f in FACTORS if f.evidence == "L"} == {"CPI"}
-    assert {f.indicator for f in FACTORS if f.evidence == "D"} == {"IIP", "WPI"}
+    # WPI (OEA) and IIP (NSO) were read in primary form on 2026-11-24 (docs/FORECASTS-V4-WPI-HISTORY.md)
+    assert {f.indicator for f in FACTORS if f.evidence == "L"} == {"CPI", "IIP", "WPI"}
+    assert not [f for f in FACTORS if f.evidence == "D"]
 
 
 def test_cpi_formula_is_ratio_of_geometric_means():

@@ -59,7 +59,7 @@ chat message. The Supabase JavaScript/Python SDKs and keys (`anon`, `service_rol
 Nothing here runs automatically. Type the URL in **your** PowerShell session (it is not saved):
 
 ```powershell
-cd P:\ArthaSense-AI\ARTHASENSE-AI
+cd P:\ArthaSense-AI\ARTHASENSE-AI-final
 $env:ARTHASENSE_TARGET_DATABASE_URL = Read-Host "Supabase Session pooler URL"        # paste it, press Enter
 
 # 1) identity and state of the hosted database (read-only; prints no credentials)

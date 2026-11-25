@@ -174,3 +174,16 @@ The chart text, tooltip, source note, explanation table and this document all de
 * The April 2026 WPI evidence is the two stored series, not a press release (unreachable).
 * Calculated WPI inflation equals OEA's published rates for August–October 2026 (checked); other months were not
   compared with press releases.
+
+## 11. Release and production verification (2026-11-25)
+
+| Step | Result |
+|---|---|
+| Local gate | Ruff clean; pytest 394 passed; ESLint and `tsc` clean; vitest 443 passed; `next build` OK |
+| Local browser (isolated restore of production data) | Overview audit 72/72; Indicators pixel-identical 14/14; Overview/CPI 366/366; Forecasts V4 113/113; Forecasts V3 58/58; Forecasts accessibility 0 violations (56 runs) |
+| GitHub `main` | fast-forward `1e36e65` → `2ab3b76` (includes the earlier local docs commit `96f3fe6`); no force push |
+| CI | success (run 45573578674) |
+| Vercel | new Overview served (explanations present) |
+| Render | API unchanged; `/health`, `/api/v1/indicators/cpi`, `/api/v1/forecasting/model-status` 200 |
+| Live browser | Overview audit **72/72**, Forecasts V4 **113/113**, Overview/CPI **366/366** (`reports/overview-audit/live-*.json`) |
+| Production database | not modified: 3,429 observations, 365 forecast runs, 4,673 forecasts, 1,788 scores (read-only check after release) |

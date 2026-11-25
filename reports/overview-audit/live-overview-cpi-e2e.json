@@ -1,0 +1,1838 @@
+{
+ "web": "https://arthasense-ai.vercel.app",
+ "expect_cpi": "available",
+ "total": 366,
+ "failed": 0,
+ "results": [
+  {
+   "name": "overview 360-light: logo loaded",
+   "pass": true,
+   "detail": "96x96 thasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=96&q=75"
+  },
+  {
+   "name": "overview 360-light: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "96x96"
+  },
+  {
+   "name": "overview 360-light: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: logo size 96px",
+   "pass": true,
+   "detail": "96"
+  },
+  {
+   "name": "overview 360-light: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: logo stacked above the heading",
+   "pass": true,
+   "detail": "logo bottom 185, h1 top 225"
+  },
+  {
+   "name": "overview 360-light: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 360-light: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 360-light: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 360-light: comparison fits the viewport width",
+   "pass": true,
+   "detail": "16+328"
+  },
+  {
+   "name": "overview 360-light: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: logo loaded",
+   "pass": true,
+   "detail": "96x96 thasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=96&q=75"
+  },
+  {
+   "name": "overview 360-dark: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "96x96"
+  },
+  {
+   "name": "overview 360-dark: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: logo size 96px",
+   "pass": true,
+   "detail": "96"
+  },
+  {
+   "name": "overview 360-dark: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: logo stacked above the heading",
+   "pass": true,
+   "detail": "logo bottom 185, h1 top 225"
+  },
+  {
+   "name": "overview 360-dark: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 360-dark: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 360-dark: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 360-dark: comparison fits the viewport width",
+   "pass": true,
+   "detail": "16+328"
+  },
+  {
+   "name": "overview 360-dark: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 360-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: logo loaded",
+   "pass": true,
+   "detail": "96x96 thasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=96&q=75"
+  },
+  {
+   "name": "overview 390-light: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "96x96"
+  },
+  {
+   "name": "overview 390-light: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: logo size 96px",
+   "pass": true,
+   "detail": "96"
+  },
+  {
+   "name": "overview 390-light: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: logo stacked above the heading",
+   "pass": true,
+   "detail": "logo bottom 185, h1 top 225"
+  },
+  {
+   "name": "overview 390-light: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 390-light: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 390-light: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 390-light: comparison fits the viewport width",
+   "pass": true,
+   "detail": "16+358"
+  },
+  {
+   "name": "overview 390-light: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: logo loaded",
+   "pass": true,
+   "detail": "96x96 thasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=96&q=75"
+  },
+  {
+   "name": "overview 390-dark: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "96x96"
+  },
+  {
+   "name": "overview 390-dark: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: logo size 96px",
+   "pass": true,
+   "detail": "96"
+  },
+  {
+   "name": "overview 390-dark: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: logo stacked above the heading",
+   "pass": true,
+   "detail": "logo bottom 185, h1 top 225"
+  },
+  {
+   "name": "overview 390-dark: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 390-dark: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 390-dark: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 390-dark: comparison fits the viewport width",
+   "pass": true,
+   "detail": "16+358"
+  },
+  {
+   "name": "overview 390-dark: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 390-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: logo loaded",
+   "pass": true,
+   "detail": "136x136 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 768-light: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "136x136"
+  },
+  {
+   "name": "overview 768-light: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: logo size 136px",
+   "pass": true,
+   "detail": "136"
+  },
+  {
+   "name": "overview 768-light: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 608, h1 x 24"
+  },
+  {
+   "name": "overview 768-light: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 768-light: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 768-light: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 768-light: comparison fits the viewport width",
+   "pass": true,
+   "detail": "24+720"
+  },
+  {
+   "name": "overview 768-light: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: logo loaded",
+   "pass": true,
+   "detail": "136x136 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 768-dark: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "136x136"
+  },
+  {
+   "name": "overview 768-dark: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: logo size 136px",
+   "pass": true,
+   "detail": "136"
+  },
+  {
+   "name": "overview 768-dark: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 608, h1 x 24"
+  },
+  {
+   "name": "overview 768-dark: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 768-dark: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 768-dark: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 768-dark: comparison fits the viewport width",
+   "pass": true,
+   "detail": "24+720"
+  },
+  {
+   "name": "overview 768-dark: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 768-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: logo loaded",
+   "pass": true,
+   "detail": "176x176 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 1024-light: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "176x176"
+  },
+  {
+   "name": "overview 1024-light: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: logo size 176px",
+   "pass": true,
+   "detail": "176"
+  },
+  {
+   "name": "overview 1024-light: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 816, h1 x 32"
+  },
+  {
+   "name": "overview 1024-light: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 1024-light: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 1024-light: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 1024-light: comparison fits the viewport width",
+   "pass": true,
+   "detail": "32+960"
+  },
+  {
+   "name": "overview 1024-light: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: logo loaded",
+   "pass": true,
+   "detail": "176x176 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 1024-dark: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "176x176"
+  },
+  {
+   "name": "overview 1024-dark: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: logo size 176px",
+   "pass": true,
+   "detail": "176"
+  },
+  {
+   "name": "overview 1024-dark: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 816, h1 x 32"
+  },
+  {
+   "name": "overview 1024-dark: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 1024-dark: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 1024-dark: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 1024-dark: comparison fits the viewport width",
+   "pass": true,
+   "detail": "32+960"
+  },
+  {
+   "name": "overview 1024-dark: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1024-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: logo loaded",
+   "pass": true,
+   "detail": "176x176 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 1440-light: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "176x176"
+  },
+  {
+   "name": "overview 1440-light: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: logo size 176px",
+   "pass": true,
+   "detail": "176"
+  },
+  {
+   "name": "overview 1440-light: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 1152, h1 x 112"
+  },
+  {
+   "name": "overview 1440-light: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 1440-light: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 1440-light: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 1440-light: comparison fits the viewport width",
+   "pass": true,
+   "detail": "112+1216"
+  },
+  {
+   "name": "overview 1440-light: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: logo loaded",
+   "pass": true,
+   "detail": "176x176 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 1440-dark: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "176x176"
+  },
+  {
+   "name": "overview 1440-dark: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: logo size 176px",
+   "pass": true,
+   "detail": "176"
+  },
+  {
+   "name": "overview 1440-dark: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 1152, h1 x 112"
+  },
+  {
+   "name": "overview 1440-dark: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 1440-dark: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 1440-dark: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 1440-dark: comparison fits the viewport width",
+   "pass": true,
+   "detail": "112+1216"
+  },
+  {
+   "name": "overview 1440-dark: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1440-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: logo loaded",
+   "pass": true,
+   "detail": "176x176 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 1920-light: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "176x176"
+  },
+  {
+   "name": "overview 1920-light: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: logo size 176px",
+   "pass": true,
+   "detail": "176"
+  },
+  {
+   "name": "overview 1920-light: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 1392, h1 x 352"
+  },
+  {
+   "name": "overview 1920-light: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 1920-light: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 1920-light: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 1920-light: comparison fits the viewport width",
+   "pass": true,
+   "detail": "352+1216"
+  },
+  {
+   "name": "overview 1920-light: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: logo loaded",
+   "pass": true,
+   "detail": "176x176 hasense-ai.vercel.app/_next/image?url=%2Flogo.png&w=256&q=75"
+  },
+  {
+   "name": "overview 1920-dark: logo keeps 1:1 aspect ratio",
+   "pass": true,
+   "detail": "176x176"
+  },
+  {
+   "name": "overview 1920-dark: logo alt text",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: logo size 176px",
+   "pass": true,
+   "detail": "176"
+  },
+  {
+   "name": "overview 1920-dark: logo overlaps no heading, button, link, nav or card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: logo is right of the heading",
+   "pass": true,
+   "detail": "logo x 1392, h1 x 352"
+  },
+  {
+   "name": "overview 1920-dark: heading text unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "overview 1920-dark: theme applied",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: comparison shows year 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: comparison has no inputs, selects or checkboxes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: comparison has no mode/range/year buttons",
+   "pass": true,
+   "detail": "?|?"
+  },
+  {
+   "name": "overview 1920-dark: CPI, WPI, IIP and GDP in the legend",
+   "pass": true,
+   "detail": "CPIWPIIIPGDP"
+  },
+  {
+   "name": "overview 1920-dark: comparison fits the viewport width",
+   "pass": true,
+   "detail": "352+1216"
+  },
+  {
+   "name": "overview 1920-dark: Section 2 still has its range bar and indicator selector",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview 1920-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 390: opens on the hero",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 390: compare step fits the viewport",
+   "pass": true,
+   "detail": "{\"x\":12,\"y\":673.5,\"width\":366,\"height\":214.5}"
+  },
+  {
+   "name": "overview tour 390: compare step does not cover the section title",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 390: reaches the comparison step describing 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 390: Escape closes the tour",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 1440: opens on the hero",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 1440: compare step fits the viewport",
+   "pass": true,
+   "detail": "{\"x\":1040,\"y\":693.5,\"width\":384,\"height\":194.5}"
+  },
+  {
+   "name": "overview tour 1440: compare step does not cover the section title",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 1440: reaches the comparison step describing 2026",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "overview tour 1440: Escape closes the tour",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-light: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 360-light: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 360-light: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-light: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-light: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 360-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 360-light: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 360-light: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 360-light: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 360-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 360-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-dark: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 360-dark: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 360-dark: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-dark: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-dark: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 360-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 360-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 360-dark: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 360-dark: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 360-dark: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 360-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 360-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-light: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 390-light: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 390-light: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-light: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-light: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 390-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 390-light: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 390-light: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 390-light: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 390-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 390-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-dark: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 390-dark: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 390-dark: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-dark: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-dark: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 390-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 390-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 390-dark: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 390-dark: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 390-dark: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 390-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 390-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-light: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 768-light: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 768-light: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-light: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-light: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 768-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 768-light: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 768-light: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 768-light: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 768-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 768-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-dark: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 768-dark: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 768-dark: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-dark: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-dark: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 768-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 768-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 768-dark: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 768-dark: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 768-dark: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 768-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 768-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-light: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 1024-light: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 1024-light: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-light: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-light: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 1024-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1024-light: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 1024-light: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1024-light: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1024-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 1024-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-dark: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 1024-dark: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 1024-dark: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-dark: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-dark: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1024-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 1024-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1024-dark: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 1024-dark: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1024-dark: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1024-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 1024-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-light: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 1440-light: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 1440-light: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-light: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-light: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 1440-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1440-light: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 1440-light: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1440-light: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1440-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 1440-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-dark: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 1440-dark: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 1440-dark: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-dark: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-dark: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1440-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 1440-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1440-dark: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 1440-dark: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1440-dark: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1440-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 1440-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-light: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 1920-light: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 1920-light: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-light: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-light: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 1920-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1920-light: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 1920-light: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1920-light: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1920-light: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 1920-light: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-dark: CPI card shows a model estimate",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: A"
+  },
+  {
+   "name": "forecasts 1920-dark: CPI card latest official equals API latest",
+   "pass": true,
+   "detail": "110.05"
+  },
+  {
+   "name": "forecasts 1920-dark: CPI card says what it was trained on",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-dark: WPI card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-dark: IIP card still shows a model estimate",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts 1920-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "forecasts 1920-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1920-dark: 1, 3 and 6 month horizons",
+   "pass": true,
+   "detail": "1 month|3 months|6 months"
+  },
+  {
+   "name": "cpi explorer 1920-dark: training history line",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1920-dark: chart drawn",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer 1920-dark: no horizontal overflow",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "cpi explorer 1920-dark: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi research: Training data row lists the back and current series",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi research: data fingerprint of the linked history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer: 1-month view has 1 stored forecast month(s)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer: 3-month view has 3 stored forecast month(s)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi explorer: 6-month view has 6 stored forecast month(s)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "comparison: CPI h=6 shows 6 models on 17 identical origins",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi research/comparison: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "forecasts tour anchors on the CPI card",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/cpi: loads",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/cpi: keeps its range filters",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/cpi: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/wpi: loads",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/wpi: keeps its range filters",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/wpi: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/iip: loads",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/iip: keeps its range filters",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/iip: no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/gdp: loads",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/gdp: keeps its range filters",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "indicators/gdp: no console errors",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

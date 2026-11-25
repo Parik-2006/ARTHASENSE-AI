@@ -1,0 +1,97 @@
+{
+ "checks": [
+  {
+   "name": "official table sources unchanged",
+   "pass": true,
+   "detail": "{'rows': 1, 'md5': '1216918ea183eb3a5057c3443e3c58db'}"
+  },
+  {
+   "name": "official table series unchanged",
+   "pass": true,
+   "detail": "{'rows': 50, 'md5': '363844219771c478b0b95a155b59cb67'}"
+  },
+  {
+   "name": "official table releases unchanged",
+   "pass": true,
+   "detail": "{'rows': 126, 'md5': '519f96d11241c3e1cfc0bcdf06a72b03'}"
+  },
+  {
+   "name": "official table observations unchanged",
+   "pass": true,
+   "detail": "{'rows': 3429, 'md5': '99136c7c907d970ef99a5ee249c51dfa'}"
+  },
+  {
+   "name": "official table linking_factors unchanged",
+   "pass": true,
+   "detail": "{'rows': 0, 'md5': 'd41d8cd98f00b204e9800998ecf8427e'}"
+  },
+  {
+   "name": "pre-existing runs unchanged",
+   "pass": true,
+   "detail": "204"
+  },
+  {
+   "name": "pre-existing forecasts unchanged",
+   "pass": true,
+   "detail": "1639"
+  },
+  {
+   "name": "pre-existing scores unchanged",
+   "pass": true,
+   "detail": "934"
+  },
+  {
+   "name": "migrations unchanged",
+   "pass": true,
+   "detail": "['0000_bootstrap', '0001_core_schema', '0002_forecasting', '0003_data_foundation', '0004_source_artifacts']"
+  },
+  {
+   "name": "experiment ids unique",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "new runs only on forecast target series",
+   "pass": true,
+   "detail": "161"
+  },
+  {
+   "name": "new forecast rows: interval order and future targets",
+   "pass": true,
+   "detail": "[]"
+  },
+  {
+   "name": "no orphan forecast rows",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "name": "same set of new experiment ids as the reference",
+   "pass": true,
+   "detail": "161 vs 161"
+  },
+  {
+   "name": "new runs identical to the reference (status, forecasts, scores)",
+   "pass": true,
+   "detail": "[]"
+  }
+ ],
+ "summary": {
+  "before": {
+   "forecast_runs": 204,
+   "forecasts": 1639,
+   "scores": 934
+  },
+  "after": {
+   "forecast_runs": 365,
+   "forecasts": 4673,
+   "scores": 1788
+  },
+  "new_runs": 161,
+  "new_by_status": {
+   "completed": 127,
+   "skipped": 34,
+   "failed": 0
+  }
+ }
+}

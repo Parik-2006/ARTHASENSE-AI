@@ -1,0 +1,575 @@
+{
+ "web": "https://arthasense-ai.vercel.app",
+ "api": "https://arthasense-ai.onrender.com",
+ "old": null,
+ "at": "2026-11-25T01:43:41.154Z",
+ "pass": 113,
+ "total": 113,
+ "results": [
+  {
+   "name": "cpi: /model-status lists exactly the eight algorithms",
+   "pass": true,
+   "detail": "naive:available snaive:available drift:available ets:available arima:available sarima:available rf:available xgboost:available"
+  },
+  {
+   "name": "cpi: every unavailable model has a reason",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "wpi: /model-status lists exactly the eight algorithms",
+   "pass": true,
+   "detail": "naive:available snaive:available drift:available ets:available arima:available sarima:available rf:available xgboost:available"
+  },
+  {
+   "name": "wpi: every unavailable model has a reason",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "iip: /model-status lists exactly the eight algorithms",
+   "pass": true,
+   "detail": "naive:available snaive:available drift:available ets:available arima:available sarima:available rf:available xgboost:available"
+  },
+  {
+   "name": "iip: every unavailable model has a reason",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "gdp: /model-status lists exactly the eight algorithms",
+   "pass": true,
+   "detail": "naive:available snaive:available drift:available ets:available arima:available sarima:insufficient_history rf:insufficient_history xgboost:insufficient_history"
+  },
+  {
+   "name": "gdp: every unavailable model has a reason",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "gdp: frequency is quarterly",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "gdp: SARIMA, RF, XGBoost reported as insufficient history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "cpi: all eight models available",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "wpi: all eight models available",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "iip: all eight models available",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "every stored V4 forecast run carries a model label",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "all V4 forecast rows: 95% ⊇ 80% ⊇ point, targets after the cutoff",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "outlook: cpi card present",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "outlook: cpi card names its model",
+   "pass": true,
+   "detail": "Model: Drift"
+  },
+  {
+   "name": "outlook: cpi card has latest official, estimate, forecast period and reliability",
+   "pass": true,
+   "detail": "CPIConsumer Price Index · base 2024Stronger track recordLatest official110.05October 2026Model estimate112.05Forecast: April 2027Model: Drift▲ +1.8% expected ch"
+  },
+  {
+   "name": "cpi: card model == explorer default model",
+   "pass": true,
+   "detail": "Drift vs Drift"
+  },
+  {
+   "name": "outlook: wpi card present",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "outlook: wpi card names its model",
+   "pass": true,
+   "detail": "Model: SARIMA (SARIMA(1,1,1)(0,1,1)12)"
+  },
+  {
+   "name": "outlook: wpi card has latest official, estimate, forecast period and reliability",
+   "pass": true,
+   "detail": "WPIWholesale Price Index · base 2022-23Stronger track recordLatest official113.30October 2026Model estimate115.12Forecast: April 2027Model: SARIMA (SARIMA(1,1,1"
+  },
+  {
+   "name": "wpi: card model == explorer default model",
+   "pass": true,
+   "detail": "SARIMA vs SARIMA"
+  },
+  {
+   "name": "outlook: iip card present",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "outlook: iip card names its model",
+   "pass": true,
+   "detail": "Model: ARIMA (ARIMA(2,1,1) with drift)"
+  },
+  {
+   "name": "outlook: iip card has latest official, estimate, forecast period and reliability",
+   "pass": true,
+   "detail": "IIPIndex of Industrial Production · base 2022-23Stronger track recordLatest official124.30September 2026Model estimate127.35Forecast: March 2027Model: ARIMA (AR"
+  },
+  {
+   "name": "iip: card model == explorer default model",
+   "pass": true,
+   "detail": "ARIMA vs ARIMA"
+  },
+  {
+   "name": "outlook: gdp card present",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "outlook: gdp card names its model",
+   "pass": true,
+   "detail": "Model: Drift"
+  },
+  {
+   "name": "outlook: gdp card has latest official, estimate, forecast period and reliability",
+   "pass": true,
+   "detail": "GDPGross Domestic Product · real, quarterly · base 2022-23Limited evidenceLatest official₹81.36lakh crQ1 FY2026-27 (Apr–Jun 2026)Model estimate₹86.29lakh crFore"
+  },
+  {
+   "name": "gdp: card model == explorer default model",
+   "pass": true,
+   "detail": "Drift vs Drift"
+  },
+  {
+   "name": "outlook: GDP card uses fiscal quarters and lakh crore",
+   "pass": true,
+   "detail": "GDPGross Domestic Product · real, quarterly · base 2022-23Limited evidenceLatest official₹81.36lakh crQ1 FY2026-27 (Apr–Jun 2026)Model estimate₹86.29lakh crForecast: Q1 FY2027-28 (Apr–Jun 2027)Model: "
+  },
+  {
+   "name": "outlook: GDP card shows implied year-on-year change",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "outlook: four cards in one row at 1920 px",
+   "pass": true,
+   "detail": "255,255,255,255"
+  },
+  {
+   "name": "cpi: selector offers all eight algorithms",
+   "pass": true,
+   "detail": "Naive (baseline) | Seasonal naive | Drift | ETS | ARIMA | SARIMA | Random Forest | XGBoost"
+  },
+  {
+   "name": "cpi: enabled options == available models",
+   "pass": true,
+   "detail": "8 vs 8"
+  },
+  {
+   "name": "cpi: horizon labels use the right period",
+   "pass": true,
+   "detail": "1 month,3 months,6 months"
+  },
+  {
+   "name": "cpi: switching model updates the URL and KPI",
+   "pass": true,
+   "detail": "https://arthasense-ai.vercel.app/forecasting/cpi?model=snaive&horizon=6"
+  },
+  {
+   "name": "cpi: research view shows configuration and provenance",
+   "pass": true,
+   "detail": "Backtest evidence · 6-month horizonAll figures below, including the naive baseline's, come from one test set: 17 forecas"
+  },
+  {
+   "name": "cpi: CSV download",
+   "pass": true,
+   "detail": "indicator,classification,target_month,forecast_index,change_from_latest_observed,change_from_latest_observed_pct_model_derived,lower_80,upper_80,lower_95,upper_"
+  },
+  {
+   "name": "wpi: selector offers all eight algorithms",
+   "pass": true,
+   "detail": "Naive (baseline) | Seasonal naive | Drift | ETS | ARIMA | SARIMA | Random Forest | XGBoost"
+  },
+  {
+   "name": "wpi: enabled options == available models",
+   "pass": true,
+   "detail": "8 vs 8"
+  },
+  {
+   "name": "wpi: horizon labels use the right period",
+   "pass": true,
+   "detail": "1 month,3 months,6 months"
+  },
+  {
+   "name": "wpi: switching model updates the URL and KPI",
+   "pass": true,
+   "detail": "https://arthasense-ai.vercel.app/forecasting/wpi?model=snaive&horizon=6"
+  },
+  {
+   "name": "wpi: research view shows configuration and provenance",
+   "pass": true,
+   "detail": "Backtest evidence · 6-month horizonAll figures below, including the naive baseline's, come from one test set: 38 forecas"
+  },
+  {
+   "name": "wpi: CSV download",
+   "pass": true,
+   "detail": "indicator,classification,target_month,forecast_index,change_from_latest_observed,change_from_latest_observed_pct_model_derived,lower_80,upper_80,lower_95,upper_"
+  },
+  {
+   "name": "iip: selector offers all eight algorithms",
+   "pass": true,
+   "detail": "Naive (baseline) | Seasonal naive | Drift | ETS | ARIMA | SARIMA | Random Forest | XGBoost"
+  },
+  {
+   "name": "iip: enabled options == available models",
+   "pass": true,
+   "detail": "8 vs 8"
+  },
+  {
+   "name": "iip: horizon labels use the right period",
+   "pass": true,
+   "detail": "1 month,3 months,6 months"
+  },
+  {
+   "name": "iip: switching model updates the URL and KPI",
+   "pass": true,
+   "detail": "https://arthasense-ai.vercel.app/forecasting/iip?model=snaive&horizon=6"
+  },
+  {
+   "name": "iip: research view shows configuration and provenance",
+   "pass": true,
+   "detail": "Backtest evidence · 6-month horizonAll figures below, including the naive baseline's, come from one test set: 37 forecas"
+  },
+  {
+   "name": "iip: CSV download",
+   "pass": true,
+   "detail": "indicator,classification,target_month,forecast_index,change_from_latest_observed,change_from_latest_observed_pct_model_derived,lower_80,upper_80,lower_95,upper_"
+  },
+  {
+   "name": "gdp: selector offers all eight algorithms",
+   "pass": true,
+   "detail": "Naive (baseline) | Seasonal naive | Drift | ETS | ARIMA | SARIMA — insufficient history* | Random Forest — insufficient history* | XGBoost — insufficient history*"
+  },
+  {
+   "name": "gdp: enabled options == available models",
+   "pass": true,
+   "detail": "5 vs 5"
+  },
+  {
+   "name": "gdp: horizon labels use the right period",
+   "pass": true,
+   "detail": "1 quarter,2 quarters,4 quarters"
+  },
+  {
+   "name": "gdp: KPIs show lakh crore, never raw crore figures",
+   "pass": true,
+   "detail": "Latest official₹81.36lakh crQ1 FY2026-27 (Apr–Jun 2026) · ₹ lakh crore at constant 2022-23 pricesForecast · Q1 FY2027-28 (Apr–Jun 2027)₹86.29lakh crModel: Drift"
+  },
+  {
+   "name": "gdp: availability note explains the missing models",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "gdp: chart axis labels are fiscal quarters",
+   "pass": true,
+   "detail": "60,80,100,Q1 FY2022-23,Q3 FY2022-23,Q1 FY2023-24,Q3 FY2023-24,Q1 FY2024-25"
+  },
+  {
+   "name": "gdp: switching model updates the URL and KPI",
+   "pass": true,
+   "detail": "https://arthasense-ai.vercel.app/forecasting/gdp?model=snaive&horizon=4"
+  },
+  {
+   "name": "gdp: research view shows configuration and provenance",
+   "pass": true,
+   "detail": "Backtest evidence · 4-quarter horizonAll figures below, including the naive baseline's, come from one test set: 6 foreca"
+  },
+  {
+   "name": "gdp: CSV download",
+   "pass": true,
+   "detail": "indicator,classification,frequency,target_quarter,target_period_start,forecast_level_rs_crore,implied_yoy_growth_pct_calculated,lower_80,upper_80,lower_95,upper"
+  },
+  {
+   "name": "comparison cpi h=6: MAE, RMSE, sMAPE, tests, vs Naive",
+   "pass": true,
+   "detail": "ModelMAE ?RMSEsMAPETestsvs NaiveInside 80% ?Track record"
+  },
+  {
+   "name": "comparison cpi h=6: compared + explained models = 8",
+   "pass": true,
+   "detail": "8 + 0"
+  },
+  {
+   "name": "comparison wpi h=6: MAE, RMSE, sMAPE, tests, vs Naive",
+   "pass": true,
+   "detail": "ModelMAE ?RMSEsMAPETestsvs NaiveInside 80% ?Track record"
+  },
+  {
+   "name": "comparison wpi h=6: compared + explained models = 8",
+   "pass": true,
+   "detail": "8 + 0"
+  },
+  {
+   "name": "comparison iip h=6: MAE, RMSE, sMAPE, tests, vs Naive",
+   "pass": true,
+   "detail": "ModelMAE ?RMSEsMAPETestsvs NaiveInside 80% ?Track record"
+  },
+  {
+   "name": "comparison iip h=6: compared + explained models = 8",
+   "pass": true,
+   "detail": "8 + 0"
+  },
+  {
+   "name": "comparison gdp h=1: MAE, RMSE, sMAPE, tests, vs Naive",
+   "pass": true,
+   "detail": "ModelMAE ?RMSEsMAPETestsvs NaiveInside 80% ?Track record"
+  },
+  {
+   "name": "comparison gdp h=1: compared + explained models = 8",
+   "pass": true,
+   "detail": "3 + 5"
+  },
+  {
+   "name": "comparison gdp h=4: MAE, RMSE, sMAPE, tests, vs Naive",
+   "pass": true,
+   "detail": "ModelMAE ?RMSEsMAPETestsvs NaiveInside 80% ?Track record"
+  },
+  {
+   "name": "comparison gdp h=4: compared + explained models = 8",
+   "pass": true,
+   "detail": "3 + 5"
+  },
+  {
+   "name": "comparison: selected default badge shown at the default horizon",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "tour /forecasting @1440: steps through to the end",
+   "pass": true,
+   "detail": "Outlook tour: step 1 of 7; 7 steps"
+  },
+  {
+   "name": "tour /forecasting @1440: Escape closes and returns focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "tour /forecasting @390: steps through to the end",
+   "pass": true,
+   "detail": "Outlook tour: step 1 of 7; 7 steps"
+  },
+  {
+   "name": "tour /forecasting @390: Escape closes and returns focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "tour /forecasting/gdp @768: steps through to the end",
+   "pass": true,
+   "detail": "GDP forecast tour: step 1 of 7; 7 steps"
+  },
+  {
+   "name": "tour /forecasting/gdp @768: Escape closes and returns focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "tour /forecasting/comparison @360: steps through to the end",
+   "pass": true,
+   "detail": "Model comparison tour: step 1 of 6; 6 steps"
+  },
+  {
+   "name": "tour /forecasting/comparison @360: Escape closes and returns focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @360 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @360 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @360 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @360 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @390 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @390 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @390 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @390 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @390 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @390 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @390 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @390 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @768 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @768 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @768 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @768 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @1024 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @1024 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @1024 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @1024 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @1440 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @1440 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @1440 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @1440 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @1440 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @1440 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @1440 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @1440 dark",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting @1920 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/gdp @1920 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/wpi?view=research @1920 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no horizontal overflow /forecasting/comparison?indicator=gdp&horizon=1 @1920 light",
+   "pass": true,
+   "detail": "0px"
+  },
+  {
+   "name": "no console or page errors on the new build",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

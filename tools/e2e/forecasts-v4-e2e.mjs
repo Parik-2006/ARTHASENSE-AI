@@ -27,7 +27,17 @@ async function page(w = 1440, h = 900, scheme = "light", base = WEB) {
   }
   return p;
 }
-const go = (p, url, base = WEB) => p.goto(base + url, { waitUntil: "networkidle", timeout: 90000 });
+// Live runs cross the real internet: retry transient network failures (DNS, resets), never assertion failures.
+const go = async (p, url, base = WEB) => {
+  for (let i = 0; ; i++) {
+    try {
+      return await p.goto(base + url, { waitUntil: "networkidle", timeout: 90000 });
+    } catch (e) {
+      if (i >= 3 || !/net::ERR_|Timeout/.test(e.message)) throw e;
+      await new Promise((r) => setTimeout(r, 3000 * (i + 1)));
+    }
+  }
+};
 const overflowX = (p) => p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 const ALGOS = ["Naive", "Seasonal naive", "Drift", "ETS", "ARIMA", "SARIMA", "Random Forest", "XGBoost"];
 const IDS = ["cpi", "wpi", "iip", "gdp"];
@@ -153,6 +163,9 @@ for (const [url, w] of [["/forecasting", 1440], ["/forecasting", 390], ["/foreca
   for (let i = 0; i < 12; i++) {
     const next = p.locator('[data-testid="spotlight-tour"] button', { hasText: /^(Next|Finish)$/ });
     if (!(await next.count())) break;
+    // The card re-measures ~450 ms after each step (it follows smooth scrolling). Clicking before it settles can land
+    // on the spotlighted link underneath, as only automation can; wait like the V3 suite does (650 ms).
+    await p.waitForTimeout(650);
     const lbl = await next.textContent();
     try {
       await next.click({ timeout: 10000 });

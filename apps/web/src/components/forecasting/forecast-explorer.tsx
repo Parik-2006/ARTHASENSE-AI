@@ -176,10 +176,10 @@ export function ForecastExplorer({
   /** KPI figure: GDP shows "₹81.36" with "lakh cr" in small type so the figure never wraps. */
   const big = (v: number) =>
     quarterly ? (
-      <>
+      <span className="whitespace-nowrap">
         ₹{(v / 100_000).toFixed(2)}
-        <span className="ml-1 text-sm font-normal text-ink-muted">lakh cr</span>
-      </>
+        <span className="ml-1 whitespace-nowrap text-sm font-normal text-ink-muted">lakh cr</span>
+      </span>
     ) : (
       fmt(v)
     );

@@ -109,10 +109,10 @@ export function ForecastCard({ s, anchor }: { s: Summary; anchor: boolean }) {
   /** Big card figure: GDP shows "₹81.36" with the unit in small type so it never wraps. */
   const big = (v: number) =>
     quarterly ? (
-      <>
+      <span className="whitespace-nowrap">
         ₹{(v / 100_000).toFixed(2)}
-        <span className="ml-1 text-xs font-normal text-ink-muted">lakh cr</span>
-      </>
+        <span className="ml-1 whitespace-nowrap text-xs font-normal text-ink-muted">lakh cr</span>
+      </span>
     ) : (
       fmt(v)
     );

@@ -1,0 +1,297 @@
+{
+ "web": "http://127.0.0.1:3114",
+ "api": "http://127.0.0.1:8765",
+ "results": [
+  {
+   "name": "cpi: /forecasting/series latest == /indicators latest",
+   "pass": true,
+   "detail": "110.05 vs 110.05"
+  },
+  {
+   "name": "cpi: same base year on both APIs",
+   "pass": true,
+   "detail": "2024 / 2024"
+  },
+  {
+   "name": "wpi: /forecasting/series latest == /indicators latest",
+   "pass": true,
+   "detail": "113.3 vs 113.3"
+  },
+  {
+   "name": "wpi: same base year on both APIs",
+   "pass": true,
+   "detail": "2022-23 / 2022-23"
+  },
+  {
+   "name": "iip: /forecasting/series latest == /indicators latest",
+   "pass": true,
+   "detail": "124.3 vs 124.3"
+  },
+  {
+   "name": "iip: same base year on both APIs",
+   "pass": true,
+   "detail": "2022-23 / 2022-23"
+  },
+  {
+   "name": "every stored future forecast date is after its training cutoff",
+   "pass": true,
+   "detail": "41 runs"
+  },
+  {
+   "name": "wpi: Forecasts page latest official == Indicators page",
+   "pass": true,
+   "detail": "113.3 vs 113.3"
+  },
+  {
+   "name": "iip: Forecasts page latest official == Indicators page",
+   "pass": true,
+   "detail": "124.3 vs 124.3"
+  },
+  {
+   "name": "cpi: Forecasts page latest official == Indicators page",
+   "pass": true,
+   "detail": "110.05 vs 110.05"
+  },
+  {
+   "name": "CPI (linked-history runs stored) shows the explorer, not an unavailable state",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "horizon selector changes target month and keeps model",
+   "pass": true,
+   "detail": "Forecast · November 2026 113.58 Model: SARIMA"
+  },
+  {
+   "name": "model selector updates URL and KPI",
+   "pass": true,
+   "detail": "http://127.0.0.1:3114/forecasting/wpi?model=ets&horizon=1"
+  },
+  {
+   "name": "history window is separate from horizon",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Research View shows evidence panel",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "view=research survives control changes",
+   "pass": true,
+   "detail": "http://127.0.0.1:3114/forecasting/wpi?range=1Y&model=ets&horizon=3&view=research"
+  },
+  {
+   "name": "historical link carries only the window",
+   "pass": true,
+   "detail": "/indicators/wpi?range=1Y"
+  },
+  {
+   "name": "explorer CSV has provenance and 'not official' classification",
+   "pass": true,
+   "detail": "forecast-wpi-ets-h3.csv"
+  },
+  {
+   "name": "Simple View hides research panels",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "hover tooltip on forecast: month, value, source, ranges",
+   "pass": true,
+   "detail": "January 2027 |  | 113.70 |  | Model estimate · ETS |  | 80% range 111.50 – 115.89 |  | 95% range 110.34 – 117.05"
+  },
+  {
+   "name": "tooltip stays inside the chart",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "hover tooltip on history says Official",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Outlook 1440: tour visits 7 steps and finishes",
+   "pass": true,
+   "detail": "seen 7"
+  },
+  {
+   "name": "Outlook 1440: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Outlook 1440: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "Outlook 390: tour visits 7 steps and finishes",
+   "pass": true,
+   "detail": "seen 7"
+  },
+  {
+   "name": "Outlook 390: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Outlook 390: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "WPI explorer 1440: tour visits 7 steps and finishes",
+   "pass": true,
+   "detail": "seen 7"
+  },
+  {
+   "name": "WPI explorer 1440: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "WPI explorer 1440: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "IIP explorer 360: tour visits 7 steps and finishes",
+   "pass": true,
+   "detail": "seen 7"
+  },
+  {
+   "name": "IIP explorer 360: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "IIP explorer 360: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "WPI explorer 768: tour visits 7 steps and finishes",
+   "pass": true,
+   "detail": "seen 7"
+  },
+  {
+   "name": "WPI explorer 768: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "WPI explorer 768: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "Comparison 1440: tour visits 6 steps and finishes",
+   "pass": true,
+   "detail": "seen 6"
+  },
+  {
+   "name": "Comparison 1440: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Comparison 1440: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "Experiments 1440 (reveals details): tour visits 4 steps and finishes",
+   "pass": true,
+   "detail": "seen 4"
+  },
+  {
+   "name": "Experiments 1440 (reveals details): card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Experiments 1440 (reveals details): keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "Experiments 390: tour visits 4 steps and finishes",
+   "pass": true,
+   "detail": "seen 4"
+  },
+  {
+   "name": "Experiments 390: card inside viewport, never covering the target",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "Experiments 390: keyboard + Escape close and return focus",
+   "pass": true,
+   "detail": "Take a tour"
+  },
+  {
+   "name": "comparison CSV downloads",
+   "pass": true,
+   "detail": "comparison-iip-h3.csv"
+  },
+  {
+   "name": "comparison: CPI shows a compared set",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "experiments deep link applies filters",
+   "pass": true,
+   "detail": "25 rows"
+  },
+  {
+   "name": "row details show reproducibility fingerprints",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "experiments CSV = filtered rows",
+   "pass": true,
+   "detail": "40 rows"
+  },
+  {
+   "name": "run deep link opens run detail",
+   "pass": true,
+   "detail": "/forecasting/experiments/312"
+  },
+  {
+   "name": "direct run URL works",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "'View historical WPI' opens the existing Indicators page",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "'Back to economic overview' opens Overview",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "dark theme applied on Forecasts",
+   "pass": true,
+   "detail": "rgb(14, 17, 22)"
+  },
+  {
+   "name": "no console errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "no hydration errors",
+   "pass": true,
+   "detail": ""
+  }
+ ],
+ "errors": []
+}

@@ -6,6 +6,7 @@ import { HelpTip } from "@/components/guide/help-tip";
 import { Sparkline } from "@/components/indicators/indicator-summary";
 import { gdpSource } from "@/components/indicators/detail/indicator-detail";
 import { useRange } from "@/components/indicators/detail/use-range";
+import { CalcExplainer } from "@/components/overview/calc-explainer";
 import { TimeChart } from "@/components/overview/time-chart";
 import { Empty, SectionShell, Seg } from "@/components/overview/v3/ui";
 import { ClassBadge, periodSpan, SourceAttribution } from "@/components/source/source-attribution";
@@ -15,6 +16,7 @@ import { explainGdp, explainLevel, explainRate, monthlyWindow, pathFor, quarterW
 import { derive, type Derived, seedCustomRange } from "@/lib/overview";
 import type { IndicatorBundle } from "@/lib/overview-data";
 import { buildYearComparison, calendarQuarter } from "@/lib/overview-v3";
+import { calendarToFiscal, type Explanation, fixed, gdpExplanation, gdpQuarterDetail, methodAverageOfMonthlyYoy, monthlyExplanation, monthlyQuarterDetail, type QuarterDetail, seriesPrecision } from "@/lib/calc-explain";
 import { seriesIds } from "@/lib/source";
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
@@ -98,8 +100,11 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
       <SectionShell id="indicators" tour="cards" title="Key economic indicators" intro="The latest official figure for each indicator. Select a card to explore its history.">
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {VIEW_KEYS.map((k) => (
-            <li key={k} className="min-w-0">
+            <li key={k} className="flex min-w-0 flex-col">
               {k === "gdp" ? GdpCard() : MonthlyCard({ p: byKey(k), k })}
+              <div className="rounded-b-md border border-t-0 border-rule bg-surface px-4 pb-2 pt-0.5">
+                <CalcExplainer explanation={explainFor(k)} terms={termsFor(k)} testId={`explain-${k}`} />
+              </div>
             </li>
           ))}
         </ul>
@@ -112,8 +117,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
       <Link
         href={pathFor(k)}
         data-testid={`card-${k}`}
-        aria-label={`${VIEW_NAME[k].full} (${VIEW_NAME[k].short}): open the detailed view`}
-        className={`group flex h-full flex-col rounded-md border border-rule border-t-4 bg-surface p-4 transition-colors hover:border-accent ${focusRing}`}
+        className={`group flex flex-1 flex-col rounded-t-md border border-b-0 border-rule border-t-4 bg-surface p-4 transition-colors hover:border-accent ${focusRing}`}
         style={{ borderTopColor: VIEW_COLOR[k] }}
       >
         <span className="flex items-baseline justify-between gap-2">
@@ -130,15 +134,32 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     );
   }
 
+  /** Calculation explanation of the figure a card shows (same latest row, same series, same precision). */
+  function explainFor(k: ViewKey): Explanation | null {
+    if (k === "gdp") return gdp.ok ? gdpExplanation(gdpRows, gdp.data.baseYear, { name: "MoSPI (NSO) National Accounts", url: gdp.data.sourceUrl ?? "https://www.mospi.gov.in/", retrieved: day(gdpSource(gdp.data).retrievedAt) }) : null;
+    const p = byKey(k);
+    const seg = p?.b.segments[0];
+    if (!p || p.b.error || !seg) return null;
+    return monthlyExplanation({ key: k, rows: p.rows, official: p.official, baseYear: seg.baseYear, source: { name: `${p.b.source.short} · ${p.b.source.dataset}`, url: p.b.source.url ?? p.b.source.publisherUrl, retrieved: day(p.b.source.retrievedAt) } });
+  }
+
+  function termsFor(k: ViewKey): string[] {
+    if (k === "gdp") return ["real-gdp", "fiscal-quarter", "yoy", "official", "source"];
+    return ["index-value", "base-year", "yoy", ...(k === "iip" ? [] : ["inflation"]), k === "wpi" ? "calculated" : "official", "percentage-points", "current-legacy", "source"];
+  }
+
   function MonthlyCard({ p, k }: { p: Prep | undefined; k: Exclude<ViewKey, "gdp"> }) {
     const seg = p?.b.segments[0];
     const valid = p ? p.rows.filter((r) => r.index !== null) : [];
     const last = valid[valid.length - 1];
     const rateRow = p ? [...p.rows].reverse().find((r) => rateOf(p, r) !== null) : undefined;
+    // Shown with the source's own precision (WPI/IIP indices and IIP growth have one decimal), never extra digits.
+    const idxDp = seriesPrecision(valid.map((r) => r.index));
+    const rateDp = p?.official ? seriesPrecision(p.rows.map((r) => r.rate)) : 2;
     const footer =
       p && seg ? (
         <>
-          Source: {p.b.source.short} · base {seg.baseYear}
+          Source: {p.b.source.short} · base {seg.baseYear} · published monthly
           {day(p.b.source.retrievedAt) && <> · retrieved {day(p.b.source.retrievedAt)}</>}
         </>
       ) : (
@@ -155,11 +176,11 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
         ) : (
           <span className="mt-3 flex items-end justify-between gap-2">
             <span className="min-w-0">
-              <span className="figure block text-3xl font-medium tracking-tight">{formatIndex(last.index)}</span>
+              <span className="figure block text-3xl font-medium tracking-tight">{last.index === null ? formatIndex(null) : fixed(last.index, idxDp)}</span>
               <span className="block text-xs text-ink-muted">Index, base {seg!.baseYear} = 100 · {formatPeriod(last.period, true)}</span>
               {rateRow && (
                 <span className="mt-1 flex flex-wrap items-center gap-1.5 text-sm">
-                  <span className="figure font-medium">{(rateOf(p, rateRow) as number).toFixed(2)}%</span>
+                  <span className="figure font-medium">{fixed(rateOf(p, rateRow) as number, rateDp)}%</span>
                   <span className="text-xs text-ink-muted">{k === "iip" ? "growth" : "inflation"}, year-on-year · {formatPeriod(rateRow.period)}</span>
                   <ClassBadge cls={p.official ? "official" : "calculated"} />
                 </span>
@@ -180,7 +201,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
         "gdp",
         gdp.ok ? (
           <>
-            Source: MoSPI (NSO) National Accounts · base {gdp.data.baseYear}
+            Source: MoSPI (NSO) National Accounts · base {gdp.data.baseYear} · published quarterly
             {day(gdpSource(gdp.data).retrievedAt) && <> · retrieved {day(gdpSource(gdp.data).retrievedAt)}</>}
           </>
         ) : (
@@ -243,6 +264,11 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
     const isCurrent = s.id === p.segs[0].id;
     const val = (x: SegView, r: Derived) => (m === "level" ? r.index : x.official ? r.rate : r.yoyCalc);
     const w = monthlyWindow(s.rows, sel);
+    const idxDp = seriesPrecision(s.rows.map((r) => r.index));
+    const rateDp = s.official ? seriesPrecision(s.rows.map((r) => r.rate)) : 2;
+    const yearAgo = (n: number) => formatPeriod(`${Math.floor((n - 12) / 12)}-${String(((n - 12) % 12) + 1).padStart(2, "0")}-01`);
+    const tipYoy = (n: number) => [`vs ${yearAgo(n)} · base ${s.baseYear}`, s.official ? `Official (${p.b.source.short})` : "Calculated by ArthaSense"];
+    const tipLevel = () => [`Index, base ${s.baseYear} = 100`, `Official (${p.b.source.short})`];
     const have = w.rows.filter((r) => val(s, r) !== null).length;
     const label = k === "iip" ? "industrial production growth" : k === "cpi" ? "consumer inflation" : "wholesale inflation";
     const period = periodSpan(w.first?.period ?? null, w.last?.period ?? null);
@@ -302,7 +328,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
             {VIEW_NAME[k].short}: index level (base {s.baseYear} = 100) · {s.label} <ClassBadge cls="official" />
           </p>
           {w.stored >= 2 ? (
-            <TimeChart series={[{ key: k, label: `${VIEW_NAME[k].short} index (${s.label})`, stroke: VIEW_COLOR[k], points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${s.baseYear} = 100)`} description={`${VIEW_NAME[k].short} index, ${s.label}, ${period}.`} />
+            <TimeChart digits={idxDp} tipExtra={tipLevel} series={[{ key: k, label: `${VIEW_NAME[k].short} index (${s.label})`, stroke: VIEW_COLOR[k], points: w.rows.map((r) => ({ n: r.n, v: r.index })) }]} yLabel={`Index (base ${s.baseYear} = 100)`} description={`${VIEW_NAME[k].short} index, ${s.label}, ${period}.`} />
           ) : (
             <Empty>{w.stored === 1 ? "Only one month falls in this range; a trend needs at least two." : `No months of ${s.label} fall in this range.`}</Empty>
           )}
@@ -323,7 +349,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
           {VIEW_NAME[k].short}: {label} (% year-on-year) · {s.label} <ClassBadge cls={s.official ? "official" : "calculated"} />
         </p>
         {have ? (
-          <TimeChart kind="bars" barColor="series" signed unit="%" series={[{ key: k, label: `${label} (${s.label})`, stroke: VIEW_COLOR[k], points }]} yLabel="% change from a year earlier" description={`Bar chart of ${label}, ${s.label}, ${period}.`} />
+          <TimeChart kind="bars" barColor="series" signed unit="%" digits={rateDp} tipExtra={tipYoy} series={[{ key: k, label: `${label} (${s.label})`, stroke: VIEW_COLOR[k], points }]} yLabel="% change from a year earlier" description={`Bar chart of ${label}, ${s.label}, ${period}.`} />
         ) : (
           <Empty>
             No {label} figure for {s.label} in this range.{" "}
@@ -359,7 +385,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
           {w.tooShort ? (
             <Empty>GDP is quarterly, so a 2-month range cannot contain a full quarter. Choose 3M or longer.</Empty>
           ) : w.rows.some((r) => r.level !== null) ? (
-            <TimeChart kind="bars" barColor="series" digits={2} stepMonths={3} formatN={quarterShort} series={[{ key: "gdp", label: "Real GDP (₹ lakh crore)", stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.level === null ? null : r.level / 1e5 })) }]} yLabel="₹ lakh crore, constant prices" description={`Real GDP level by quarter, ${period}.`} />
+            <TimeChart kind="bars" barColor="series" digits={2} stepMonths={3} formatN={quarterShort} tipExtra={(n) => [quarterLabel(n).replace(/^Q\d FY\S+ /, ""), "Constant 2022-23 prices", "Official (MoSPI NSO)"]} series={[{ key: "gdp", label: "Real GDP (₹ lakh crore)", stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.level === null ? null : r.level / 1e5 })) }]} yLabel="₹ lakh crore, constant prices" description={`Real GDP level by quarter, ${period}.`} />
           ) : (
             <Empty>No GDP level is stored in this range.</Empty>
           )}
@@ -379,7 +405,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
         {w.tooShort ? (
           <Empty>GDP is quarterly, so a 2-month range cannot contain a full quarter. Choose 3M or longer.</Empty>
         ) : w.rows.some((r) => r.growthOfficial !== null) ? (
-          <TimeChart kind="bars" barColor="series" signed unit="%" digits={1} stepMonths={3} formatN={quarterShort} series={[{ key: "gdp", label: "Real GDP growth", stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.growthOfficial })) }]} yLabel="% change from a year earlier" description={`Official real GDP growth by quarter, ${period}.`} />
+          <TimeChart kind="bars" barColor="series" signed unit="%" digits={1} stepMonths={3} formatN={quarterShort} tipExtra={(n) => [quarterLabel(n).replace(/^Q\d FY\S+ /, ""), `vs ${quarterShort(n - 12)}, constant prices`, "Official (MoSPI NSO)"]} series={[{ key: "gdp", label: "Real GDP growth", stroke: VIEW_COLOR.gdp, points: w.rows.map((r) => ({ n: r.n, v: r.growthOfficial })) }]} yLabel="% change from a year earlier" description={`Official real GDP growth by quarter, ${period}.`} />
         ) : (
           <Empty>No official GDP growth is stored in this range.</Empty>
         )}
@@ -389,6 +415,78 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
           <Link href={pathFor("gdp")} className="text-sm font-medium text-accent underline">Explore GDP in detail →</Link>
         </div>
       </div>
+    );
+  }
+
+  /** Every plotted point, inspectable: the months and averages used (calculated) or the official figure (GDP). */
+  function CompareBreakdown({ quarters, keys }: { quarters: number[]; keys: ViewKey[] }) {
+    const rows: QuarterDetail[] = quarters.flatMap((n) =>
+      keys.map((k) => (k === "gdp" ? gdpQuarterDetail(gdpRows, n) : monthlyQuarterDetail(k, byKey(k)?.rows ?? [], n))),
+    );
+    // Method A (average of the three monthly year-on-year rates) differs from the method used; report by how much.
+    const gaps = rows
+      .filter((d) => d.provenance === "calculated" && d.result !== null)
+      .map((d) => {
+        const a = methodAverageOfMonthlyYoy(byKey(d.key)?.rows ?? [], d.n);
+        return a === null ? null : Math.abs((d.result as number) - a);
+      })
+      .filter((x): x is number => x !== null);
+    const dpOf = (k: ViewKey) => (k === "gdp" ? 1 : seriesPrecision((byKey(k)?.rows ?? []).map((r) => r.index)));
+    const months = (ms: QuarterDetail["months"], k: ViewKey) => ms.map((m) => `${m.label.slice(0, 3)} ${fixed(m.value, dpOf(k))}`).join(", ");
+    return (
+      <details className="mt-3 rounded border border-rule" data-testid="compare-breakdown">
+        <summary className={`cursor-pointer px-3 py-2 text-sm font-medium ${focusRing}`}>How was each point calculated?</summary>
+        <div className="overflow-x-auto px-3 pb-3" role="region" aria-label="Calculation of each plotted point (scrollable)" tabIndex={0}>
+          <table className="w-full min-w-[40rem] text-xs">
+            <caption className="sr-only">Months and averages behind each quarterly point</caption>
+            <thead>
+              <tr className="border-b border-rule text-left">
+                <th scope="col" className="py-1.5 pr-3 font-semibold">Quarter</th>
+                <th scope="col" className="py-1.5 pr-3 font-semibold">Indicator</th>
+                <th scope="col" className="py-1.5 pr-3 font-semibold">This quarter (index)</th>
+                <th scope="col" className="py-1.5 pr-3 font-semibold">Same quarter a year earlier</th>
+                <th scope="col" className="py-1.5 text-right font-semibold">Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((d) => (
+                <tr key={`${d.n}-${d.key}`} className="border-b border-rule align-top last:border-b-0">
+                  <th scope="row" className="py-1.5 pr-3 text-left font-normal">
+                    {calendarQuarter(d.n)}
+                    <span className="block text-ink-muted">{calendarToFiscal(d.n)}</span>
+                  </th>
+                  <td className="py-1.5 pr-3">{VIEW_NAME[d.key].short}</td>
+                  {d.provenance === "official" ? (
+                    <td colSpan={2} className="py-1.5 pr-3 text-ink-muted">
+                      Official real GDP growth as published by MoSPI (NSO): the quarter vs the same quarter a year earlier, constant prices.
+                    </td>
+                  ) : (
+                    <>
+                      <td className="figure py-1.5 pr-3">
+                        {months(d.months, d.key)}
+                        {d.avg !== null && <span className="block text-ink-muted">average {d.avg.toFixed(4)}</span>}
+                      </td>
+                      <td className="figure py-1.5 pr-3">
+                        {months(d.prevMonths, d.key)}
+                        {d.prevAvg !== null && <span className="block text-ink-muted">average {d.prevAvg.toFixed(4)}</span>}
+                      </td>
+                    </>
+                  )}
+                  <td className="figure py-1.5 text-right">
+                    {d.result === null ? <span className="text-ink-muted">not shown: {d.missing}</span> : `${d.result > 0 ? "+" : ""}${fixed(d.result, 1)}%`}
+                    <span className="block text-ink-muted">{d.provenance === "official" ? "official" : "calculated"}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-2 text-ink-muted">
+            Calculated change = ((average of this quarter ÷ average of the same quarter a year earlier) − 1) × 100. Averaging index levels first and then comparing is not the same as
+            averaging three monthly year-on-year rates
+            {gaps.length ? `; in this chart the two differ by at most ${Math.max(...gaps).toFixed(3)} percentage points` : ""}.
+          </p>
+        </div>
+      </details>
     );
   }
 
@@ -410,9 +508,10 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
               {result.year ?? "—"}
             </span>
           </div>
-          <p className="mb-2 text-xs text-ink-muted">
+          <p className="mb-2 text-xs text-ink-muted" data-testid="compare-method">
             <strong className="text-ink">Quarterly, year-on-year.</strong>
-            <HelpTip id="gdp-quarterly" /> GDP is quarterly, so CPI, WPI and IIP enter as the average of a quarter&apos;s three months, only when all three are stored. No monthly GDP is created.
+            <HelpTip id="gdp-quarterly" /> For CPI, WPI and IIP, ArthaSense averages the index over the quarter&apos;s three months and compares that average with the same three months a year earlier
+            (calculated; only when all six months are stored). GDP shows its official real growth for the quarter, as published. No monthly GDP is created.
           </p>
           {result.problem ? (
             <Empty>{result.problem}</Empty>
@@ -427,7 +526,9 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
                 series={result.series.map((s) => ({ ...s, stroke: VIEW_COLOR[s.key as ViewKey] ?? s.stroke }))}
                 yLabel="Change from the same quarter a year earlier (%)"
                 description={`Year-on-year change of ${result.series.map((s) => s.label).join(", ")} by quarter, ${span}.`}
+                tipExtra={(n) => [`${calendarToFiscal(n)} · vs same quarter ${Math.floor(n / 12) - 1}`, "GDP official; others calculated", "(3-month average index)"]}
               />
+              <CompareBreakdown quarters={result.quarters} keys={result.series.map((x) => x.key as ViewKey)} />
               <p className="mt-2 text-xs text-ink-muted" data-testid="compare-fiscal">
                 Fiscal quarters: {result.quarters.map((n) => `${calendarQuarter(n).replace(/ \d{4}$/, "")} = ${quarterShort(n)}`).join(" · ")}
               </p>
@@ -438,7 +539,7 @@ export function OverviewFinal({ bundles, gdp }: { bundles: IndicatorBundle[]; gd
                   ))}
                 </ul>
               )}
-              <SourceAttribution className="mt-3" cls="calculated" sources={sources} period={span} units="% change from a year earlier" method="Calculated by ArthaSense from each indicator's current official series (quarterly averages of monthly indices; GDP at constant prices). Not official rates." />
+              <SourceAttribution className="mt-3" cls="calculated" sources={sources} period={span} units="% change from a year earlier" method="CPI, WPI and IIP: calculated by ArthaSense from each indicator's current official series as ((average index of the quarter's 3 months ÷ average of the same 3 months a year earlier) − 1) × 100; not official rates. GDP: official real growth (constant prices) as published by MoSPI (NSO)." />
             </>
           )}
         </div>

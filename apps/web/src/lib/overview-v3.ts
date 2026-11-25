@@ -254,7 +254,17 @@ export function buildYearComparison(args: { monthly: MonthlyInput[]; gdp: GdpInp
     ...args.monthly.map((m) => ({ key: m.key as OvKey, pts: quarterlyAverage(m.rows) })),
     ...(args.gdp ? [{ key: "gdp" as OvKey, pts: gdpLevels(args.gdp.rows) }] : []),
   ].sort((a, b) => OV_KEYS.indexOf(a.key) - OV_KEYS.indexOf(b.key));
-  const yoy = new Map(levels.map((l) => [l.key, qYoy(l.pts)]));
+  // Monthly indices: YoY of the quarterly-average index (calculated, Method B). GDP: its OFFICIAL real growth of the
+  // quarter as published (the same definition, quarter vs the same quarter a year earlier); it is never recalculated
+  // from levels, so the chart and the GDP card always agree.
+  const yoy = new Map(
+    levels.map((l) => [
+      l.key,
+      l.key === "gdp" && args.gdp
+        ? new Map(args.gdp.rows.filter((r) => r.growthOfficial !== null).map((r) => [r.n, r.growthOfficial as number]))
+        : qYoy(l.pts),
+    ]),
+  );
   const allN = [...yoy.values()].flatMap((m) => [...m.keys()]);
   const year = args.year ?? (allN.length ? Math.floor(Math.max(...allN) / 12) : null);
   const empty: YearComparison = { year, quarters: [], series: [], notes: [], problem: null };

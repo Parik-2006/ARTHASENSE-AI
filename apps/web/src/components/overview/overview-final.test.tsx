@@ -76,7 +76,10 @@ describe("Section 1: four cards that link straight to the Indicators views", () 
   it("cards show the latest stored value, its month, base year and official vs calculated", () => {
     render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
     const cpi = screen.getByTestId("card-cpi");
-    expect(cpi.textContent).toMatch(/147\.00/);
+    // Shown with the stored precision: this fixture's indices are whole numbers, so no decimals are invented
+    // (real CPI base 2024 has 2 decimals and WPI/IIP 1; see calc-explain.test.ts).
+    expect(cpi.textContent).toMatch(/147Index/);
+    expect(cpi.textContent).not.toMatch(/147\.00/);
     expect(cpi.textContent).toMatch(/Index, base 2024 = 100 · March 2026/);
     expect(within(cpi).getByText("Official data")).toBeTruthy();
     expect(within(screen.getByTestId("card-wpi")).getByText("Calculated by ArthaSense")).toBeTruthy();
@@ -295,5 +298,47 @@ describe("the series hint is not shown for relative ranges when the selected ser
     search = "chg=iip&chgm=level&chgs=2011-12";
     render(ui());
     expect(screen.queryByTestId("series-hint")).toBeNull();
+  });
+});
+
+describe("How was this calculated? (cards and comparison)", () => {
+  it("every card has an explainer outside the card link (a button never sits inside the link)", () => {
+    render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
+    for (const k of ["cpi", "wpi", "iip", "gdp"]) {
+      const ex = screen.getByTestId(`explain-${k}`);
+      expect(screen.getByTestId(`card-${k}`).contains(ex)).toBe(false);
+      expect(within(ex).getByRole("button", { name: /How was this calculated/ })).toBeTruthy();
+    }
+  });
+  it("opens a dialog with the stored values substituted, moves focus in, and Escape returns focus", () => {
+    render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
+    const btn = within(screen.getByTestId("explain-wpi")).getByRole("button", { name: /How was this calculated/ });
+    fireEvent.click(btn);
+    const dlg = screen.getByTestId("explain-wpi-dialog");
+    expect(dlg.getAttribute("role")).toBe("dialog");
+    expect(document.activeElement).toBe(dlg);
+    // WPI fixture: 147 (Mar 2026) vs 135 (Mar 2025), calculated by ArthaSense
+    expect(within(dlg).getByTestId("explain-substituted").textContent).toBe(`((147 ÷ 135) − 1) × 100 = ${((147 / 135 - 1) * 100).toFixed(4)}%`);
+    expect(within(dlg).getByTestId("explain-value").textContent).toBe(`${((147 / 135 - 1) * 100).toFixed(2)}%`);
+    expect(within(dlg).getAllByText("Calculated by ArthaSense").length).toBeGreaterThan(0);
+    expect(within(dlg).getByTestId("explain-plain").textContent).toMatch(/^Wholesale prices in March 2026 were \d+\.\d\d% higher than in March 2025\./);
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByTestId("explain-wpi-dialog")).toBeNull();
+    expect(document.activeElement).toBe(btn);
+  });
+  it("the official CPI rate is shown as published and labelled official", () => {
+    render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
+    fireEvent.click(within(screen.getByTestId("explain-cpi")).getByRole("button"));
+    const dlg = screen.getByTestId("explain-cpi-dialog");
+    expect(within(dlg).getAllByText("Official data").length).toBeGreaterThan(0);
+    expect(within(dlg).getByText(/Cross-check with the same formula/)).toBeTruthy();
+  });
+  it("the comparison states the implemented method and lets each point be inspected", () => {
+    render(<OverviewFinal bundles={all()} gdp={gdpOk()} />);
+    expect(screen.getByTestId("compare-method").textContent).toMatch(/averages the index over the quarter's three months and compares that average with the same three months a year earlier/);
+    expect(screen.getByTestId("compare-method").textContent).toMatch(/GDP shows its official real growth/);
+    const b = screen.getByTestId("compare-breakdown");
+    expect(within(b).getAllByText("calculated").length).toBeGreaterThan(0);
+    expect(b.textContent).toMatch(/Calculated change = \(\(average of this quarter ÷ average of the same quarter a year earlier\) − 1\) × 100/);
   });
 });

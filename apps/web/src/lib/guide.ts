@@ -268,7 +268,52 @@ export const HELP: Record<string, HelpEntry> = {
     how: "Open 'Source details'. Anything the source does not provide is marked as such.",
     mistake: "The retrieval time is when ArthaSense fetched the data, not the official release date.",
   },
+  inflation: {
+    title: "Inflation and deflation",
+    what: "Inflation is a rise in a price index compared with a year earlier; a fall is deflation (negative inflation).",
+    why: "It tells you whether prices are higher or lower than twelve months before.",
+    how: "6% inflation means the index is 6% above the same month last year, not that prices rose 6% this month.",
+    mistake: "Lower inflation still means prices are rising, only more slowly. Only a negative rate means they fell.",
+  },
+  "real-gdp": {
+    title: "Real GDP",
+    what: "The value of everything an economy produces, measured at the prices of a fixed base year (here 2022-23).",
+    why: "Fixing prices removes inflation, so growth reflects more output, not higher prices.",
+    how: "Real GDP growth compares a quarter with the same quarter a year earlier, both at base-year prices.",
+    mistake: "Nominal (current-price) GDP can grow just because prices rose. ArthaSense shows real GDP.",
+  },
+  "fiscal-quarter": {
+    title: "Fiscal quarter",
+    what: "India's financial year runs April to March: Q1 = Apr–Jun, Q2 = Jul–Sep, Q3 = Oct–Dec, Q4 = Jan–Mar.",
+    why: "GDP is published by fiscal quarter, so Jan–Mar 2026 belongs to FY2025-26.",
+    how: "\"Q1 FY2026-27\" means April to June 2026.",
+    mistake: "Q1 is not January–March. Check the months in brackets.",
+  },
+  "percentage-points": {
+    title: "Percent vs percentage points",
+    what: "A percentage point is the difference between two percentages: inflation going from 5% to 6% is a rise of 1 percentage point.",
+    why: "That same move is a 20% increase in the rate, which sounds very different.",
+    how: "ArthaSense uses \"percentage points\" for differences between rates and \"%\" for changes in a level.",
+    mistake: "Saying inflation \"rose 1%\" when it went from 5% to 6% is ambiguous; say 1 percentage point.",
+  },
+  calculated: {
+    title: "Calculated by ArthaSense",
+    what: "A figure ArthaSense computed from official observations, for example WPI inflation from the WPI index.",
+    why: "Some sources publish only an index, so the change has to be calculated.",
+    how: "Open \"How was this calculated?\" to see the formula with the exact official values used.",
+    mistake: "It is not an official rate, even when it matches one published elsewhere.",
+  },
+  "current-legacy": {
+    title: "Current and legacy series",
+    what: "When a statistics office updates an index's base year it starts a new (current) series; the old one becomes legacy.",
+    why: "Each series has its own basket, weights and base year.",
+    how: "Read and compare levels only within one series. Choose the series with the selector.",
+    mistake: "An index of 110 in one base year is not comparable with 110 in another base year.",
+  },
 };
+
+/** Glossary terms shown in calculation explanations, in reading order. */
+export const GLOSSARY_TERMS = ["index-value", "base-year", "yoy", "inflation", "real-gdp", "fiscal-quarter", "percentage-points", "official", "calculated", "current-legacy", "source"] as const;
 
 // ---------- tour ----------
 

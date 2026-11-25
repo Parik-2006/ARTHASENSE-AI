@@ -17,7 +17,9 @@ const gdp = (n: number) =>
       indicator: "GDP", base_year: "2022-23", frequency: "quarterly", unit: "u",
       observations: Array.from({ length: n }, (_, i) => {
         const y = 2022 + Math.floor(i / 4);
-        return { fiscal_year: `${y}-${String((y + 1) % 100).padStart(2, "0")}`, quarter: (i % 4) + 1, level: 100 + i * 2, growth_yoy: null };
+        // Official growth as MoSPI publishes it: one decimal, from the first quarter with a year-earlier quarter.
+        const growth_yoy = i >= 4 ? Math.round(((100 + i * 2) / (100 + (i - 4) * 2) - 1) * 1000) / 10 : null;
+        return { fiscal_year: `${y}-${String((y + 1) % 100).padStart(2, "0")}`, quarter: (i % 4) + 1, level: 100 + i * 2, growth_yoy };
       }),
     })!,
   );
@@ -99,8 +101,10 @@ describe("buildYearComparison (Overview: one calendar year, all four indicators)
   it("YoY uses the year-earlier quarter from the full history (lookback not lost by cutting to 2026)", () => {
     // CPI Jan-Mar 2026 average = (112+113+114)/3 = 113; Jan-Mar 2025 = 101 -> +11.88%
     expect(val("cpi", ym(2026, 1))).toBeCloseTo((113 / 101 - 1) * 100, 10);
-    // GDP Q4 FY25-26 (index 15 in the fixture: 100 + 15*2 = 130) vs Q4 FY24-25 (index 11: 122)
-    expect(val("gdp", ym(2026, 1))).toBeCloseTo((130 / 122 - 1) * 100, 10);
+    // GDP Q4 FY25-26 (index 15 in the fixture: 100 + 15*2 = 130) vs Q4 FY24-25 (index 11: 122): the chart shows the
+    // OFFICIAL growth (6.6, one decimal), never the recalculation from levels (6.557...)
+    expect(val("gdp", ym(2026, 1))).toBe(6.6);
+    expect((130 / 122 - 1) * 100).not.toBe(6.6);
   });
   it("never creates monthly GDP: GDP appears only on quarter starts it has, later quarters are a stated gap", () => {
     const gdpPts = r.series.find((s) => s.key === "gdp")!.points;

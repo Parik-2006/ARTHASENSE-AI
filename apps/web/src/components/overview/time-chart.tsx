@@ -33,7 +33,10 @@ export function TimeChart({
   stepMonths = 1,
   formatN,
   barColor = "sign",
+  tipExtra,
 }: {
+  /** Opt-in extra tooltip lines for a point (comparison period, provenance, method). Without it the tooltip is unchanged. */
+  tipExtra?: (n: number) => string[];
   /** Bars: "sign" = rise/fall colours; "series" = the series colour for rises and grey for falls. */
   barColor?: "sign" | "series";
   series: ChartSeries[];
@@ -112,8 +115,9 @@ export function TimeChart({
             const p = s.points.find((q) => q.n === an);
             return `${series.length > 1 ? `${s.label}: ` : ""}${p && p.v !== null ? fmt(p.v) : "no data"}`;
           }),
+          ...(tipExtra ? tipExtra(an) : []),
         ];
-  const tipW = Math.min(width - 8, 190);
+  const tipW = Math.min(width - 8, tipExtra ? 250 : 190);
   const tipH = 10 + tip.length * 16;
   const tipX = an === null ? 0 : sx(an) + tipW + 14 > width - M.r ? sx(an) - tipW - 10 : sx(an) + 10;
 

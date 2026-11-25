@@ -52,3 +52,17 @@ previous `main` (needs `pngjs` and `pixelmatch` next to `playwright-core`).
 WEB=http://127.0.0.1:3114 API=http://127.0.0.1:8765 OLD=http://127.0.0.1:3115 OUT=report.json SHOTS=shots node forecasts-v4-e2e.mjs
 WEB=http://127.0.0.1:3114 API=http://127.0.0.1:8765 OUT=results.json node forecasts-v4-results.mjs   # numbers for the docs
 ```
+
+## Overview scientific audit
+
+`overview-audit-e2e.mjs`: the verified card values at the source's precision (CPI 110.05 / 6.09%, WPI 113.3 / 12.29%,
+IIP 124.3 / 6.7%, GDP 7.8%), every "How was this calculated?" explanation (real October 2025 CPI 103.74, substituted
+formulas), the comparison method sentence, per-point table and tooltip, change-chart tooltips, 320–1920 px in light and
+dark (no overflow, dialog inside the viewport), axe WCAG 2.1 A/AA with the dialog open, and console errors. Needs data
+as stored on 2026-11-25 (production or a restore of it).
+`indicators-pixel-diff.mjs`: Indicators pages of a previous build (`OLD`) vs this build (`WEB`) must be pixel-identical.
+
+```
+WEB=http://127.0.0.1:3114 OUT=report.json SHOTS=shots node overview-audit-e2e.mjs
+OLD=http://127.0.0.1:3115 WEB=http://127.0.0.1:3114 node indicators-pixel-diff.mjs
+```
